@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="png" href="../images/Favicon.png">
+    <title>CyberShield - Deepfake Detector</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@400,500,600,700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/face-api.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #020617;
+            --card: #020617;
+            --card-border: rgba(51, 65, 85, 0.9);
+            --text: #e5e7eb;
+            --accent: #3b82f6;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+
+            background:
+                radial-gradient(circle at 0% 0%,
+                    rgba(59, 130, 246, .20),
+                    transparent 60%),
+
+                radial-gradient(circle at 100% 100%,
+                    rgba(34, 197, 94, .15),
+                    transparent 55%),
+
+                linear-gradient(145deg,
+                    var(--bg) 0%,
+                    #020617 100%);
+
+            background-attachment: fixed;
+
+            color: var(--text);
+
+            min-height: 100vh;
+        }
+
+        .light-mode {
+            --bg: #ffffff;
+            --card: #ffffff;
+            --card-border: #e2e8f0;
+            --text: #0f172a;
+            --accent: #3b82f6;
+        }
+
+        body.light-mode {
+            background: #ffffff;
+        }
+
+        body.light-mode .card {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, .05);
+            transition: all .25s ease;
+        }
+
+        body.light-mode .card:hover {
+
+            border-color: #3b82f6 !important;
+
+            box-shadow:
+                0 0 0 1px rgba(59, 130, 246, .25),
+                0 0 25px rgba(59, 130, 246, .20);
+
+            transform: translateY(-2px);
+        }
+
+        body.light-mode input {
+            background: #ffffff;
+            color: #0f172a;
+            border: 1px solid #cbd5e1;
+        }
+
+        body.light-mode .drop-zone {
+            border-color: #3b82f6;
+            background: #f8fafc;
+        }
+
+        body.light-mode footer {
+            color: #64748b;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 32px;
+            border-bottom: 1px solid rgba(59, 130, 246, 0.3);
+            padding-bottom: 16px;
+        }
+
+        .brand {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .brand-logo {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .back-link {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        .grid2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 28px;
+        }
+
+        .card {
+            background: var(--card);
+
+            border: 1px solid var(--card-border);
+
+            border-radius: 28px;
+
+            padding: 24px;
+
+            transition: all .25s ease;
+        }
+
+        .card:hover {
+
+            border-color: #3b82f6 !important;
+
+            box-shadow:
+                0 0 0 2px rgba(59, 130, 246, .25),
+                0 10px 30px rgba(59, 130, 246, .15);
+
+            transform: translateY(-3px);
+        }
+
+        input {
+            width: 100%;
+            padding: 14px;
+            border-radius: 40px;
+            margin-top: 12px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            border: none;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            padding: 14px;
+            border-radius: 40px;
+            margin-top: 12px;
+        }
+
+        #analyzeMedia {
+            width: 100%;
+        }
+
+        .grid2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 28px;
+            align-items: stretch;
+        }
+
+        .grid2 .card {
+            height: 100%;
+        }
+
+        .score-big {
+            font-size: 2.2rem;
+            font-weight: 700;
+        }
+
+        .source-tabs {
+            display: flex;
+            gap: 10px;
+            margin: 18px 0;
+        }
+
+        .source-tabs button {
+            flex: 1;
+            margin: 0;
+        }
+
+        .active-tab {
+            background: linear-gradient(135deg,
+                    #3b82f6,
+                    #8b5cf6);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        #previewContainer {
+            margin-top: 15px;
+        }
+
+        #previewContainer img,
+        #previewContainer video {
+            width: 100%;
+            max-height: 280px;
+            object-fit: cover;
+            border-radius: 18px;
+        }
+
+        .drop-zone {
+            margin-top: 15px;
+            border: 2px dashed #3b82f6;
+            border-radius: 20px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: .3s;
+        }
+
+        .drop-zone:hover {
+            background: rgba(59, 130, 246, .08);
+        }
+
+        .drop-zone.drag-over {
+            background: rgba(59, 130, 246, .15);
+            border-color: #8b5cf6;
+        }
+
+        #visitCard {
+            margin-top: 25px;
+        }
+
+        #visitWarning {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+        }
+
+        #visitBtn {
+            background: linear-gradient(135deg,
+                    #16a34a,
+                    #15803d);
+
+            margin: 0;
+        }
+
+        #openQRSection {
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            gap: 24px;
+
+            margin-top: 0;
+        }
+
+        #visitBtn {
+            margin-left: auto;
+            background:
+                linear-gradient(135deg,
+                    #16a34a,
+                    #15803d);
+        }
+
+        #aiCard {
+            margin-top: 25px;
+        }
+
+        #aiExplanation {
+
+            margin-top: 12px;
+
+            line-height: 1.8;
+
+            color: var(--text);
+
+            font-size: .95rem;
+        }
+
+        #explainBtn {
+
+            margin-top: 16px;
+
+            background:
+                linear-gradient(135deg,
+                    #4f46e5,
+                    #7c3aed);
+        }
+
+
+        #visitBtn:hover {
+            transform: translateY(-2px);
+        }
+
+        .result-list {
+            list-style: none;
+            margin-top: 16px;
+        }
+
+        .result-list li {
+
+            background:
+                rgba(59, 130, 246, .1);
+
+            border-radius: 14px;
+
+            padding: 10px;
+
+            margin-bottom: 8px;
+        }
+
+        .badge {
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-size: .8rem;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 48px;
+            color: var(--muted);
+            font-size: 0.75rem;
+        }
+
+        @media (max-width:800px) {
+            .grid2 {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <div class="brand">
+                <div class="brand-logo">🎭</div>
+                <div>
+                    <h2> Deepfake Media Detector</h2>
+                    <p>Analyze images, videos, and media URLs for deepfake content</p>
+                </div>
+            </div>
+            <a href="index.html" style="color:var(--accent);" class="back-link">← Return to Dashboard</a>
+        </header>
+        <div class="grid2">
+            <div class="card">
+
+                <h3>🎭 Media Source</h3>
+
+                <div class="source-tabs">
+                    <button id="urlTab" class="active-tab">
+                        🔗 From URL
+                    </button>
+
+                    <button id="fileTab">
+                        📁 Upload File
+                    </button>
+                </div>
+                <!-- URL OPTION -->
+                <div id="urlSection">
+
+                    <input type="text" id="mediaUrl" placeholder="https://example.com/video.mp4 or image.jpg">
+
+                </div>
+                <!-- FILE OPTION -->
+                <div id="fileSection" class="hidden">
+
+                    <div id="dropZone" class="drop-zone">
+
+                        <p>📁 Drag & Drop Image / Video Here</p>
+                        <p>or click to browse</p>
+
+                        <input type="file" id="mediaFile" accept="image/*,video/*" hidden>
+
+                    </div>
+
+                    <div id="previewContainer"></div>
+
+                </div>
+
+                <button id="analyzeMedia">
+                    Analyze Media
+                </button>
+
+                <p style="margin-top:12px;font-size:.8rem;">
+                    Upload an image/video or paste a media URL for analysis.
+                </p>
+
+            </div>
+            <div class="card" id="deepfakeResult">
+
+                <h3>⚠️ Risk Assessment</h3>
+
+                <div>
+                    <span id="dfBadge" class="badge">
+                        —
+                    </span>
+                </div>
+
+                <div style="margin-top:12px;">
+
+                    <strong>Analyzed Media:</strong>
+
+                    <p id="mediaName">
+                        ---
+                    </p>
+
+                </div>
+
+                <div>
+                    <strong>Risk Score:</strong>
+                    <span id="dfScore">0</span>%
+                </div>
+
+                <div>
+                    <strong>Confidence:</strong>
+                    <span id="dfConfidence">—</span>
+                </div>
+
+                <ul id="dfReasons" class="result-list">
+                </ul>
+
+            </div>
+        </div>
+
+        <div id="visitCard" class="card">
+            <h3>🌐 Open Deepfake Content</h3>
+            <p id="visitWarning">
+                <button id="visitBtn">
+                    Continue to Content →
+                </button>
+            </p>
+        </div>
+        <div id="aiCard" class="card">
+            <h3>🛡️ CyberShield AI Assistant</h3>
+
+            <p id="aiExplanation">
+                Understand why this URL was flagged, potential risks, and how to stay protected.
+            </p>
+
+            <button id="explainBtn">
+                🤖 Analyze with AI
+            </button>
+        </div>
+        <div id="reportDeepfake" style="text-align:right;margin-top:28px;" class="hidden">
+            <button id="reportDeepBtn" style="background:#dc2626;">🚨 Report as Deepfake</button>
+        </div>
+        <footer style="margin-top:48px;text-align:center;">⚠️ Simulated detection using compression artifacts & temporal
+            inconsistency analysis.
+        </footer>
+    </div>
+    <script src="theme.js"></script>
+    <script>
+        if (!localStorage.getItem("token")) {
+            window.location.replace("login.html");
+        }
+        const urlTab =
+            document.getElementById("urlTab");
+
+        const fileTab =
+            document.getElementById("fileTab");
+
+        const urlSection =
+            document.getElementById("urlSection");
+
+        const fileSection =
+            document.getElementById("fileSection");
+
+        const mediaFile =
+            document.getElementById("mediaFile");
+
+        const dropZone =
+            document.getElementById("dropZone");
+
+        dropZone.addEventListener("click", () => {
+            mediaFile.click();
+        });
+
+        dropZone.addEventListener("dragover", (e) => {
+
+            e.preventDefault();
+
+            dropZone.classList.add("drag-over");
+        });
+
+        dropZone.addEventListener("dragleave", () => {
+
+            dropZone.classList.remove("drag-over");
+        });
+
+        dropZone.addEventListener("drop", (e) => {
+
+            e.preventDefault();
+
+            dropZone.classList.remove("drag-over");
+
+            mediaFile.files = e.dataTransfer.files;
+
+            mediaFile.dispatchEvent(
+                new Event("change")
+            );
+        });
+        const previewContainer =
+            document.getElementById("previewContainer");
+
+        urlTab.addEventListener("click", () => {
+
+            urlSection.classList.remove("hidden");
+            fileSection.classList.add("hidden");
+
+            urlTab.classList.add("active-tab");
+            fileTab.classList.remove("active-tab");
+        });
+
+        fileTab.addEventListener("click", () => {
+
+            fileSection.classList.remove("hidden");
+            urlSection.classList.add("hidden");
+
+            fileTab.classList.add("active-tab");
+            urlTab.classList.remove("active-tab");
+        });
+
+        mediaFile.addEventListener("change", () => {
+
+            const file = mediaFile.files[0];
+            window.currentFile = file;
+
+            if (!file) return;
+
+            const src =
+                URL.createObjectURL(file);
+
+            if (file.type.startsWith("image")) {
+
+                previewContainer.innerHTML =
+                    `<img src="${src}">`;
+
+            } else {
+
+                previewContainer.innerHTML =
+                    `
+        <video controls>
+            <source src="${src}">
+        </video>
+        `;
+            }
+        });
+        const mediaInput = document.getElementById('mediaUrl');
+        const analyzeBtn = document.getElementById('analyzeMedia');
+        const dfScoreSpan = document.getElementById('dfScore');
+        const dfConfidenceSpan = document.getElementById('dfConfidence');
+        const dfReasons = document.getElementById('dfReasons');
+        const dfBadge = document.getElementById('dfBadge');
+        const reportDeepDiv = document.getElementById('reportDeepfake');
+        let lastMedia = '';
+        function deepfakeAnalysis(file) {
+
+            let score = 0;
+            let reasons = [];
+
+            const lower = file.name.toLowerCase();
+
+            if (
+                lower.includes("deepfake") ||
+                lower.includes("synthetic")
+            ) {
+                score += 40;
+                reasons.push("Deepfake related filename");
+            }
+
+            if (file.size < 50000) {
+
+                score += 15;
+
+                reasons.push(
+                    "Very small media file"
+                );
+            }
+
+            if (
+                lower.includes("ai") ||
+                lower.includes("generated")
+            ) {
+                score += 20;
+                reasons.push("AI generated keyword found");
+            }
+
+            return {
+                score,
+                confidence:
+                    score > 70 ? "High" :
+                        score > 40 ? "Medium" :
+                            "Low",
+                reasons
+            };
+        }
+
+        async function getImageInfo(file) {
+
+            return new Promise((resolve) => {
+
+                const img = new Image();
+
+                img.onload = () => {
+
+                    resolve({
+                        width: img.width,
+                        height: img.height
+                    });
+
+                };
+
+                img.src = URL.createObjectURL(file);
+
+            });
+
+        }
+
+        async function loadFaceModel() {
+
+            await faceapi.nets.tinyFaceDetector.loadFromUri(
+                'https://justadudewhohacks.github.io/face-api.js/models'
+            );
+
+            console.log("Face model loaded");
+        }
+
+        loadFaceModel();
+        async function updateAnalysis() {
+
+            let mediaName = "";
+
+            if (!urlSection.classList.contains("hidden")) {
+
+                mediaName =
+                    mediaInput.value.trim();
+
+                if (!mediaName) {
+
+                    alert("Please enter a media URL or upload a file.");
+
+                    return;
+                }
+            } else {
+
+                const file =
+                    window.currentFile;
+
+                if (!file) {
+
+                    alert("Please upload a file.");
+
+                    return;
+                }
+
+                mediaName =
+                    file.name;
+            }
+
+            lastMedia = mediaName;
+
+            document.getElementById("mediaName").textContent = mediaName;
+
+
+            let result;
+
+            if (window.currentFile) {
+
+                result =
+                    deepfakeAnalysis(
+                        window.currentFile
+                    );
+
+            } else {
+
+                result = {
+                    score: 10,
+                    confidence: "Low",
+                    reasons: [
+                        "URL based analysis only"
+                    ]
+                };
+ 
+            }
+
+            if (window.currentFile &&
+                window.currentFile.type.startsWith("image")) {
+
+                const info =
+                    await getImageInfo(
+                        window.currentFile
+                    );
+
+                if (
+                    info.width < 300 ||
+                    info.height < 300
+                ) {
+
+                    result.score += 15;
+
+                    result.reasons.push(
+                        "Low resolution image"
+                    );
+                }
+
+                const ratio =
+                    info.width / info.height;
+
+                if (
+                    ratio > 3 ||
+                    ratio < 0.3
+                ) {
+
+                    result.score += 10;
+
+                    result.reasons.push(
+                        "Unusual aspect ratio"
+                    );
+                }
+
+                const img =
+                    document.querySelector(
+                        "#previewContainer img"
+                    );
+
+                if (img) {
+
+                    const faces =
+                        await faceapi.detectAllFaces(
+                            img,
+                            new faceapi.TinyFaceDetectorOptions()
+                        );
+
+                    result.reasons.push(
+                        `${faces.length} face(s) detected`
+                    );
+
+                    if (faces.length === 0) {
+
+                        result.score += 10;
+
+                        result.reasons.push(
+                            "No human face detected"
+                        );
+                    }
+                }
+            }
+
+            result.confidence =
+                result.score > 70 ? "High" :
+                    result.score > 40 ? "Medium" :
+                        "Low";
+
+            dfScoreSpan.innerText =
+                result.score;
+
+            dfConfidenceSpan.innerText =
+                result.confidence;
+
+            dfReasons.innerHTML =
+                result.reasons.map(
+                    r => `<li>🔍 ${r}</li>`
+                ).join("");
+
+            if (result.score > 55) {
+
+                dfBadge.innerText =
+                    "⚠️ Potential Deepfake";
+
+                reportDeepDiv.classList.remove("hidden");
+
+            } else {
+
+                dfBadge.innerText =
+                    "✅ Likely Authentic";
+
+                reportDeepDiv.classList.add("hidden");
+            }
+        }
+        analyzeBtn.addEventListener('click', updateAnalysis);
+
+        const explainBtn =
+            document.getElementById("explainBtn");
+
+        const aiExplanation =
+            document.getElementById("aiExplanation");
+
+        explainBtn.addEventListener(
+            "click",
+            async () => {
+
+                const media =
+                    document.getElementById(
+                        "mediaName"
+                    ).innerText;
+
+                if (
+                    media === "---"
+                ) {
+
+                    alert(
+                        "Analyze media first."
+                    );
+
+                    return;
+                }
+
+                aiExplanation.innerHTML =
+                    "🧠 CyberShield AI is analyzing...";
+
+                try {
+
+                    const response =
+                        await fetch(
+                            "http://127.0.0.1:5000/generate",
+                            {
+                                method: "POST",
+
+                                headers: {
+                                    "Content-Type":
+                                        "application/json"
+                                },
+
+                                body: JSON.stringify({
+
+                                    topic: `
+You are CyberShield AI.
+
+Analyze this media:
+
+Media:
+${media}
+
+Risk Score:
+${dfScoreSpan.innerText}
+
+Confidence:
+${dfConfidenceSpan.innerText}
+
+Indicators:
+${Array.from(dfReasons.children)
+                                            .map(li => li.innerText)
+                                            .join("\n")}
+
+Provide:
+
+1. Deepfake probability
+2. Why it may be fake
+3. Technical indicators
+4. Safety recommendation
+
+Keep response under 150 words.
+`
+                                })
+                            }
+                        );
+
+                    const data =
+                        await response.json();
+
+                    aiExplanation.innerHTML =
+                        data.answer.replace(
+                            /\n/g,
+                            "<br>"
+                        );
+
+                }
+
+                catch {
+
+                    aiExplanation.innerHTML =
+                        "❌ Failed to connect with CyberShield AI.";
+                }
+
+            }
+        );
+        document.getElementById('reportDeepBtn')?.addEventListener('click', () => alert(`Deepfake report submitted for ${lastMedia}`));
+    </script>
+
+</body>
+
+</html>

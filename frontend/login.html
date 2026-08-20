@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" type="png" href="../images/Favicon.png">
+  <title>Login | CyberSheild_Hub</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* (keeps your styles — unchanged for layout) */
+    body {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #0b0c10;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      margin: 0;
+    }
+
+    .login-card {
+      width: 100%;
+      max-width: 420px;
+      padding: 2rem;
+      border-radius: 16px;
+      background: #14151b;
+      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .tab-toggle {
+      display: flex;
+      background: #0f1014;
+      padding: 0.25rem;
+      border-radius: 999px;
+      margin-bottom: 1.5rem;
+    }
+
+    .tab-toggle button {
+      flex: 1;
+      border: none;
+      border-radius: 999px;
+      padding: 0.6rem 0.75rem;
+      font-size: 0.9rem;
+      font-weight: 500;
+      background: transparent;
+      color: #9ca3af;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .tab-toggle button.active {
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      color: #f9fafb;
+    }
+
+    .login-title {
+      font-size: 1.5rem;
+      margin-bottom: 0.25rem;
+      color: #ffffff;
+    }
+
+    .login-subtitle {
+      font-size: 0.9rem;
+      color: #9ca3af;
+      margin-bottom: 1.5rem;
+    }
+
+    .field {
+      margin-bottom: 1rem;
+    }
+
+    .field label {
+      display: block;
+      font-size: 0.85rem;
+      color: #e5e7eb;
+      margin-bottom: 0.25rem;
+    }
+
+    .field input {
+      width: 100%;
+      padding: 0.6rem 0.75rem;
+      border-radius: 999px;
+      border: 1px solid #374151;
+      background: #0f1014;
+      color: #f9fafb;
+      font-size: 0.9rem;
+      outline: none;
+    }
+
+    .field input:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 1px #3b82f6;
+    }
+
+    .actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      font-size: 0.8rem;
+      color: #9ca3af;
+    }
+
+    .actions a {
+      color: #60a5fa;
+      text-decoration: none;
+    }
+
+    .actions a:hover {
+      text-decoration: underline;
+    }
+
+    .btn-primary {
+      width: 100%;
+      padding: 0.7rem;
+      border-radius: 999px;
+      border: none;
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      color: #f9fafb;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+    }
+
+    .btn-primary:hover {
+      opacity: 0.9;
+    }
+
+    .helper-text {
+      margin-top: 0.75rem;
+      text-align: center;
+      font-size: 0.8rem;
+      color: #9ca3af;
+    }
+
+    .helper-text a {
+      color: #60a5fa;
+      text-decoration: none;
+    }
+
+    .helper-text a:hover {
+      text-decoration: underline;
+    }
+
+    .error,
+    .success {
+      margin-top: 0.5rem;
+      font-size: 0.8rem;
+      display: none;
+    }
+
+    .error {
+      color: #f97373;
+    }
+
+    .success {
+      color: #4ade80;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .tiny {
+      font-size: 0.75rem;
+      color: #9ca3af;
+      margin-top: 0.4rem;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="login-card">
+    <div class="tab-toggle">
+      <button id="loginTab" class="active">Login</button>
+      <button id="signupTab">Sign up</button>
+    </div>
+
+    <h1 class="login-title" id="formTitle">Welcome back 👋</h1>
+    <p class="login-subtitle" id="formSubtitle">Log in to access your dashboard.</p>
+
+    <!-- LOGIN FORM -->
+    <form id="loginForm">
+      <div class="field">
+        <label for="loginEmail">Email</label>
+        <input id="loginEmail" type="email" required placeholder="you@example.com" />
+      </div>
+
+      <div class="field">
+        <label for="loginPassword">Password</label>
+        <input id="loginPassword" type="password" required placeholder="••••••••" />
+      </div>
+
+      <div class="actions">
+        <label><input type="checkbox" style="margin-right:4px;"> Remember me</label>
+        <a href="forgot-password.html">Forgot password?</a>
+      </div>
+
+      <button type="submit" class="btn-primary">Log in</button>
+
+      <p class="error" id="loginError"></p>
+      <p class="success" id="loginSuccess"></p>
+
+      <p class="helper-text">Don't have an account? <a href="#" id="goToSignup">Sign up</a></p>
+    </form>
+
+    <!-- SIGNUP FORM -->
+    <form id="signupForm" class="hidden">
+      <div class="field"><label for="signupName">Full name</label><input id="signupName" type="text" required
+          placeholder="Your name" /></div>
+      <div class="field"><label for="signupEmail">Email</label><input id="signupEmail" type="email" required
+          placeholder="you@example.com" /></div>
+      <div class="field"><label for="signupPassword">Password</label><input id="signupPassword" type="password" required
+          placeholder="Create a password" /></div>
+      <div class="field"><label for="signupConfirmPassword">Confirm password</label><input id="signupConfirmPassword"
+          type="password" required placeholder="Repeat your password" /></div>
+
+      <button type="submit" class="btn-primary">Create account</button>
+
+      <p class="error" id="signupError"></p>
+      <p class="success" id="signupSuccess"></p>
+
+      <p class="helper-text">Already have an account? <a href="#" id="goToLogin">Log in</a></p>
+    </form>
+  </div>
+
+  <script>
+    // UI switching
+    const loginTab = document.getElementById("loginTab");
+    const signupTab = document.getElementById("signupTab");
+    const loginForm = document.getElementById("loginForm");
+    const signupForm = document.getElementById("signupForm");
+    const formTitle = document.getElementById("formTitle");
+    const formSubtitle = document.getElementById("formSubtitle");
+    const goToSignup = document.getElementById("goToSignup");
+    const goToLogin = document.getElementById("goToLogin");
+
+    function showLogin() {
+      loginTab.classList.add("active");
+      signupTab.classList.remove("active");
+      loginForm.classList.remove("hidden");
+      signupForm.classList.add("hidden");
+      formTitle.textContent = "Welcome back 👋";
+      formSubtitle.textContent = "Log in to access your dashboard.";
+    }
+
+    function showSignup() {
+      signupTab.classList.add("active");
+      loginTab.classList.remove("active");
+      signupForm.classList.remove("hidden");
+      loginForm.classList.add("hidden");
+      formTitle.textContent = "Create your account ✨";
+      formSubtitle.textContent = "Sign up to start using Phishing Website Detector.";
+    }
+
+    loginTab.addEventListener("click", showLogin);
+    signupTab.addEventListener("click", showSignup);
+    goToSignup.addEventListener("click", (e) => { e.preventDefault(); showSignup(); });
+    goToLogin.addEventListener("click", (e) => { e.preventDefault(); showLogin(); });
+
+    document.addEventListener("DOMContentLoaded", () => {
+      if (location.hash === "#register") {
+        showSignup();
+      } else {
+        showLogin();
+      }
+    });
+
+    const loginError = document.getElementById("loginError");
+    const loginSuccess = document.getElementById("loginSuccess");
+    const signupError = document.getElementById("signupError");
+    const signupSuccess = document.getElementById("signupSuccess");
+
+    const API_BASE = "http://localhost:5001/api";
+
+    // ✅ LOGIN
+    loginForm.addEventListener("submit", async function (e) {
+      e.preventDefault();
+      loginError.style.display = "none";
+      loginSuccess.style.display = "none";
+
+      const email = document.getElementById("loginEmail").value.trim();
+      const password = document.getElementById("loginPassword").value.trim();
+
+      try {
+        const res = await fetch(`${API_BASE}/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          loginError.textContent = data.message || "Login failed.";
+          loginError.style.display = "block";
+          return;
+        }
+
+        // ✅ FIX: store email (NOT token)
+        localStorage.setItem(
+          "token",
+          data.token
+        );
+
+        localStorage.setItem(
+          "userEmail",
+          data.user.email
+        );
+
+        localStorage.setItem(
+          "userName",
+          data.user.name
+        );
+
+        loginSuccess.textContent = data.message || "Login successful!";
+        loginSuccess.style.display = "block";
+
+        setTimeout(() => {
+          window.location.href = "index.html";
+        }, 800);
+
+      } catch (err) {
+        console.error(err);
+        loginError.textContent = "Unable to connect to server.";
+        loginError.style.display = "block";
+      }
+    });
+
+
+    // ✅ SIGNUP
+    signupForm.addEventListener("submit", async function (e) {
+      e.preventDefault();
+      signupError.style.display = "none";
+      signupSuccess.style.display = "none";
+
+      const name = document.getElementById("signupName").value.trim();
+      const email = document.getElementById("signupEmail").value.trim();
+      const password = document.getElementById("signupPassword").value.trim();
+      const confirmPassword = document.getElementById("signupConfirmPassword").value.trim();
+
+      if (password !== confirmPassword) {
+        signupError.textContent = "Passwords do not match.";
+        signupError.style.display = "block";
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/signup`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, email, password })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          signupError.textContent = data.message || "Signup failed.";
+          signupError.style.display = "block";
+          return;
+        }
+
+        signupSuccess.textContent = "Account created successfully!";
+        signupSuccess.style.display = "block";
+
+        setTimeout(() => {
+          showLogin();
+          document.getElementById("loginEmail").value = email;
+        }, 900);
+
+      } catch (err) {
+        console.error(err);
+        signupError.textContent = "Server error. Try again.";
+        signupError.style.display = "block";
+      }
+    });
+  </script>
+</body>
+
+</html>

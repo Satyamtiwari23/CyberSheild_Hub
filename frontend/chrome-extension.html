@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="png" href="../images/Favicon.png">
+    <title>CyberShield Extension</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #020617;
+            --card: #020617;
+            --text: #e5e7eb;
+            --accent: #3b82f6;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+
+            background:
+                radial-gradient(circle at 0% 0%,
+                    rgba(59, 130, 246, .20),
+                    transparent 60%),
+
+                radial-gradient(circle at 100% 100%,
+                    rgba(34, 197, 94, .15),
+                    transparent 55%),
+
+                linear-gradient(145deg,
+                    var(--bg) 0%,
+                    #020617 100%);
+
+            background-attachment: fixed;
+
+            color: var(--text);
+
+            min-height: 100vh;
+        }
+
+        .ext-card {
+            background: var(--card);
+
+            border: 1px solid #334155;
+
+            border-radius: 48px;
+
+            padding: 40px;
+
+            text-align: center;
+
+            transition: all .25s ease;
+        }
+
+        .ext-card:hover {
+
+            border-color: #3b82f6;
+
+            box-shadow:
+                0 0 0 1px rgba(59, 130, 246, .30),
+                0 0 30px rgba(59, 130, 246, .20);
+
+            transform: translateY(-2px);
+        }
+
+        body.light-mode .ext-card {
+
+            background: #ffffff;
+
+            border: 1px solid #475569;
+
+            box-shadow:
+                0 4px 12px rgba(15, 23, 42, .04),
+                0 1px 3px rgba(15, 23, 42, .05);
+        }
+
+        body.light-mode .ext-card:hover {
+
+            border-color: #3b82f6;
+
+            box-shadow:
+                0 0 0 1px rgba(59, 130, 246, .30),
+                0 0 30px rgba(59, 130, 246, .18);
+
+            transform: translateY(-2px);
+        }
+
+        .feature {
+
+            background: rgba(59, 130, 246, .10);
+
+            border: 1px solid transparent;
+
+            border-radius: 28px;
+
+            padding: 24px;
+
+            width: 200px;
+
+            transition: all .25s ease;
+        }
+
+        .feature:hover {
+
+            border-color: #3b82f6;
+
+            box-shadow:
+                0 0 0 1px rgba(59, 130, 246, .30),
+                0 0 20px rgba(59, 130, 246, .18);
+
+            transform: translateY(-2px);
+        }
+
+        .light-mode {
+            --bg: #ffffff;
+            --card: #ffffff;
+            --card-border: #e2e8f0;
+            --text: #0f172a;
+            --accent: #3b82f6;
+        }
+
+        body.light-mode {
+            background: #ffffff;
+        }
+
+        body.light-mode .card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, .05);
+        }
+
+        body.light-mode input {
+            background: #ffffff;
+            color: #0f172a;
+            border: 1px solid #cbd5e1;
+        }
+
+        body.light-mode .drop-zone {
+            border-color: #3b82f6;
+            background: #f8fafc;
+        }
+
+        body.light-mode footer {
+            color: #64748b;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 32px;
+        }
+
+        .ext-card {
+            background: var(--card);
+            border: 1px solid #334155;
+            border-radius: 48px;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .chrome-btn {
+            display: inline-block;
+            background: #fbbf24;
+            color: #020617;
+            padding: 16px 32px;
+            border-radius: 60px;
+            font-weight: 700;
+            margin: 24px 0;
+            text-decoration: none;
+        }
+
+        .features {
+            display: flex;
+            gap: 28px;
+            justify-content: center;
+            margin: 40px 0;
+            flex-wrap: wrap;
+        }
+
+        .feature {
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: 28px;
+            padding: 24px;
+            width: 200px;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 56px;
+            color: #9ca3af;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="ext-card">
+            <span style="font-size:56px;">🧩</span>
+            <h1 style="font-size:2rem;margin:8px 0;">CyberShield Browser Guard</h1>
+            <p>Real-time phishing & scam protection directly in Chrome</p>
+            <a href="#" class="chrome-btn" id="installFakeBtn">➕ Add to Chrome (Demo)</a>
+            <p style="font-size:0.8rem;">✔️ Blocks malicious URLs ✔️ Scans emails on-the-fly ✔️ QR risk overlay</p>
+            <div class="features">
+                <div class="feature">🔗 Auto link analysis</div>
+                <div class="feature">📧 Gmail phishing filter</div>
+                <div class="feature">⚡ Lightweight & free</div>
+            </div>
+            <hr style="margin:24px 0;border-color:#334155;">
+            <h3>📥 Installation instructions (simulated)</h3>
+            <ol style="text-align:left;display:inline-block;margin-top:12px;">
+                <li>1. Download the extension .crx file</li>
+                <li>2. Go to chrome://extensions</li>
+                <li>3. Enable Developer mode → Load unpacked</li>
+                <li>4. Select the CyberShield folder</li>
+            </ol>
+            <div style="margin-top:32px;"><a href="index.html" style="color:var(--accent);">← Return to Dashboard</a>
+            </div>
+        </div>
+        <footer>🚀 Extension will be published on Chrome Web Store soon. Demo interface.</footer>
+    </div>
+    <script src="theme.js"></script>
+    <script>
+        if (!localStorage.getItem("token")) {
+            window.location.replace("login.html");
+        }
+        document.getElementById('installFakeBtn')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            alert('Demo: In a real scenario, you would download the extension package.\nCyberShield protects against phishing & scams.');
+        });
+    </script>
+</body>
+
+</html>

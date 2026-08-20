@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="png" href="../images/Favicon.png">
+    <title>Phishing Email Test - CyberShield</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #020617;
+            --card: #020617;
+            --card-border: rgba(51, 65, 85, .9);
+            --text: #e5e7eb;
+            --muted: #9ca3af;
+            --accent: #3b82f6;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+
+            background:
+                radial-gradient(circle at 0% 0%,
+                    rgba(59, 130, 246, .20),
+                    transparent 60%),
+
+                radial-gradient(circle at 100% 100%,
+                    rgba(34, 197, 94, .15),
+                    transparent 55%),
+
+                linear-gradient(145deg,
+                    var(--bg) 0%,
+                    #020617 100%);
+
+            background-attachment: fixed;
+
+            color: var(--text);
+
+            min-height: 100vh;
+        }
+
+        body.light-mode {
+            background: #ffffff;
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 28px;
+            align-items: stretch;
+        }
+
+        .two-col .card {
+            height: 100%;
+        }
+
+        #explainBtn {
+            background:
+                linear-gradient(135deg,
+                    #4f46e5,
+                    #7c3aed);
+        }
+
+
+        #emailResultCard strong {
+            display: inline-block;
+            margin-top: 4px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+
+            margin-bottom: 32px;
+
+            border-bottom: 1px solid rgba(59, 130, 246, .3);
+
+            padding-bottom: 16px;
+        }
+
+        .brand {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .brand-logo {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .back-link {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 28px;
+        }
+
+        .card {
+            background: var(--card);
+
+            border: 1px solid var(--card-border);
+
+            border-radius: 28px;
+
+            padding: 24px;
+
+            transition: .25s ease;
+        }
+
+        .card:hover {
+            border-color: #3b82f6;
+
+            box-shadow:
+                0 0 0 1px rgba(59, 130, 246, .3),
+                0 0 25px rgba(59, 130, 246, .25);
+
+            transform: translateY(-2px);
+        }
+
+        textarea {
+            width: 100%;
+
+            background: rgba(0, 0, 0, .2);
+
+            border: 1px solid var(--card-border);
+
+            border-radius: 20px;
+
+            padding: 14px;
+
+            color: var(--text);
+
+            resize: none;
+        }
+
+        button {
+            background:
+                linear-gradient(135deg,
+                    #3b82f6,
+                    #8b5cf6);
+
+            border: none;
+
+            padding: 12px 24px;
+
+            border-radius: 40px;
+
+            color: white;
+
+            font-weight: 600;
+
+            cursor: pointer;
+
+            transition: .25s ease;
+
+            margin-top: 16px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+
+            box-shadow:
+                0 0 18px rgba(59, 130, 246, .35);
+        }
+
+        /* =========================
+   LIGHT MODE
+========================= */
+
+        body.light-mode {
+
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #0f172a;
+            --muted: #64748b;
+            --card-border: #dbe4f0;
+
+            background:
+                radial-gradient(circle at top left,
+                    rgba(59, 130, 246, .08),
+                    transparent 40%),
+
+                radial-gradient(circle at bottom right,
+                    rgba(34, 197, 94, .05),
+                    transparent 45%),
+
+                #f8fafc;
+
+            color: var(--text);
+        }
+
+        /* Container */
+
+        body.light-mode .container,
+        body.light-mode .wrap {
+
+            color: var(--text);
+        }
+
+        /* Header */
+
+        body.light-mode header {
+
+            border-bottom: 1px solid #dbe4f0;
+        }
+
+        /* Cards */
+
+        body.light-mode .card {
+
+            background: #ffffff;
+
+            border: 1px solid #64748b;
+
+            box-shadow:
+                0 4px 12px rgba(15, 23, 42, .04),
+                0 1px 3px rgba(15, 23, 42, .06);
+
+            color: #0f172a;
+        }
+
+        body.light-mode .card:hover {
+
+            border-color: #3b82f6 !important;
+
+            box-shadow:
+                0 0 0 2px rgba(59, 130, 246, .25),
+                0 10px 30px rgba(59, 130, 246, .15);
+
+            transform: translateY(-2px);
+        }
+
+        /* Textareas */
+
+        body.light-mode textarea,
+        body.light-mode input {
+
+            background: #f8fafc;
+
+            color: #0f172a;
+
+            border: 1px solid #dbe4f0;
+        }
+
+        body.light-mode textarea::placeholder,
+        body.light-mode input::placeholder {
+
+            color: #94a3b8;
+        }
+
+        /* Analysis Box */
+
+        body.light-mode .result-list li {
+
+            background: #eff6ff;
+
+            color: #1e293b;
+
+            border: 1px solid #dbeafe;
+        }
+
+        /* Risk Input Box */
+
+        body.light-mode #urlInput,
+        body.light-mode #qrPayload {
+
+            background: #eff6ff;
+
+            border: 1px solid #dbeafe;
+
+            color: #1e293b;
+        }
+
+        /* Buttons */
+
+        body.light-mode button {
+
+            background:
+                linear-gradient(135deg,
+                    #3b82f6,
+                    #6366f1);
+
+            color: white;
+
+            box-shadow:
+                0 4px 12px rgba(59, 130, 246, .25);
+        }
+
+        body.light-mode button:hover {
+
+            box-shadow:
+                0 8px 20px rgba(59, 130, 246, .35);
+        }
+
+        /* Green Button */
+
+        body.light-mode #visitBtn {
+
+            background:
+                linear-gradient(135deg,
+                    #22c55e,
+                    #16a34a);
+        }
+
+        /* Footer */
+
+        body.light-mode footer {
+
+            color: #64748b;
+        }
+
+        /* Links */
+
+        body.light-mode a {
+
+            color: #2563eb;
+        }
+
+        .badge {
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-size: .8rem;
+        }
+
+        .badge-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        #visitCard {
+            margin-top: 25px;
+        }
+
+        #openEmailSection {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 24px;
+            padding: 3px;
+        }
+
+        #visitBtn {
+            margin: 0;
+
+            background:
+                linear-gradient(135deg,
+                    #16a34a,
+                    #15803d);
+        }
+
+        #emailResultCard {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .badge-warning {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .badge-safe {
+            background: #22c55e;
+            color: white;
+        }
+
+        .result-list {
+            list-style: none;
+            margin-top: 16px;
+        }
+
+        .result-list li {
+            background:
+                rgba(59, 130, 246, .1);
+
+            border-radius: 14px;
+
+            padding: 10px;
+
+            margin-bottom: 8px;
+        }
+
+        #extractedLinksBox {
+            margin-top: 20px;
+        }
+
+        #linksList li {
+            word-break: break-all;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        #aiCard {
+            margin-top: 25px;
+        }
+
+        #aiExplanation {
+            margin-top: 12px;
+            line-height: 1.8;
+        }
+
+        #reportEmailSection {
+            margin-top: 24px;
+            text-align: right;
+        }
+
+        #reportEmailBtn {
+            background: #dc2626;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 48px;
+            color: var(--muted);
+            font-size: .75rem;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media(max-width:800px) {
+            .two-col {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <div class="brand">
+                <div class="brand-logo">📧</div>
+                <div>
+                    <h2>Phishing Email Analyzer</h2>
+                    <p>Paste email content or upload email data for threat assessment</p>
+                </div>
+            </div>
+            <a href="index.html" style="color:var(--accent);" class="back-link">← Return to Dashboard</a>
+        </header>
+        <div class="two-col">
+            <div class="card">
+                <h3>✉️ Paste email content</h3>
+                <textarea id="emailBody" rows="6"
+                    placeholder="Enter Complete Email including Sender Email ID"></textarea>
+                <button id="scanEmailBtn" class="full-btn">Scan Email</button>
+            </div>
+            <div class="card" id="emailResultCard">
+                <h3>🔍 Threat Analysis</h3>
+                <div>
+                    <span id="emailRiskBadge">—</span>
+                </div>
+                <div>
+                    <strong>Risk Score:</strong>
+                    <span id="emailScore">0</span>/100
+                </div>
+                <div>
+                    <strong>Verdict:</strong> <span id="emailVerdict">—</span>
+                </div>
+                <ul id="emailReasonList" class="result-list">
+
+                </ul>
+            </div>
+        </div>
+        <div id="visitCard" class="card">
+
+            <div id="openEmailSection">
+
+                <div>
+
+                    <h3>📧 Email Investigation</h3>
+
+                    <p>
+                        Review links, sender information, and indicators extracted from the email before taking any
+                        action.
+                    </p>
+
+                </div>
+
+                <button id="visitBtn">
+                    🔍 View Extracted Links →
+                </button>
+
+            </div>
+            <div id="extractedLinksBox" class="hidden">
+
+                <h4 style="margin-top:20px;">
+                    🔗 Extracted Links
+                </h4>
+
+                <ul id="linksList" class="result-list">
+                </ul>
+
+            </div>
+
+
+        </div>
+        <div id="aiCard" class="card">
+            <h3>🛡️ CyberShield AI Assistant</h3>
+
+            <p id="aiExplanation">
+                Understand why this URL was flagged, potential risks, and how to stay protected.
+            </p>
+
+            <button id="explainBtn">
+                🤖 Analyze with AI
+            </button>
+        </div>
+
+        <div id="reportEmailSection" class="hidden" style="text-align:right;margin-top:20px;">
+            <button id="reportEmailBtn" style="background:#dc2626;">📬 Report Phishing Email</button>
+        </div>
+        <footer>⚠️ Heuristic analysis – not 100% accurate. Always double-check suspicious links.</footer>
+        <script src="theme.js"></script>
+        <script>
+            if (!localStorage.getItem("token")) {
+                window.location.replace("login.html");
+            }
+            const emailText = document.getElementById('emailBody');
+            const scanBtn = document.getElementById('scanEmailBtn');
+            const riskSpan = document.getElementById('emailRiskBadge');
+            const scoreSpan = document.getElementById('emailScore');
+            const verdictSpan = document.getElementById('emailVerdict');
+            const reasonUl = document.getElementById('emailReasonList');
+            const reportDiv = document.getElementById('reportEmailSection');
+            let lastEmail = '';
+            let emailLinks = [];
+            const explainBtn =
+                document.getElementById("explainBtn");
+
+            const aiExplanation =
+                document.getElementById("aiExplanation");
+            function analyzeEmail(content) {
+
+                let score = 0;
+                let reasons = [];
+
+                const lower = content.toLowerCase();
+
+                // Urgency
+                const urgentWords = [
+                    "urgent",
+                    "immediately",
+                    "within 24 hours",
+                    "action required",
+                    "verify",
+                    "confirm",
+                    "suspended",
+                    "deactivated",
+                    "locked",
+                    "expire"
+                ];
+
+                urgentWords.forEach(word => {
+                    if (lower.includes(word)) {
+                        score += 10;
+                        reasons.push(`⚠️ Urgency keyword: ${word}`);
+                    }
+                });
+
+                // Financial bait
+                const financeWords = [
+                    "bank",
+                    "paypal",
+                    "upi",
+                    "payment",
+                    "refund",
+                    "invoice",
+                    "gift card",
+                    "crypto",
+                    "bitcoin"
+                ];
+
+                financeWords.forEach(word => {
+                    if (lower.includes(word)) {
+                        score += 10;
+                        reasons.push(`💰 Financial keyword: ${word}`);
+                    }
+                });
+
+                // Credentials
+                const credentialWords = [
+                    "password",
+                    "otp",
+                    "pin",
+                    "cvv",
+                    "login",
+                    "sign in",
+                    "verify account"
+                ];
+
+                credentialWords.forEach(word => {
+                    if (lower.includes(word)) {
+                        score += 15;
+                        reasons.push(`🔑 Credential request: ${word}`);
+                    }
+                });
+
+                // Links
+                const urls =
+                    content.match(/https?:\/\/[^\s]+/g);
+
+                if (urls) {
+
+                    score += urls.length * 15;
+
+                    reasons.push(
+                        `🔗 ${urls.length} link(s) found`
+                    );
+
+                    urls.forEach(url => {
+
+                        if (
+                            url.includes("@") ||
+                            url.includes("bit.ly") ||
+                            url.includes("tinyurl") ||
+                            url.includes("t.co")
+                        ) {
+
+                            score += 25;
+
+                            reasons.push(
+                                "🚨 Suspicious shortened/hidden URL"
+                            );
+                        }
+                    });
+                }
+
+                // Excessive caps
+                const caps =
+                    content.match(/[A-Z]{5,}/g);
+
+                if (caps) {
+
+                    score += 10;
+
+                    reasons.push(
+                        "📢 Excessive capital letters"
+                    );
+                }
+
+                // Sender mismatch
+                if (
+                    lower.includes("@gmail.com") &&
+                    (
+                        lower.includes("paypal") ||
+                        lower.includes("bank") ||
+                        lower.includes("microsoft")
+                    )
+                ) {
+
+                    score += 30;
+
+                    reasons.push(
+                        "🎭 Possible brand impersonation"
+                    );
+                }
+
+                score = Math.min(score, 100);
+
+                let verdict;
+
+                if (score >= 70) {
+
+                    verdict =
+                        "🔴 High Risk Phishing";
+
+                } else if (score >= 40) {
+
+                    verdict =
+                        "🟠 Suspicious Email";
+
+                } else {
+
+                    verdict =
+                        "🟢 Likely Legitimate";
+                }
+
+                return {
+                    score,
+                    reasons,
+                    verdict
+                };
+            }
+            function updateEmail() {
+
+                const content = emailText.value.trim();
+
+                if (!content) {
+
+                    scoreSpan.innerText = "0";
+                    verdictSpan.innerText = "—";
+                    riskSpan.innerText = "—";
+                    reasonUl.innerHTML = "";
+
+                    reportDiv.classList.add("hidden");
+
+                    return;
+                }
+
+                lastEmail = content;
+
+                emailLinks =
+                    content.match(
+                        /https?:\/\/[^\s]+/g
+                    ) || [];
+
+                const analysis = analyzeEmail(content);
+
+                scoreSpan.innerText = analysis.score;
+                verdictSpan.innerText = analysis.verdict;
+
+                reasonUl.innerHTML =
+                    analysis.reasons
+                        .map(r => `<li>${r}</li>`)
+                        .join("");
+
+                if (analysis.score >= 40) {
+
+                    riskSpan.innerText =
+                        "⚠️ Phishing indicators found";
+
+                    reportDiv.classList.remove("hidden");
+
+                } else {
+
+                    riskSpan.innerText =
+                        "✅ No obvious phishing";
+
+                    reportDiv.classList.add("hidden");
+                }
+            }
+            scanBtn.addEventListener(
+                'click',
+                updateEmail
+            );
+
+            document
+                .getElementById("visitBtn")
+                .addEventListener("click", () => {
+
+                    const box =
+                        document.getElementById(
+                            "extractedLinksBox"
+                        );
+
+                    const list =
+                        document.getElementById(
+                            "linksList"
+                        );
+
+                    if (emailLinks.length === 0) {
+
+                        list.innerHTML =
+                            "<li>No links found.</li>";
+
+                    } else {
+
+                        list.innerHTML =
+                            emailLinks
+                                .map(link => {
+
+                                    let status =
+                                        "🟠 Unknown Domain";
+
+                                    let color =
+                                        "#f59e0b";
+
+                                    const lower =
+                                        link.toLowerCase();
+
+                                    const trustedDomains = [
+                                        "google.com",
+                                        "github.com",
+                                        "amazon.com",
+                                        "amazon.in",
+                                        "microsoft.com",
+                                        "paypal.com",
+                                        "apple.com"
+                                    ];
+
+                                    const trusted =
+                                        trustedDomains.some(
+                                            domain =>
+                                                lower.includes(domain)
+                                        );
+
+                                    if (trusted) {
+
+                                        status =
+                                            "🟢 Trusted Domain";
+
+                                        color =
+                                            "#22c55e";
+
+                                    }
+
+                                    if (
+                                        lower.includes("bit.ly") ||
+                                        lower.includes("tinyurl") ||
+                                        lower.includes("@") ||
+                                        lower.includes("secure-login") ||
+                                        lower.includes("verify") ||
+                                        lower.includes("account-update") ||
+                                        lower.includes("login")
+                                    ) {
+
+                                        status =
+                                            "🔴 Potential Phishing";
+
+                                        color =
+                                            "#ef4444";
+                                    }
+
+                                    return `
+            <li style="
+                padding:12px;
+                margin-bottom:10px;
+                border-radius:12px;
+                background:rgba(59,130,246,.08);
+            ">
+
+                <a href="${link}"
+                   target="_blank"
+                   style="
+                    color:#3b82f6;
+                    word-break:break-all;
+                   ">
+                    ${link}
+                </a>
+
+                <div style="
+                    margin-top:8px;
+                    color:${color};
+                    font-weight:600;
+                ">
+                    ${status}
+                </div>
+
+            </li>
+            `;
+                                })
+                                .join("");
+                    }
+
+                    box.classList.toggle("hidden");
+
+                });
+
+            explainBtn?.addEventListener(
+                "click",
+                async () => {
+
+                    if (!lastEmail.trim()) {
+
+                        alert(
+                            "Paste and scan an email first."
+                        );
+
+                        return;
+                    }
+
+                    aiExplanation.innerHTML =
+                        "🧠 CyberShield AI is analyzing...";
+
+                    try {
+
+                        const response =
+                            await fetch(
+                                "http://127.0.0.1:5000/generate",
+                                {
+                                    method: "POST",
+
+                                    headers: {
+                                        "Content-Type":
+                                            "application/json"
+                                    },
+
+                                    body: JSON.stringify({
+
+                                        topic: `
+Analyze this email.
+
+Email Content:
+${lastEmail}
+
+Risk Score:
+${scoreSpan.innerText}
+
+Verdict:
+${verdictSpan.innerText}
+
+Indicators:
+${Array.from(reasonUl.children)
+                                                .map(li => li.innerText)
+                                                .join("\n")}
+
+Return:
+
+📧 Email Type
+
+🟢 or 🔴 Verdict
+
+📌 Key Findings
+• Maximum 3 points
+
+⚠️ Risks
+• Maximum 3 points
+
+🛡️ Recommendation
+
+Maximum 250 words.
+No markdown.
+`
+                                    })
+                                });
+
+                        const data =
+                            await response.json();
+
+                        aiExplanation.innerHTML =
+                            data.answer.replace(
+                                /\n/g,
+                                "<br>"
+                            );
+
+                    }
+
+                    catch (err) {
+
+                        aiExplanation.innerHTML =
+                            "❌ Failed to connect with CyberShield AI.";
+                    }
+                }
+            );
+            document.getElementById(
+                'reportEmailBtn')?.addEventListener(
+                    'click', () =>
+                    alert(`Reported email:\n${lastEmail.substring(0, 150)}`
+                    ));
+        </script>
+    </div>
+</body>
+
+</html>
