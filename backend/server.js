@@ -1,3 +1,4 @@
+require("dotenv").config();
 const nodemailer = require("nodemailer");
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
@@ -13,13 +14,13 @@ const transporter = nodemailer.createTransport({
   service: "gmail",
 
   auth: {
-    user: "cybershelidhub26@gmail.com",
-    pass: "uzja lhkh idfr esqr"
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
   }
 });
 
 // ✅ Connect MongoDB
-mongoose.connect("mongodb://127.0.0.1:27017/mernDB")
+mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log("MongoDB Connected ✅"))
   .catch((err) => console.log(err));
 
@@ -93,7 +94,7 @@ app.post('/api/login', async (req, res) => {
     {
       userId: user._id
     },
-    "cybershield-secret",
+    process.env.JWT_SECRET,
     {
       expiresIn: "7d"
     }
@@ -214,7 +215,8 @@ app.post(
 
 
 // Start server
-const PORT = 5001;
-app.listen(PORT, () => {
-  console.log(`Backend running on http://localhost:${PORT}`);
+const PORT = process.env.PORT || 5001;
+
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`Backend running on port ${PORT}`);
 });
