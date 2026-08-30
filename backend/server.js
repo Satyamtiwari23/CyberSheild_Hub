@@ -1,5 +1,5 @@
 require("dotenv").config();
-const nodemailer = require("nodemailer");
+const { Resend } = require("resend");
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
@@ -10,23 +10,7 @@ const mongoose = require("mongoose");
 const app = express();
 app.use(cors());
 app.use(express.json());
-const transporter = nodemailer.createTransport({
-
-  host: "smtp.gmail.com",
-
-  port: 587,
-
-  secure: false,
-
-  auth: {
-
-    user: process.env.EMAIL_USER,
-
-    pass: process.env.EMAIL_PASS
-
-  }
-
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 // ✅ Connect MongoDB
 mongoose.connect(process.env.MONGODB_URI)
@@ -146,7 +130,7 @@ app.post("/api/forgot-password", async (req, res) => {
   await user.save();
 
   const resetLink =
-    `http://127.0.0.1:5501/projects/Advanced/CyberSheild_Hub/frontend/reset-password.html?token=${token}`;
+    `https://satyamtiwari23.github.io/CyberSheild_Hub/frontend/reset-password.html?token=${token}`;
 
   try {
 
