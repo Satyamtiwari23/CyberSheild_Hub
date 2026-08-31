@@ -23,7 +23,20 @@ The platform combines **frontend web technologies, Node.js/Express, Python/Flask
 
 Everyday cyber threats arrive through several different channels at once — a suspicious link, a phishing email, a malicious QR code, or manipulated media — and most people have no single place to check any of them. CyberShield Hub consolidates multiple analysis tools into one platform and pairs each result with an AI Assistant that explains *why* something looks risky, instead of leaving users with a raw score and no context.
 
-
+```mermaid
+flowchart TD
+  A[Internet Threats] --> B[Malicious URLs]
+  A --> C[Phishing Emails]
+  A --> D[Malicious QR Codes]
+  A --> E[Manipulated Media]
+  B --> F[CyberShield Hub]
+  C --> F
+  D --> F
+  E --> F
+  F --> G[Threat Analysis]
+  G --> H[AI Explanation]
+  H --> I[Security Recommendation]
+```
 
 ---
 
