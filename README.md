@@ -12,7 +12,7 @@ The platform combines **frontend web technologies, Node.js/Express, Python/Flask
 
 | | |
 |---|---|
-|    Live link | [Satyamtiwari23/CyberSheild_Hub/index.html] (https://satyamtiwari23.github.io/CyberSheild_Hub/index.html) |
+| 🖥️ Live Site | https://satyamtiwari23.github.io/CyberSheild_Hub/index.html |
 | 💻 GitHub Repo | [Satyamtiwari23/CyberShield-Hub](https://github.com/Satyamtiwari23) |
 | 💼 LinkedIn | [Satyam Tiwari](https://www.linkedin.com/in/satyam-tiwari-8s5a4t3y8a7m4104/) |
 | ✉️ Email | sttiwari9211@gmail.com |
