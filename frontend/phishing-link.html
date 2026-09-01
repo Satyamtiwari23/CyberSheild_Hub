@@ -72,16 +72,29 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap;
+            flex-wrap: nowrap;
+
+            width: 100%;
+
             margin-bottom: 32px;
+
             border-bottom: 1px solid rgba(59, 130, 246, 0.3);
+
             padding-bottom: 16px;
+
+            gap: 20px;
         }
 
         .brand {
             display: flex;
             gap: 12px;
             align-items: center;
+
+            min-width: 0;
+        }
+
+        .brand>div:last-child {
+            min-width: 0;
         }
 
         .brand-logo {
@@ -281,7 +294,7 @@
         }
 
         #visitBtn {
-            margin-left: 550px;
+            margin-left: 0;
             background: linear-gradient(135deg,
                     #16a34a,
                     #15803d);
@@ -292,7 +305,7 @@
         }
 
         #visitCard {
-            margin: 0px -630px 0px 0px;
+            margin-top: 25px;
         }
 
         .report-section {
@@ -342,6 +355,47 @@
             .tool-grid {
                 grid-template-columns: 1fr;
             }
+
+            header {
+                flex-wrap: nowrap;
+
+                align-items: center;
+
+                gap: 10px;
+            }
+
+            header .brand {
+                flex: 1;
+                min-width: 0;
+            }
+
+            header .brand h2 {
+                font-size: 1.25rem;
+
+                white-space: nowrap;
+            }
+
+            header .brand p {
+                font-size: 0.8rem;
+
+                white-space: nowrap;
+            }
+
+            header .brand-logo {
+                width: 42px;
+                height: 42px;
+
+                flex-shrink: 0;
+            }
+
+            .back-link {
+                flex-shrink: 0;
+
+                white-space: nowrap;
+
+                font-size: 0.85rem;
+            }
+
         }
 
         .hidden {
@@ -391,16 +445,15 @@
                     <li>⚡ Enter a URL and click Scan</li>
                 </ul>
             </div>
-            <div id="visitCard" class="card">
-                <h3>🌐 Open Website</h3>
-                <p id="visitWarning">
-                    This website may be unsafe. Proceed only if you trust the source.
-                    <button id="visitBtn">
-                        Continue to Website →
-                    </button>
-                </p>
-            </div>
-
+        </div>
+        <div id="visitCard" class="card">
+            <h3>🌐 Open Website</h3>
+            <p id="visitWarning">
+                This website may be unsafe. Proceed only if you trust the source.
+                <button id="visitBtn">
+                    Continue to Website →
+                </button>
+            </p>
         </div>
         <div id="aiCard" class="card">
             <h3>🛡️ CyberShield AI Assistant</h3>
