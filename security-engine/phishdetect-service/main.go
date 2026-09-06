@@ -1,11 +1,12 @@
 package main
 
-import (
-	"encoding/json"
-	"log"
-	"net/http"
+ import (
+    "encoding/json"
+    "log"
+    "net/http"
+    "os"
 
-	"github.com/phishdetect/phishdetect"
+    "github.com/phishdetect/phishdetect"
 )
 
 type AnalyzeRequest struct {
@@ -105,26 +106,32 @@ func healthHandler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 
-	http.HandleFunc(
-		"/health",
-		healthHandler,
-	)
+    http.HandleFunc(
+        "/health",
+        healthHandler,
+    )
 
-	http.HandleFunc(
-		"/analyze",
-		analyzeHandler,
-	)
+    http.HandleFunc(
+        "/analyze",
+        analyzeHandler,
+    )
 
-	log.Println(
-		"PhishDetect service running on http://127.0.0.1:5003",
-	)
+    port := os.Getenv("PORT")
 
-	err := http.ListenAndServe(
-		"127.0.0.1:5003",
-		nil,
-	)
+    if port == "" {
+        port = "5003"
+    }
 
-	if err != nil {
-		log.Fatal(err)
-	}
+    log.Println(
+        "PhishDetect service running on port " + port,
+    )
+
+    err := http.ListenAndServe(
+        "0.0.0.0:"+port,
+        nil,
+    )
+
+    if err != nil {
+        log.Fatal(err)
+    }
 }
