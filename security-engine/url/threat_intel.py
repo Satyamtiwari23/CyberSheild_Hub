@@ -6,7 +6,10 @@ from dotenv import load_dotenv
 
 load_dotenv()
 URLHAUS_AUTH_KEY = os.getenv("URLHAUS_AUTH_KEY")
-
+PHISHDETECT_URL = os.getenv(
+    "PHISHDETECT_URL",
+    "http://127.0.0.1:5003"
+)
 PHISHING_DOMAINS_URL = (
     "https://raw.githubusercontent.com/"
     "Phishing-Database/Phishing.Database/"
@@ -244,7 +247,7 @@ def check_phishdetect(url):
     try:
 
         response = requests.post(
-            "http://127.0.0.1:5003/analyze",
+            f"{PHISHDETECT_URL}/analyze",
             json={
                 "url": url
             },

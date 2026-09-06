@@ -8,6 +8,14 @@ const express = require('express');
 const cors = require('cors');
 const mongoose = require("mongoose");
 
+const SECURITY_ENGINE_URL =
+  process.env.SECURITY_ENGINE_URL ||
+  "http://127.0.0.1:5002";
+
+const AI_SERVICE_URL =
+  process.env.AI_SERVICE_URL ||
+  "http://127.0.0.1:5004";
+
 const app = express();
 const googleOAuth2Client = new google.auth.OAuth2(
   process.env.GMAIL_CLIENT_ID,
@@ -433,7 +441,7 @@ app.post("/api/url/analyze", async (req, res) => {
         }
 
         const response = await axios.post(
-            "http://127.0.0.1:5002/analyze-url",
+            `${SECURITY_ENGINE_URL}/analyze-url`,
             {
                 url: url
             }
@@ -468,7 +476,7 @@ app.post("/api/ai/explain", async (req, res) => {
         }
 
         const response = await axios.post(
-            "http://127.0.0.1:5004/generate",
+            `${AI_SERVICE_URL}/generate`,
             {
                 topic: topic
             }
