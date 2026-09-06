@@ -32,7 +32,7 @@ def generate():
 
         completion = client.chat.completions.create(
 
-            model="llama-3.3-70b-versatile",
+            model="openai/gpt-oss-120b",
 
             messages=[
                 {
@@ -83,6 +83,6 @@ def generate():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="127.0.0.1", port=5004, debug=True)
 
 

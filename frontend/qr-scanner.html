@@ -7,7 +7,7 @@
     <link rel="icon" type="image/png" href="images/Favicon.png">
     <title>CyberShield - Malicious QR Detector</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/html5-qrcode"></script>
+    <script src="https://unpkg.com/@zxing/browser@latest"></script>
     <style>
         * {
             margin: 0;
@@ -307,6 +307,11 @@
                 <button id="startScannerBtn">
                     Start Camera Scan
                 </button>
+                <input type="file" id="qrImageInput" accept="image/*" hidden>
+
+                <button id="galleryBtn" type="button" style="margin-left:10px;">
+                    🖼️ Choose from Gallery
+                </button>
 
                 <p style="font-size:0.8rem;margin-top:12px;">
                     Point your camera at a QR code.
@@ -328,32 +333,27 @@
                 </ul>
             </div>
         </div>
-        <div id="openQRSection">
+
+        <div id="openQRSection" class="hidden">
+
             <div id="visitCard" class="card">
-                <h3>🌐 Open QR Content</h3>
-                <p id="visitWarning">
-                    This website may be unsafe. Proceed only if you trust the source.
-                    <button id="visitBtn">
-                        Continue to QR →
-                    </button>
-                </p>
-                <div id="paymentApps" style="display:none; margin-left:850px; margin-top: 15px;">
 
-                    <button onclick="window.open('https://www.phonepe.com/','_blank')">
-                        PhonePe
-                    </button>
+                <h3 id="actionTitle">
+                    🔗 QR Action
+                </h3>
 
-                    <button onclick="window.open('https://pay.google.com/','_blank')">
-                        Google Pay
-                    </button>
-
-                    <button onclick="window.open('https://paytm.com/','_blank')">
-                        Paytm
-                    </button>
-
+                <div id="actionDetails" style="margin-top:12px;">
+                    Review the QR content before continuing.
                 </div>
+
+                <button id="visitBtn" style="margin-top:16px;">
+                    Continue →
+                </button>
+
             </div>
+
         </div>
+
         <div id="aiCard" class="card">
             <h3>🛡️ CyberShield AI Assistant</h3>
 
@@ -486,101 +486,519 @@
         }
 
         function updateUI(payload) {
-            const res = analyzeQR(payload);
-            riskScoreSpan.innerText = res.score;
-            verdictSpan.innerText = res.verdict;
-            reasonListQR.innerHTML = res.reasons.map(r => `<li>${r}</li>`).join('');
+
+            const qrType = detectQRType(payload);
+
+            let res;
+
+            // ==============================
+            // UPI PAYMENT QR
+            // ==============================
+
+            if (qrType === "payment") {
+
+                const payment =
+                    analyzeUPI(payload);
+
+                res = {
+                    score: payment.score,
+                    reasons: payment.reasons,
+                    verdict:
+                        payment.score < 30
+                            ? "🟢 Safe"
+                            : payment.score < 65
+                                ? "⚠️ Suspicious"
+                                : "🔴 Dangerous"
+                };
+
+            }
+
+            // ==============================
+            // OTHER QR TYPES
+            // ==============================
+
+            else {
+
+                res = analyzeQR(payload);
+
+            }
+
+            // ==============================
+            // UPDATE RISK SCORE
+            // ==============================
+
+            riskScoreSpan.innerText =
+                res.score;
+
+            verdictSpan.innerText =
+                res.verdict;
+
+            reasonListQR.innerHTML =
+                res.reasons
+                    .map(r => `<li>${r}</li>`)
+                    .join("");
+
+
+            // ==============================
+            // RISK BADGE
+            // ==============================
+
             if (res.score >= 70) {
 
                 riskBadge.textContent =
                     "🔴 Dangerous";
 
             }
+
             else if (res.score >= 45) {
 
                 riskBadge.textContent =
                     "⚠️ Suspicious";
 
             }
+
             else {
 
                 riskBadge.textContent =
                     "✅ Safe";
             }
+
+
+            // ==============================
+            // SAVE PAYLOAD
+            // ==============================
+
             lastPayload = payload;
 
-            document.getElementById(
-                "paymentApps"
-            ).style.display = "none";
 
-            document.getElementById(
-                "scannedContent"
-            ).textContent = payload;
+            // Hide old payment buttons
 
-            const qrType = detectQRType(payload);
 
-            document.getElementById("scannedContent").innerHTML = `
-                <b>Type:</b> ${qrType}<br>
-                <b>Content:</b> ${payload}
-                `;
-            // Show open button if QR contains URL
+            // ==============================
+            // DISPLAY QR CONTENT
+            // ==============================
 
-            const value = payload.trim().toLowerCase();
-            console.log("QR Content:", payload);
+            const scannedContent =
+                document.getElementById(
+                    "scannedContent"
+                );
 
-            if (
-                value.startsWith("http://") ||
-                value.startsWith("https://") ||
-                value.startsWith("www.") ||
-                value.startsWith("upi://") ||
-                value.startsWith("tel:") ||
-                value.startsWith("mailto:")
-            ) {
+
+            if (qrType === "payment") {
+
+                const payment =
+                    parseUPIPayload(payload);
+
+                scannedContent.innerHTML = `
+            <b>Type:</b> UPI Payment<br>
+            <b>UPI ID:</b>
+            ${payment.upiId || "Not provided"}<br>
+            <b>Merchant:</b>
+            ${payment.merchantName || "Not provided"}<br>
+            <b>Amount:</b>
+            ${payment.amount
+                        ? "₹" + payment.amount
+                        : "Not fixed"
+                    }<br>
+            <b>Currency:</b>
+            ${payment.currency}
+        `;
+
+            }
+
+            else {
+
+                scannedContent.innerHTML = `
+            <b>Type:</b> ${qrType}<br>
+            <b>Content:</b> ${payload}
+        `;
+            }
+
+
+            console.log(
+                "QR Type:",
+                qrType
+            );
+
+            console.log(
+                "QR Content:",
+                payload
+            );
+
+
+            // ==============================
+            // SHOW OPEN SECTION
+            // ==============================
+
+            console.log(
+                "QR Type:",
+                qrType
+            );
+
+            console.log(
+                "QR Content:",
+                payload
+            );
+
+
+            // ==============================
+            // CONFIGURE ACTION BUTTON
+            // ==============================
+
+            const actionTitle =
+                document.getElementById(
+                    "actionTitle"
+                );
+
+            const actionDetails =
+                document.getElementById(
+                    "actionDetails"
+                );
+
+
+            // Website
+            if (qrType === "website") {
+
+                actionTitle.textContent =
+                    "🌐 Open Website";
+
+                actionDetails.innerHTML = `
+        <div>
+            Review the security result before opening this website.
+        </div>
+
+        <div style="margin-top:10px; word-break:break-all;">
+            <strong>URL:</strong> ${payload}
+        </div>
+    `;
 
                 openQRSection.classList.remove("hidden");
+            }
 
-            } else {
 
-                openQRSection.classList.add("hidden");
+            // UPI
+            else if (qrType === "payment") {
+
+                const payment =
+                    parseUPIPayload(payload);
+
+                actionTitle.textContent =
+                    "💳 Payment Details";
+
+                actionDetails.innerHTML = `
+        <div style="line-height:1.8;">
+
+            <div>
+                <strong>Merchant:</strong>
+                ${payment.merchantName || "Not provided"}
+            </div>
+
+            <div>
+                <strong>UPI ID:</strong>
+                ${payment.upiId || "Not provided"}
+            </div>
+
+            <div>
+                <strong>Amount:</strong>
+                ${payment.amount
+                        ? "₹" + payment.amount
+                        : "Not fixed"
+                    }
+            </div>
+
+            <div>
+                <strong>Currency:</strong>
+                ${payment.currency}
+            </div>
+
+            <div style="margin-top:10px;">
+                ⚠️ Verify the recipient and amount
+                in your payment app before paying.
+            </div>
+
+        </div>
+    `;
+
+                openQRSection.classList.remove(
+                    "hidden"
+                );
+            }
+
+
+            // WhatsApp
+            else if (qrType === "whatsapp") {
+
+                actionTitle.textContent =
+                    "💬 Open WhatsApp";
+
+                actionDetails.innerHTML = `
+        <div>
+            This QR contains a WhatsApp link.
+            Review the destination before opening.
+        </div>
+
+        <div style="margin-top:10px; word-break:break-all;">
+            <strong>Destination:</strong> ${payload}
+        </div>
+    `;
+
+                openQRSection.classList.remove("hidden");
+            }
+
+
+            // Phone
+            else if (qrType === "phone") {
+
+                actionTitle.textContent =
+                    "📞 Call Number";
+
+                actionDetails.innerHTML = `
+        <div>
+            Make sure you recognize this phone number.
+        </div>
+
+        <div style="margin-top:10px;">
+            <strong>Number:</strong> ${payload}
+        </div>
+    `;
+
+                openQRSection.classList.remove("hidden");
+            }
+
+
+            // Email
+            else if (qrType === "email") {
+
+                actionTitle.textContent =
+                    "📧 Open Email";
+
+                actionDetails.innerHTML = `
+        <div>
+            Review the email address before continuing.
+        </div>
+
+        <div style="margin-top:10px; word-break:break-all;">
+            <strong>Email:</strong> ${payload}
+        </div>
+    `;
+
+                openQRSection.classList.remove("hidden");
+            }
+
+
+            // Everything else
+            else {
+
+                openQRSection.classList.add(
+                    "hidden"
+                );
             }
         }
+
         const scannerBtn =
             document.getElementById("startScannerBtn");
 
-        let html5QrCode =
-            new Html5Qrcode("reader");
+        const readerElement =
+            document.getElementById("reader");
+
+        const codeReader =
+            new ZXingBrowser.BrowserQRCodeReader();
+
+        let scannerControls = null;
+        let scanning = false;
 
         scannerBtn.addEventListener("click", async () => {
 
+            if (scanning) {
+                stopQRScanner();
+                return;
+            }
+
             try {
 
-                await html5QrCode.start(
-                    { facingMode: "environment" },
+                scanning = true;
 
-                    {
-                        fps: 10,
-                        qrbox: 250
-                    },
+                scannerBtn.textContent =
+                    "Stop Camera Scan";
 
-                    (decodedText) => {
+                readerElement.innerHTML = "";
 
-                        html5QrCode.stop();
+                const video =
+                    document.createElement("video");
+
+                video.style.width = "100%";
+                video.style.maxWidth = "500px";
+                video.style.borderRadius = "16px";
+
+                readerElement.appendChild(video);
+
+                const devices =
+                    await ZXingBrowser.BrowserCodeReader
+                        .listVideoInputDevices();
+
+                if (!devices.length) {
+                    throw new Error("No camera found.");
+                }
+
+                // Prefer the rear/environment camera when available
+                const selectedDevice =
+                    devices.find(device =>
+                        /back|rear|environment/i.test(
+                            device.label
+                        )
+                    ) || devices[0];
+
+                console.log(
+                    "Using camera:",
+                    selectedDevice.label
+                );
+
+                scannerControls =
+                    await codeReader.decodeFromVideoDevice(
+                        selectedDevice.deviceId,
+                        video,
+                        (result, error) => {
+
+                            if (result) {
+
+                                const decodedText =
+                                    result.getText();
+
+                                console.log(
+                                    "QR decoded:",
+                                    decodedText
+                                );
+
+                                stopQRScanner();
+
+                                updateUI(decodedText);
+                            }
+
+                        }
+                    );
+
+            } catch (error) {
+
+                console.error(
+                    "QR scanner error:",
+                    error
+                );
+
+                stopQRScanner();
+
+                alert(
+                    "Unable to access the camera.\n\n" +
+                    "Please allow camera permission and try again."
+                );
+            }
+        });
+
+
+        function stopQRScanner() {
+
+            if (scannerControls) {
+
+                scannerControls.stop();
+
+                scannerControls = null;
+            }
+
+            scanning = false;
+
+            scannerBtn.textContent =
+                "Start Camera Scan";
+
+            readerElement.innerHTML = "";
+        }
+
+        const galleryBtn =
+            document.getElementById("galleryBtn");
+
+        const qrImageInput =
+            document.getElementById("qrImageInput");
+
+
+        galleryBtn.addEventListener("click", () => {
+
+            qrImageInput.click();
+
+        });
+
+
+        qrImageInput.addEventListener("change", async (event) => {
+
+            const file =
+                event.target.files[0];
+
+            if (!file) {
+                return;
+            }
+
+            try {
+
+                // Stop camera if it is currently running
+                stopQRScanner();
+
+                const imageUrl =
+                    URL.createObjectURL(file);
+
+                const image =
+                    new Image();
+
+                image.onload = async () => {
+
+                    try {
+
+                        const result =
+                            await codeReader.decodeFromImageElement(
+                                image
+                            );
+
+                        const decodedText =
+                            result.getText();
+
+                        console.log(
+                            "QR decoded from gallery:",
+                            decodedText
+                        );
 
                         updateUI(decodedText);
 
-                    },
+                    } catch (error) {
 
-                    () => { }
+                        console.error(
+                            "Gallery QR decode failed:",
+                            error
+                        );
+
+                        alert(
+                            "❌ No readable QR code found in this image."
+                        );
+
+                    } finally {
+
+                        URL.revokeObjectURL(imageUrl);
+
+                    }
+                };
+
+                image.src = imageUrl;
+
+            } catch (error) {
+
+                console.error(
+                    "Gallery error:",
+                    error
                 );
-
-            } catch (err) {
 
                 alert(
-                    "Camera access denied or unavailable."
+                    "❌ Unable to read the selected image."
                 );
-
-                console.error(err);
             }
+
+            // Allow selecting the same image again
+            event.target.value = "";
+
         });
 
         explainBtn?.addEventListener(
@@ -676,175 +1094,385 @@
             "click",
             () => {
 
-                if (!lastPayload) return;
-
-                let message =
-                    "This QR code may be unsafe.\n\n";
-
-                // Suggest app depending on QR type
-
-                if (
-                    lastPayload.startsWith("http")
-                ) {
-
-                    message +=
-                        "Recommended app:\n" +
-                        "🌐 Web Browser\n\n" +
-                        "Open link anyway?";
+                if (!lastPayload) {
+                    return;
                 }
 
-                else if (
-                    lastPayload.startsWith("upi://")
-                ) {
+                const type =
+                    detectQRType(lastPayload);
 
-                    message +=
-                        "Recommended app:\n" +
-                        "💳 Google Pay / PhonePe / Paytm\n\n" +
-                        "Open payment app?";
-                }
+                // =========================
+                // WEBSITE
+                // =========================
 
-                else if (
-                    lastPayload.startsWith("tel:")
-                ) {
+                if (type === "website") {
 
-                    message +=
-                        "Recommended app:\n" +
-                        "📞 Phone App\n\n" +
-                        "Open anyway?";
-                }
+                    const confirmed =
+                        confirm(
+                            "This QR contains a website.\n\n" +
+                            "Only continue if you trust this destination.\n\n" +
+                            lastPayload +
+                            "\n\nOpen website?"
+                        );
 
-                else if (
-                    lastPayload.startsWith("mailto:")
-                ) {
+                    if (confirmed) {
 
-                    message +=
-                        "Recommended app:\n" +
-                        "📧 Email App\n\n" +
-                        "Open anyway?";
-                }
-
-                else {
-
-                    message +=
-                        "Open QR content anyway?";
-                }
-
-                if (confirm(message)) {
-
-                    const type = detectQRType(lastPayload);
-
-                    switch (type) {
-
-                        case "payment":
-
-                            document.getElementById(
-                                "paymentApps"
-                            ).style.display = "flex";
-
-                            return;
-
-                            if (app === "1") {
-
-                                window.open(
-                                    "https://www.phonepe.com/",
-                                    "_blank"
-                                );
-
-                            } else if (app === "2") {
-
-                                window.open(
-                                    "https://pay.google.com/",
-                                    "_blank"
-                                );
-
-                            } else if (app === "3") {
-
-                                window.open(
-                                    "https://paytm.com/",
-                                    "_blank"
-                                );
-
-                            }
-
-                            break;
-
-                        case "website":
-
-                            window.open(
-                                lastPayload,
-                                "_blank"
-                            );
-
-                            break;
-
-                        case "whatsapp-group":
-
-                            window.open(
-                                lastPayload,
-                                "_blank"
-                            );
-
-                            break;
-
-                        case "phone":
-
-                            window.location.href =
-                                lastPayload;
-
-                            break;
-
-                        case "email":
-
-                            window.location.href =
-                                lastPayload;
-
-                            break;
-
-                        default:
-
-                            navigator.clipboard.writeText(
-                                lastPayload
-                            );
-
-                            alert(
-                                "QR content copied to clipboard."
-                            );
+                        window.open(
+                            lastPayload,
+                            "_blank",
+                            "noopener,noreferrer"
+                        );
                     }
+
+                    return;
                 }
+
+
+                // =========================
+                // UPI PAYMENT
+                // =========================
+
+                if (type === "payment") {
+
+                    const payment =
+                        parseUPIPayload(lastPayload);
+
+                    const confirmed =
+                        confirm(
+                            "UPI PAYMENT\n\n" +
+
+                            "Merchant: " +
+                            (payment.merchantName ||
+                                "Not provided") +
+
+                            "\n\n" +
+
+                            "UPI ID: " +
+                            (payment.upiId ||
+                                "Not provided") +
+
+                            "\n\n" +
+
+                            "Amount: " +
+                            (
+                                payment.amount
+                                    ? "₹" + payment.amount
+                                    : "Not fixed"
+                            ) +
+
+                            "\n\n" +
+
+                            "Please verify these details in your payment app before making the payment.\n\n" +
+
+                            "Continue?"
+                        );
+
+                    if (!confirmed) {
+                        return;
+                    }
+
+                    /*
+                     * Do NOT directly navigate to upi://
+                     * on desktop browsers.
+                     *
+                     * It can be intercepted by any application
+                     * registered for the UPI URL scheme.
+                     */
+
+                    const isMobile =
+                        /Android|iPhone|iPad|iPod/i.test(
+                            navigator.userAgent
+                        );
+
+                    if (!isMobile) {
+
+                        navigator.clipboard
+                            .writeText(lastPayload)
+                            .then(() => {
+
+                                alert(
+                                    "UPI payment QR detected.\n\n" +
+                                    "The payment link has been copied.\n\n" +
+                                    "Open it on your phone using your preferred UPI app."
+                                );
+
+                            })
+                            .catch(() => {
+
+                                alert(
+                                    "UPI payment QR detected.\n\n" +
+                                    "Please use a mobile device with a UPI app to continue."
+                                );
+
+                            });
+
+                        return;
+                    }
+
+                    /*
+                     * On mobile, allow the operating system
+                     * to hand the UPI URI to an installed
+                     * payment application.
+                     */
+
+                    window.location.href =
+                        lastPayload;
+
+                    return;
+                }
+
+
+                // =========================
+                // WHATSAPP
+                // =========================
+
+                if (type === "whatsapp") {
+
+                    const confirmed =
+                        confirm(
+                            "This QR contains a WhatsApp link.\n\n" +
+                            lastPayload +
+                            "\n\n" +
+                            "Open WhatsApp?"
+                        );
+
+                    if (confirmed) {
+
+                        window.open(
+                            lastPayload,
+                            "_blank",
+                            "noopener,noreferrer"
+                        );
+                    }
+
+                    return;
+                }
+
+
+                // =========================
+                // PHONE
+                // =========================
+
+                if (type === "phone") {
+
+                    if (
+                        confirm(
+                            "Call this number?\n\n" +
+                            lastPayload
+                        )
+                    ) {
+
+                        window.location.href =
+                            lastPayload;
+                    }
+
+                    return;
+                }
+
+
+                // =========================
+                // EMAIL
+                // =========================
+
+                if (type === "email") {
+
+                    if (
+                        confirm(
+                            "Open email application?\n\n" +
+                            lastPayload
+                        )
+                    ) {
+
+                        window.location.href =
+                            lastPayload;
+                    }
+
+                    return;
+                }
+
+
+                // =========================
+                // OTHER CONTENT
+                // =========================
+
+                navigator.clipboard
+                    .writeText(lastPayload)
+                    .then(() => {
+
+                        alert(
+                            "QR content copied to clipboard."
+                        );
+
+                    })
+                    .catch(() => {
+
+                        alert(
+                            "QR content:\n\n" +
+                            lastPayload
+                        );
+
+                    });
+
             }
         );
 
         function detectQRType(payload) {
 
-            if (payload.startsWith("http://") ||
-                payload.startsWith("https://"))
-                return "website";
+            if (!payload) {
+                return "unknown";
+            }
 
-            if (payload.startsWith("upi://"))
+            const value = payload.trim();
+
+            // UPI payment QR
+            if (/^upi:\/\/pay\?/i.test(value)) {
                 return "payment";
+            }
 
-            if (payload.startsWith("WIFI:"))
+            // WhatsApp links
+            if (
+                /^(https?:\/\/)?(wa\.me|chat\.whatsapp\.com)\//i.test(value)
+            ) {
+                return "whatsapp";
+            }
+
+            // Wi-Fi QR
+            if (/^WIFI:/i.test(value)) {
                 return "wifi";
+            }
 
-            if (payload.startsWith("tel:"))
+            // Phone QR
+            if (/^tel:/i.test(value)) {
                 return "phone";
+            }
 
-            if (payload.startsWith("mailto:"))
+            // Email QR
+            if (/^mailto:/i.test(value)) {
                 return "email";
+            }
 
-            if (payload.startsWith("SMSTO:"))
+            // SMS QR
+            if (/^(SMSTO:|sms:)/i.test(value)) {
                 return "sms";
+            }
 
-            if (payload.includes("chat.whatsapp.com"))
-                return "whatsapp-group";
-
-            if (payload.includes("wa.me"))
-                return "whatsapp-link";
-
-            if (payload.startsWith("BEGIN:VCARD"))
+            // Contact QR
+            if (/^(BEGIN:VCARD|MECARD:)/i.test(value)) {
                 return "contact";
+            }
 
+            // Website QR
+            if (/^https?:\/\//i.test(value)) {
+                return "website";
+            }
+
+            // Plain text
             return "text";
+        }
+
+        function parseUPIPayload(payload) {
+
+            try {
+
+                const url = new URL(payload);
+
+                const params = url.searchParams;
+
+                return {
+                    upiId: params.get("pa") || "",
+                    merchantName: params.get("pn") || "",
+                    amount: params.get("am") || "",
+                    currency: params.get("cu") || "INR",
+                    transactionId: params.get("tid") || "",
+                    referenceId: params.get("tr") || "",
+                    note: params.get("tn") || ""
+                };
+
+            } catch (error) {
+
+                console.error(
+                    "UPI payload parsing failed:",
+                    error
+                );
+
+                return {
+                    upiId: "",
+                    merchantName: "",
+                    amount: "",
+                    currency: "INR",
+                    transactionId: "",
+                    referenceId: "",
+                    note: ""
+                };
+            }
+        }
+
+        function analyzeUPI(payload) {
+
+            const data = parseUPIPayload(payload);
+
+            let score = 0;
+            const reasons = [];
+
+            if (!data.upiId) {
+
+                score += 40;
+
+                reasons.push(
+                    "⚠️ UPI ID is missing"
+                );
+            }
+
+            if (data.amount) {
+
+                const amount =
+                    Number(data.amount);
+
+                if (
+                    !Number.isFinite(amount) ||
+                    amount < 0
+                ) {
+
+                    score += 40;
+
+                    reasons.push(
+                        "⚠️ Invalid payment amount"
+                    );
+                }
+            }
+
+            if (
+                data.currency &&
+                data.currency.toUpperCase() !== "INR"
+            ) {
+
+                score += 20;
+
+                reasons.push(
+                    "⚠️ Unexpected currency: " +
+                    data.currency
+                );
+            }
+
+            if (!data.merchantName) {
+
+                reasons.push(
+                    "ℹ️ Merchant name is not provided"
+                );
+            }
+
+            if (!data.amount) {
+
+                reasons.push(
+                    "ℹ️ Payment amount is not fixed"
+                );
+            }
+
+            return {
+                data,
+                score: Math.min(score, 100),
+                reasons
+            };
         }
     </script>
 </body>

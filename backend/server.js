@@ -1,4 +1,5 @@
 require("dotenv").config();
+const axios = require("axios");
 const { google } = require("googleapis");
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
@@ -417,6 +418,75 @@ app.get("/oauth2callback", async (req, res) => {
 const PORT = process.env.PORT || 5001;
 app.get("/", (req, res) => {
   res.send("CyberShield Hub Backend is running successfully 🚀");
+});
+
+app.post("/api/url/analyze", async (req, res) => {
+
+    try {
+
+        const { url } = req.body;
+
+        if (!url) {
+            return res.status(400).json({
+                error: "URL is required"
+            });
+        }
+
+        const response = await axios.post(
+            "http://127.0.0.1:5002/analyze-url",
+            {
+                url: url
+            }
+        );
+
+        return res.json(response.data);
+
+    } catch (error) {
+
+        console.error(
+            "URL Security Engine Error:",
+            error.message
+        );
+
+        return res.status(500).json({
+            error: "Security engine unavailable"
+        });
+    }
+});
+
+// 🤖 AI Security Assistant
+app.post("/api/ai/explain", async (req, res) => {
+
+    try {
+
+        const { topic } = req.body;
+
+        if (!topic) {
+            return res.status(400).json({
+                error: "Topic is required"
+            });
+        }
+
+        const response = await axios.post(
+            "http://127.0.0.1:5004/generate",
+            {
+                topic: topic
+            }
+        );
+
+        return res.json(response.data);
+
+    } catch (error) {
+
+        console.error(
+            "AI Chatbot Error:",
+            error.message
+        );
+
+        return res.status(500).json({
+            error: "AI service unavailable"
+        });
+    }
 });
 
 app.listen(PORT, "0.0.0.0", () => {

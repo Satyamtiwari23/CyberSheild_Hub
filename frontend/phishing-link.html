@@ -492,81 +492,212 @@
         const inputError = document.getElementById('inputError');
         let lastUrl = '';
 
-        function analyzePhishingLink(url) {
-            let score = 0;
-            const reasons = [];
-            const lowerUrl = url.toLowerCase();
-            // Heuristic patterns
-            if (/(paypal|ebay|amazon|apple|microsoft)/.test(lowerUrl) && !lowerUrl.includes('.com/') && !lowerUrl.includes('.org/')) score += 25, reasons.push("⚠️ Brand name in domain but unusual TLD or structure");
-            if (/\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/.test(lowerUrl)) score += 40, reasons.push("🚨 IP address as domain – common phishing tactic");
-            if (lowerUrl.includes('-secure-') || lowerUrl.includes('login-verify') || lowerUrl.includes('account-update')) score += 30, reasons.push("🔒 Suspicious keywords ('secure','verify','update')");
-            if (lowerUrl.includes('bit.ly') || lowerUrl.includes('tinyurl') || lowerUrl.includes('short.link')) score += 20, reasons.push("📎 URL shortener – hides real destination");
-            if ((lowerUrl.match(/\./g) || []).length > 4) score += 15, reasons.push("🌐 Multiple subdomains – potential spoofing");
-            if (!url.startsWith('https://')) score += 35, reasons.push("🔓 Missing HTTPS – data transmitted insecurely");
-            if (url.includes('@')) score += 30, reasons.push("⚠️ '@' symbol in URL – browser confusion attack");
-            if (score > 100) score = 100;
-            let status = score < 30 ? "🟢 Low Risk – Likely safe" : (score < 65 ? "🟠 Medium Risk – Suspicious" : "🔴 High Risk – Phishing probable");
-            if (score === 0 && url.length > 5) status = "✅ No obvious malicious signals";
-            return { score, reasons, status };
-        }
+        async function updateResult(url) {
 
-        function updateResult(url) {
-            if (!url || (!url.startsWith('http://') && !url.startsWith('https://'))) {
+            if (
+                !url ||
+                (!url.startsWith('http://') &&
+                    !url.startsWith('https://'))
+            ) {
                 inputError.classList.remove('hidden');
                 return false;
             }
+
             inputError.classList.add('hidden');
-            const analysis = analyzePhishingLink(url);
-            riskScoreSpan.innerText = analysis.score;
-            riskStatusSpan.innerText = analysis.status;
-            reasonList.innerHTML = analysis.reasons.map(r => `<li>${r}</li>`).join('');
 
-            if (analysis.score >= 50) {
+            // Show loading state
+            riskBadge.innerText = "🔄 Scanning...";
+            riskBadge.className = "badge badge-warning";
+
+            riskScoreSpan.innerText = "—";
+            riskStatusSpan.innerText =
+                "CyberShield security engine is analyzing...";
+
+            reasonList.innerHTML = `
+        <li>🔍 Running URL security analysis...</li>
+    `;
+
+            try {
+
+                const response = await fetch(
+                    "http://127.0.0.1:5001/api/url/analyze",
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+
+                        body: JSON.stringify({
+                            url: url
+                        })
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error("Security engine request failed");
+                }
+
+                const analysis = await response.json();
+
+                console.log("CyberShield URL Analysis:", analysis);
+
+                const score = analysis.score ?? 0;
+
+                riskScoreSpan.innerText = score;
+
+                /*
+                 * Convert backend verdict into
+                 * user-friendly frontend status.
+                 */
+
+                if (score >= 70) {
+
+                    riskStatusSpan.innerText =
+                        "🔴 High Risk – Phishing probable";
+
+                    riskBadge.innerText =
+                        "⚠️ Suspicious / Phishing";
+
+                    riskBadge.className =
+                        "badge badge-danger";
+
+                    reportSection.classList.remove("hidden");
+
+                    visitCard.classList.remove("hidden");
+
+                    visitBtn.innerText =
+                        "⚠️ Visit Anyway";
+
+                } else if (score >= 40) {
+
+                    riskStatusSpan.innerText =
+                        "🟠 Medium Risk – Suspicious";
+
+                    riskBadge.innerText =
+                        "⚠️ Suspicious";
+
+                    riskBadge.className =
+                        "badge badge-warning";
+
+                    reportSection.classList.remove("hidden");
+
+                    visitCard.classList.remove("hidden");
+
+                    visitBtn.innerText =
+                        "⚠️ Visit Anyway";
+
+                } else {
+
+                    riskStatusSpan.innerText =
+                        "🟢 Low Risk – No major signals detected";
+
+                    riskBadge.innerText =
+                        "🟢 Low Risk";
+
+                    riskBadge.className =
+                        "badge badge-safe";
+
+                    reportSection.classList.add("hidden");
+
+                    visitCard.classList.remove("hidden");
+
+                    visitBtn.innerText =
+                        "🌐 Open Website";
+                }
+
+                /*
+                 * Display security signals
+                 */
+
+                if (
+                    analysis.signals &&
+                    analysis.signals.length > 0
+                ) {
+
+                    reasonList.innerHTML =
+                        analysis.signals
+                            .map(signal => {
+
+                                return `
+                            <li>
+                                ⚠️ ${signal.name}
+                                <small>
+                                    (${signal.severity})
+                                </small>
+                            </li>
+                        `;
+
+                            })
+                            .join("");
+
+                } else {
+
+                    reasonList.innerHTML = `
+                <li>
+                    ✅ No obvious malicious signals detected
+                </li>
+            `;
+                }
+
+                lastUrl = url;
+
+                return true;
+
+            } catch (error) {
+
+                console.error(
+                    "CyberShield Scanner Error:",
+                    error
+                );
 
                 riskBadge.innerText =
-                    '⚠️ Suspicious / Phishing';
+                    "❌ Scanner Error";
 
                 riskBadge.className =
-                    'badge badge-danger';
+                    "badge badge-danger";
 
-                reportSection.classList.remove('hidden');
+                riskScoreSpan.innerText =
+                    "—";
 
-                visitCard.classList.remove('hidden');
+                riskStatusSpan.innerText =
+                    "Unable to connect to security engine";
 
-                visitBtn.innerText =
-                    '⚠️ Visit Anyway';
+                reasonList.innerHTML = `
+            <li>
+                ❌ Security engine is unavailable.
+            </li>
+            <li>
+                Make sure Node.js and Python services are running.
+            </li>
+        `;
 
-            } else {
-
-                riskBadge.innerText =
-                    '🟢 Clean';
-
-                riskBadge.className =
-                    'badge badge-safe';
-
-                reportSection.classList.add('hidden');
-
-                visitCard.classList.remove('hidden');
-
-                visitBtn.innerText =
-                    '🌐 Open Website';
+                return false;
             }
-            lastUrl = url;
-            return true;
         }
 
-        scanBtn.addEventListener('click', () => {
+        scanBtn.addEventListener('click', async () => {
+
             let rawUrl = urlInput.value.trim();
-            if (!rawUrl) rawUrl = urlInput.placeholder;
-            if (!rawUrl.startsWith('http')) rawUrl = 'https://' + rawUrl;
-            updateResult(rawUrl);
+
+            if (!rawUrl) {
+                inputError.classList.remove('hidden');
+                return;
+            }
+
+            if (
+                !rawUrl.startsWith('http://') &&
+                !rawUrl.startsWith('https://')
+            ) {
+                rawUrl = 'https://' + rawUrl;
+            }
+
+            await updateResult(rawUrl);
         });
 
         document.getElementById('reportBtn')?.addEventListener('click', () => {
             alert(`Thank you for reporting: ${lastUrl}\nOur team will review the website.`);
         });
-        // initial demo scan
-        setTimeout(() => scanBtn.click(), 100);
 
         visitBtn?.addEventListener('click', () => {
 
@@ -602,7 +733,7 @@
 
             try {
 
-                const response = await fetch("http://127.0.0.1:5000/generate", {
+                const response = await fetch("http://127.0.0.1:5001/api/ai/explain", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json"
