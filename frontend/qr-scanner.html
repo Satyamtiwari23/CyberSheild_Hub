@@ -8,6 +8,7 @@
     <title>CyberShield - Malicious QR Detector</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@zxing/browser@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
     <style>
         * {
             margin: 0;
@@ -380,6 +381,11 @@
         if (!localStorage.getItem("token")) {
             window.location.replace("login.html");
         }
+        const API_BASE_URL =
+            window.location.hostname === "localhost" ||
+                window.location.hostname === "127.0.0.1"
+                ? "http://127.0.0.1:5001"
+                : "https://cybersheild-hub.onrender.com";
         const qrInput = document.getElementById('qrText');
         const analyzeBtn = document.getElementById('analyzeQrBtn');
         const riskBadge = document.getElementById('riskBadge');
@@ -924,11 +930,170 @@
 
         });
 
+        async function decodeQRCodeFromImage(image) {
+
+            // ==========================================
+            // METHOD 1: jsQR on the full image
+            // ==========================================
+
+            const canvas = document.createElement("canvas");
+            const ctx = canvas.getContext("2d", {
+                willReadFrequently: true
+            });
+
+            const maxSize = 2000;
+
+            let width = image.naturalWidth;
+            let height = image.naturalHeight;
+
+            // Keep large images manageable
+            const scale =
+                Math.min(1, maxSize / Math.max(width, height));
+
+            width = Math.round(width * scale);
+            height = Math.round(height * scale);
+
+            canvas.width = width;
+            canvas.height = height;
+
+            ctx.drawImage(
+                image,
+                0,
+                0,
+                width,
+                height
+            );
+
+            let imageData =
+                ctx.getImageData(
+                    0,
+                    0,
+                    width,
+                    height
+                );
+
+            let result =
+                jsQR(
+                    imageData.data,
+                    imageData.width,
+                    imageData.height,
+                    {
+                        inversionAttempts: "attemptBoth"
+                    }
+                );
+
+            if (result) {
+
+                console.log(
+                    "QR detected using jsQR full image"
+                );
+
+                return result.data;
+            }
+
+
+            // ==========================================
+            // METHOD 2: Grayscale / enhanced image
+            // ==========================================
+
+            const enhancedCanvas =
+                document.createElement("canvas");
+
+            const enhancedCtx =
+                enhancedCanvas.getContext("2d", {
+                    willReadFrequently: true
+                });
+
+            enhancedCanvas.width = width;
+            enhancedCanvas.height = height;
+
+            enhancedCtx.drawImage(
+                image,
+                0,
+                0,
+                width,
+                height
+            );
+
+            imageData =
+                enhancedCtx.getImageData(
+                    0,
+                    0,
+                    width,
+                    height
+                );
+
+            const data =
+                imageData.data;
+
+            // Convert image to grayscale
+            for (let i = 0; i < data.length; i += 4) {
+
+                const gray =
+                    0.299 * data[i] +
+                    0.587 * data[i + 1] +
+                    0.114 * data[i + 2];
+
+                data[i] = gray;
+                data[i + 1] = gray;
+                data[i + 2] = gray;
+            }
+
+            result =
+                jsQR(
+                    data,
+                    width,
+                    height,
+                    {
+                        inversionAttempts: "attemptBoth"
+                    }
+                );
+
+            if (result) {
+
+                console.log(
+                    "QR detected using enhanced image"
+                );
+
+                return result.data;
+            }
+
+
+            // ==========================================
+            // METHOD 3: Try ZXing on full image
+            // ==========================================
+
+            try {
+
+                const zxingResult =
+                    await codeReader.decodeFromImageElement(
+                        image
+                    );
+
+                if (zxingResult) {
+
+                    console.log(
+                        "QR detected using ZXing"
+                    );
+
+                    return zxingResult.getText();
+                }
+
+            } catch (error) {
+
+                console.log(
+                    "ZXing full-image attempt failed"
+                );
+
+            }
+
+
+            return null;
+        }
 
         qrImageInput.addEventListener("change", async (event) => {
 
-            const file =
-                event.target.files[0];
+            const file = event.target.files[0];
 
             if (!file) {
                 return;
@@ -939,23 +1104,22 @@
                 // Stop camera if it is currently running
                 stopQRScanner();
 
-                const imageUrl =
-                    URL.createObjectURL(file);
+                const imageUrl = URL.createObjectURL(file);
 
-                const image =
-                    new Image();
+                const image = new Image();
 
                 image.onload = async () => {
 
                     try {
 
-                        const result =
-                            await codeReader.decodeFromImageElement(
-                                image
-                            );
+                        console.log("Gallery image loaded");
 
                         const decodedText =
-                            result.getText();
+                            await decodeQRCodeFromImage(image);
+
+                        if (!decodedText) {
+                            throw new Error("QR code not detected");
+                        }
 
                         console.log(
                             "QR decoded from gallery:",
@@ -972,7 +1136,8 @@
                         );
 
                         alert(
-                            "❌ No readable QR code found in this image."
+                            "❌ QR code could not be detected.\n\n" +
+                            "Try a clearer image where the QR code is visible."
                         );
 
                     } finally {
@@ -980,6 +1145,16 @@
                         URL.revokeObjectURL(imageUrl);
 
                     }
+                };
+
+                image.onerror = () => {
+
+                    URL.revokeObjectURL(imageUrl);
+
+                    alert(
+                        "❌ Unable to load the selected image."
+                    );
+
                 };
 
                 image.src = imageUrl;
@@ -994,6 +1169,7 @@
                 alert(
                     "❌ Unable to read the selected image."
                 );
+
             }
 
             // Allow selecting the same image again
@@ -1021,7 +1197,7 @@
 
                     const response =
                         await fetch(
-                            "http://127.0.0.1:5000/generate",
+                            `${API_BASE_URL}/api/ai/explain`,
                             {
                                 method: "POST",
 
@@ -1325,7 +1501,11 @@
             const value = payload.trim();
 
             // UPI payment QR
-            if (/^upi:\/\/pay\?/i.test(value)) {
+            // UPI payment QR
+            if (
+                /^upi:\/\/pay\?/i.test(value) ||
+                /^upi:\s*\/\/\s*pay\?/i.test(value)
+            ) {
                 return "payment";
             }
 
