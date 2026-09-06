@@ -1002,7 +1002,6 @@ Aspiring Full-Stack & AI Developer
 
 - Full-Stack Development
 - Artificial Intelligence
-- Cybersecurity
 - Machine Learning
 - Backend Development
 - Cloud Deployment
