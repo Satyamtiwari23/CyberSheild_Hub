@@ -14,10 +14,6 @@ The project combines **HTML/CSS/JavaScript, Node.js/Express, Python/Flask, Mongo
 |---|---|
 | 🖥️ Live Site | https://satyamtiwari23.github.io/CyberSheild_Hub/index.html |
 | 💻 GitHub Repository | https://github.com/Satyamtiwari23/CyberSheild_Hub |
-| 🔐 Node.js Backend | https://cybersheild-hub.onrender.com |
-| 🛡️ Security Engine | https://cybershield-security-engine.onrender.com |
-| 🔎 PhishDetect Service | https://cybershield-phishdetect.onrender.com |
-| 🤖 AI Service | https://cybershield-ai-rdm7.onrender.com |
 | 💼 LinkedIn | https://www.linkedin.com/in/satyam-tiwari-8s5a4t3y8a7m4104/ |
 | ✉️ Email | sttiwari9211@gmail.com |
 
