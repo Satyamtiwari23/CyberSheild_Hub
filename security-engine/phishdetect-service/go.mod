@@ -1,6 +1,6 @@
 module cybershield/phishdetect-service
 
-go 1.27.1
+go 1.25
 
 require github.com/phishdetect/phishdetect v1.25.10
 
