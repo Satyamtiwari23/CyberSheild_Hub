@@ -23,6 +23,29 @@ const googleOAuth2Client = new google.auth.OAuth2(
   process.env.GMAIL_REDIRECT_URI
 );
 
+// =====================================================
+// GOOGLE LOGIN OAUTH
+// =====================================================
+
+const googleLoginClient = new google.auth.OAuth2(
+  process.env.GOOGLE_LOGIN_CLIENT_ID,
+  process.env.GOOGLE_LOGIN_CLIENT_SECRET,
+  process.env.GOOGLE_LOGIN_REDIRECT_URI
+);
+
+// =====================================================
+// GITHUB LOGIN OAUTH
+// =====================================================
+
+const GITHUB_CLIENT_ID =
+  process.env.GITHUB_CLIENT_ID;
+
+const GITHUB_CLIENT_SECRET =
+  process.env.GITHUB_CLIENT_SECRET;
+
+const GITHUB_REDIRECT_URI =
+  process.env.GITHUB_REDIRECT_URI;
+
 googleOAuth2Client.setCredentials({
   refresh_token: process.env.GMAIL_REFRESH_TOKEN
 });
@@ -44,6 +67,16 @@ const userSchema = new mongoose.Schema({
   name: String,
   email: String,
   password: String,
+
+  authProvider: {
+    type: String,
+    default: "password"
+  },
+
+  passwordSet: {
+    type: Boolean,
+    default: false
+  },
 
   resetToken: String,
   resetTokenExpiry: Date,
@@ -90,8 +123,9 @@ app.post('/api/signup', async (req, res) => {
 
   const newUser = new User({
     name,
-    email,
-    password: hashedPassword
+    email: email.toLowerCase(),
+    password: hashedPassword,
+    authProvider: "local"
   });
   await newUser.save();
 
@@ -355,10 +389,8 @@ app.post("/api/reset-password", async (req, res) => {
     }
 
     // Change password
-    user.password = await bcrypt.hash(
-      password,
-      10
-    );
+    user.password = await bcrypt.hash(password, 10);
+    user.passwordSet = true;
 
     // Remove reset credentials
     user.resetToken = undefined;
@@ -430,72 +462,733 @@ app.get("/", (req, res) => {
 
 app.post("/api/url/analyze", async (req, res) => {
 
-    try {
+  try {
 
-        const { url } = req.body;
+    const { url } = req.body;
 
-        if (!url) {
-            return res.status(400).json({
-                error: "URL is required"
-            });
-        }
-
-        const response = await axios.post(
-            `${SECURITY_ENGINE_URL}/analyze-url`,
-            {
-                url: url
-            }
-        );
-
-        return res.json(response.data);
-
-    } catch (error) {
-
-        console.error(
-            "URL Security Engine Error:",
-            error.message
-        );
-
-        return res.status(500).json({
-            error: "Security engine unavailable"
-        });
+    if (!url) {
+      return res.status(400).json({
+        error: "URL is required"
+      });
     }
+
+    const response = await axios.post(
+      `${SECURITY_ENGINE_URL}/analyze-url`,
+      {
+        url: url
+      }
+    );
+
+    return res.json(response.data);
+
+  } catch (error) {
+
+    console.error(
+      "URL Security Engine Error:",
+      error.message
+    );
+
+    return res.status(500).json({
+      error: "Security engine unavailable"
+    });
+  }
 });
 
 // 🤖 AI Security Assistant
 app.post("/api/ai/explain", async (req, res) => {
 
-    try {
+  try {
 
-        const { topic } = req.body;
+    const { topic } = req.body;
 
-        if (!topic) {
-            return res.status(400).json({
-                error: "Topic is required"
-            });
-        }
-
-        const response = await axios.post(
-            `${AI_SERVICE_URL}/generate`,
-            {
-                topic: topic
-            }
-        );
-
-        return res.json(response.data);
-
-    } catch (error) {
-
-        console.error(
-            "AI Chatbot Error:",
-            error.message
-        );
-
-        return res.status(500).json({
-            error: "AI service unavailable"
-        });
+    if (!topic) {
+      return res.status(400).json({
+        error: "Topic is required"
+      });
     }
+
+    const response = await axios.post(
+      `${AI_SERVICE_URL}/generate`,
+      {
+        topic: topic
+      }
+    );
+
+    return res.json(response.data);
+
+  } catch (error) {
+
+    console.error(
+      "AI Chatbot Error:",
+      error.message
+    );
+
+    return res.status(500).json({
+      error: "AI service unavailable"
+    });
+  }
 });
+
+
+// =====================================================
+// START GITHUB LOGIN
+// =====================================================
+
+app.get("/auth/github", (req, res) => {
+
+  const mode =
+    req.query.mode === "signup"
+      ? "signup"
+      : "login";
+
+  const state =
+    crypto.randomBytes(32).toString("hex");
+
+  const isProduction =
+    process.env.NODE_ENV === "production";
+
+  res.setHeader(
+    "Set-Cookie",
+    [
+      `github_oauth_state=${state}; HttpOnly; ${isProduction ? "Secure; " : ""}SameSite=Lax; Path=/; Max-Age=600`,
+      `github_oauth_mode=${mode}; HttpOnly; ${isProduction ? "Secure; " : ""}SameSite=Lax; Path=/; Max-Age=600`
+    ]
+  );
+
+  const githubAuthUrl =
+    "https://github.com/login/oauth/authorize" +
+    `?client_id=${encodeURIComponent(GITHUB_CLIENT_ID)}` +
+    `&redirect_uri=${encodeURIComponent(GITHUB_REDIRECT_URI)}` +
+    `&scope=${encodeURIComponent("read:user user:email")}` +
+    `&state=${encodeURIComponent(state)}`;
+
+  res.redirect(githubAuthUrl);
+
+});
+
+// =====================================================
+// GITHUB LOGIN / SIGNUP CALLBACK
+// =====================================================
+
+app.get("/auth/github/callback", async (req, res) => {
+
+  try {
+
+    const { code, state } = req.query;
+
+    if (!code || !state) {
+      return res.status(400).send(
+        "Invalid GitHub OAuth request."
+      );
+    }
+
+    // -------------------------------------------------
+    // READ COOKIES
+    // -------------------------------------------------
+
+    const cookies =
+      req.headers.cookie || "";
+
+    const cookieMap = {};
+
+    cookies
+      .split(";")
+      .map(cookie => cookie.trim())
+      .forEach(cookie => {
+
+        const index = cookie.indexOf("=");
+
+        if (index !== -1) {
+
+          const key =
+            cookie.substring(0, index);
+
+          const value =
+            cookie.substring(index + 1);
+
+          cookieMap[key] = value;
+        }
+      });
+
+    const savedState =
+      cookieMap.github_oauth_state;
+
+    const mode =
+      cookieMap.github_oauth_mode || "login";
+
+
+    // -------------------------------------------------
+    // VERIFY STATE
+    // -------------------------------------------------
+
+    if (!savedState || savedState !== state) {
+
+      return res.status(403).send(
+        "Invalid OAuth state."
+      );
+
+    }
+
+
+    // -------------------------------------------------
+    // EXCHANGE CODE FOR ACCESS TOKEN
+    // -------------------------------------------------
+
+    const tokenResponse =
+      await axios.post(
+        "https://github.com/login/oauth/access_token",
+        {
+          client_id: GITHUB_CLIENT_ID,
+          client_secret: GITHUB_CLIENT_SECRET,
+          code,
+          redirect_uri: GITHUB_REDIRECT_URI
+        },
+        {
+          headers: {
+            Accept: "application/json"
+          }
+        }
+      );
+
+    const githubAccessToken =
+      tokenResponse.data.access_token;
+
+    if (!githubAccessToken) {
+
+      console.error(
+        "GitHub token error:",
+        tokenResponse.data
+      );
+
+      return res.status(500).send(
+        "GitHub authorization failed."
+      );
+
+    }
+
+
+    // -------------------------------------------------
+    // GET GITHUB USER
+    // -------------------------------------------------
+
+    const githubUserResponse =
+      await axios.get(
+        "https://api.github.com/user",
+        {
+          headers: {
+            Authorization:
+              `Bearer ${githubAccessToken}`,
+            Accept: "application/vnd.github+json"
+          }
+        }
+      );
+
+    const githubUser =
+      githubUserResponse.data;
+
+
+    // -------------------------------------------------
+    // GET GITHUB EMAIL
+    // -------------------------------------------------
+
+    const githubEmailsResponse =
+      await axios.get(
+        "https://api.github.com/user/emails",
+        {
+          headers: {
+            Authorization:
+              `Bearer ${githubAccessToken}`,
+            Accept: "application/vnd.github+json"
+          }
+        }
+      );
+
+    const githubEmail =
+      githubEmailsResponse.data.find(
+        email =>
+          email.primary &&
+          email.verified
+      );
+
+    if (!githubEmail) {
+
+      return res.status(400).send(
+        "No verified GitHub email was found."
+      );
+
+    }
+
+    const email =
+      githubEmail.email
+        .toLowerCase()
+        .trim();
+
+    const name =
+      githubUser.name ||
+      githubUser.login ||
+      "GitHub User";
+
+
+    // -------------------------------------------------
+    // FIND USER IN MONGODB
+    // -------------------------------------------------
+
+    let user =
+      await User.findOne({
+        email
+      });
+
+
+    // =================================================
+    // GITHUB SIGNUP
+    // =================================================
+
+    if (mode === "signup") {
+
+      if (user) {
+
+        const frontend =
+          process.env.FRONTEND_URL ||
+          "http://127.0.0.1:5501/Git/Git_posts/CyberSheild_Hub/frontend";
+
+        return res.redirect(
+          `${frontend}/login.html?oauth_error=` +
+          encodeURIComponent(
+            "An account with this email already exists. Please use Login instead."
+          )
+        );
+
+      }
+
+
+      // Create NEW GitHub account
+
+      const randomPassword =
+        crypto.randomBytes(32).toString("hex");
+
+      const hashedPassword =
+        await bcrypt.hash(randomPassword, 10);
+
+      user = new User({
+        name,
+        email,
+        password: hashedPassword,
+        authProvider: "github",
+        passwordSet: false
+      });
+
+      await user.save();
+
+    }
+
+
+    // =================================================
+    // GITHUB LOGIN
+    // =================================================
+
+    else {
+
+      if (!user) {
+
+        const frontend =
+          process.env.FRONTEND_URL ||
+          "http://127.0.0.1:5501/Git/Git_posts/CyberSheild_Hub/frontend";
+
+        return res.redirect(
+          `${frontend}/login.html?oauth_error=` +
+          encodeURIComponent(
+            "No CyberShield account found with this GitHub email. Please sign up first."
+          )
+        );
+
+      }
+
+
+      // Existing account created with another provider
+
+      if (
+        user.authProvider &&
+        user.authProvider !== "github"
+      ) {
+
+        const frontend =
+          process.env.FRONTEND_URL ||
+          "http://127.0.0.1:5501/Git/Git_posts/CyberSheild_Hub/frontend";
+
+        return res.redirect(
+          `${frontend}/login.html?oauth_error=` +
+          encodeURIComponent(
+            "This email is already registered with another login method. Please use that method."
+          )
+        );
+
+      }
+
+    }
+
+
+    // -------------------------------------------------
+    // CREATE CYBERSHIELD JWT
+    // -------------------------------------------------
+
+    const token =
+      jwt.sign(
+        {
+          userId: user._id
+        },
+
+        process.env.JWT_SECRET,
+
+        {
+          expiresIn: "7d"
+        }
+      );
+
+
+    // -------------------------------------------------
+    // FRONTEND REDIRECT
+    // -------------------------------------------------
+
+    const frontend =
+      process.env.FRONTEND_URL ||
+      "http://127.0.0.1:5501/Git/Git_posts/CyberSheild_Hub/frontend";
+
+    const redirectUrl =
+      `${frontend}/login.html` +
+      `#oauth_token=${encodeURIComponent(token)}` +
+      `&name=${encodeURIComponent(user.name)}` +
+      `&email=${encodeURIComponent(user.email)}` +
+      `&provider=github`;
+
+    res.redirect(redirectUrl);
+
+
+  } catch (error) {
+
+    console.error(
+      "GitHub Login OAuth Error:",
+      error.response?.data ||
+      error.message ||
+      error
+    );
+
+    res.status(500).send(
+      "GitHub login failed."
+    );
+
+  }
+
+});
+// =====================================================
+// GOOGLE LOGIN / SIGNUP
+// =====================================================
+
+app.get("/auth/google-login", (req, res) => {
+
+  const mode =
+    req.query.mode === "signup"
+      ? "signup"
+      : "login";
+
+  const state =
+    crypto.randomBytes(32).toString("hex");
+
+  const isProduction =
+    process.env.NODE_ENV === "production";
+
+  res.setHeader(
+    "Set-Cookie",
+    `google_oauth_state=${state}; HttpOnly; ${isProduction ? "Secure; " : ""
+    }SameSite=Lax; Path=/; Max-Age=600`
+  );
+
+  const authUrl =
+    googleLoginClient.generateAuthUrl({
+      access_type: "offline",
+
+      scope: [
+        "openid",
+        "email",
+        "profile"
+      ],
+
+      state,
+
+      prompt: "select_account",
+
+      login_hint: undefined
+    });
+
+  // Save mode in another cookie
+  res.setHeader(
+    "Set-Cookie",
+    [
+      `google_oauth_state=${state}; HttpOnly; ${isProduction ? "Secure; " : ""
+      }SameSite=Lax; Path=/; Max-Age=600`,
+
+      `google_oauth_mode=${mode}; HttpOnly; ${isProduction ? "Secure; " : ""
+      }SameSite=Lax; Path=/; Max-Age=600`
+    ]
+  );
+
+  res.redirect(authUrl);
+});
+
+// =====================================================
+// GOOGLE LOGIN / SIGNUP CALLBACK
+// =====================================================
+
+app.get("/auth/google-login/callback", async (req, res) => {
+
+  try {
+
+    const { code, state } = req.query;
+
+    if (!code || !state) {
+      return res.status(400).send(
+        "Invalid Google OAuth request."
+      );
+    }
+
+    // -------------------------------------------------
+    // READ COOKIES
+    // -------------------------------------------------
+
+    const cookies =
+      req.headers.cookie || "";
+
+    const cookieMap = {};
+
+    cookies
+      .split(";")
+      .map(cookie => cookie.trim())
+      .forEach(cookie => {
+
+        const index = cookie.indexOf("=");
+
+        if (index !== -1) {
+
+          const key =
+            cookie.substring(0, index);
+
+          const value =
+            cookie.substring(index + 1);
+
+          cookieMap[key] = value;
+        }
+      });
+
+    const savedState =
+      cookieMap.google_oauth_state;
+
+    const mode =
+      cookieMap.google_oauth_mode || "login";
+
+
+    // -------------------------------------------------
+    // VERIFY STATE
+    // -------------------------------------------------
+
+    if (!savedState || savedState !== state) {
+
+      return res.status(403).send(
+        "Invalid OAuth state."
+      );
+
+    }
+
+
+    // -------------------------------------------------
+    // EXCHANGE CODE FOR GOOGLE TOKENS
+    // -------------------------------------------------
+
+    const { tokens } =
+      await googleLoginClient.getToken(code);
+
+    googleLoginClient.setCredentials(tokens);
+
+
+    // -------------------------------------------------
+    // GET GOOGLE USER INFORMATION
+    // -------------------------------------------------
+
+    const oauth2Client =
+      google.oauth2({
+        auth: googleLoginClient,
+        version: "v2"
+      });
+
+    const { data } =
+      await oauth2Client.userinfo.get();
+
+    const email =
+      data.email?.toLowerCase().trim();
+
+    const name =
+      data.name || "Google User";
+
+
+    if (!email) {
+
+      return res.status(400).send(
+        "Google account email could not be retrieved."
+      );
+
+    }
+
+
+    // -------------------------------------------------
+    // FIND USER IN MONGODB
+    // -------------------------------------------------
+
+    let user =
+      await User.findOne({
+        email: email
+      });
+
+
+    // =================================================
+    // GOOGLE SIGNUP
+    // =================================================
+
+    if (mode === "signup") {
+
+      // Email already exists
+      if (user) {
+
+        const frontend =
+          process.env.FRONTEND_URL ||
+          "http://127.0.0.1:5501/Git/Git_posts/CyberSheild_Hub/frontend";
+
+        return res.redirect(
+          `${frontend}/login.html?oauth_error=` +
+          encodeURIComponent(
+            "An account with this email already exists. Please use Login instead."
+          )
+        );
+      }
+
+
+      // Create NEW Google account
+
+      const randomPassword =
+        crypto.randomBytes(32).toString("hex");
+
+      const hashedPassword =
+        await bcrypt.hash(randomPassword, 10);
+
+      user = new User({
+        name,
+        email,
+        password: hashedPassword,
+        authProvider: "google",
+        passwordSet: false
+      });
+
+      await user.save();
+
+    }
+
+
+    // =================================================
+    // GOOGLE LOGIN
+    // =================================================
+
+    else {
+
+      // User doesn't exist
+      if (!user) {
+
+        const frontend =
+          process.env.FRONTEND_URL ||
+          "http://127.0.0.1:5501/Git/Git_posts/CyberSheild_Hub/frontend";
+
+        return res.redirect(
+          `${frontend}/login.html?oauth_error=` +
+          encodeURIComponent(
+            "No CyberShield account found with this Google email. Please sign up first."
+          )
+        );
+
+      }
+
+
+      // Existing account created with another provider
+      if (
+        user.authProvider &&
+        user.authProvider !== "google"
+      ) {
+
+        const frontend =
+          process.env.FRONTEND_URL ||
+          "http://127.0.0.1:5501/Git/Git_posts/CyberSheild_Hub/frontend";
+
+        return res.redirect(
+          `${frontend}/login.html?oauth_error=` +
+          encodeURIComponent(
+            "This email is already registered with another login method. Please use that method."
+          )
+        );
+
+      }
+
+    }
+
+
+    // -------------------------------------------------
+    // CREATE CYBERSHIELD JWT
+    // -------------------------------------------------
+
+    const token =
+      jwt.sign(
+        {
+          userId: user._id
+        },
+
+        process.env.JWT_SECRET,
+
+        {
+          expiresIn: "7d"
+        }
+      );
+
+
+    // -------------------------------------------------
+    // FRONTEND REDIRECT
+    // -------------------------------------------------
+
+    const frontend =
+      process.env.FRONTEND_URL ||
+      "http://127.0.0.1:5501/Git/Git_posts/CyberSheild_Hub/frontend";
+
+
+    const redirectUrl =
+      `${frontend}/login.html` +
+      `#oauth_token=${encodeURIComponent(token)}` +
+      `&name=${encodeURIComponent(user.name)}` +
+      `&email=${encodeURIComponent(user.email)}`;
+
+
+    res.redirect(redirectUrl);
+
+
+  } catch (error) {
+
+    console.error(
+      "Google Login OAuth Error:",
+      error.response?.data ||
+      error.message ||
+      error
+    );
+
+    res.status(500).send(
+      "Google login failed."
+    );
+
+  }
+
+});
+
 
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Backend running on port ${PORT}`);

@@ -168,6 +168,75 @@
       color: #9ca3af;
       margin-top: 0.4rem;
     }
+
+    /* ===== SOCIAL LOGIN ===== */
+
+    .social-login {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin: 1.2rem 0 1rem;
+    }
+
+    .social-btn {
+      width: 48px;
+      height: 48px;
+      padding: 0;
+      border-radius: 12px;
+      border: 1px solid #374151;
+      background: #0f1014;
+      color: #f9fafb;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .social-btn:hover {
+      background: #191b22;
+      border-color: #4b5563;
+      transform: translateY(-2px);
+    }
+
+    .social-icon {
+      width: 22px;
+      height: 22px;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .google-icon {
+      color: #ffffff;
+    }
+
+    .github-icon {
+      color: #ffffff;
+    }
+
+    .social-divider {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 14px 0;
+      color: #6b7280;
+      font-size: 0.75rem;
+    }
+
+    .social-divider::before,
+    .social-divider::after {
+      content: "";
+      height: 1px;
+      flex: 1;
+      background: #2d3038;
+    }
   </style>
 </head>
 
@@ -200,6 +269,64 @@
 
       <button type="submit" class="btn-primary">Log in</button>
 
+      <div class="social-divider">
+        <span>OR</span>
+      </div>
+      <div class="social-login">
+
+        <!-- Google -->
+        <button type="button" class="social-btn" id="googleLoginBtn" aria-label="Continue with Google"
+          title="Continue with Google">
+
+          <span class="social-icon google-icon">
+            G
+          </span>
+
+        </button>
+
+
+        <!-- GitHub -->
+        <button type="button" class="social-btn" id="githubLoginBtn" aria-label="Continue with GitHub"
+          title="Continue with GitHub">
+
+          <span class="social-icon github-icon">
+
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+
+              <path d="M12 0C5.37 0 0 5.37 0 12
+        c0 5.3 3.438 9.8 8.205 11.385
+        .6.113.82-.258.82-.577
+        0-.285-.01-1.04-.015-2.04
+        -3.338.724-4.042-1.61-4.042-1.61
+        -.546-1.387-1.333-1.756-1.333-1.756
+        -1.089-.745.084-.729.084-.729
+        1.205.084 1.84 1.237 1.84 1.237
+        1.07 1.835 2.809 1.305 3.495.998
+        .108-.776.418-1.305.762-1.605
+        -2.665-.3-5.466-1.332-5.466-5.93
+        0-1.31.465-2.38 1.235-3.22
+        -.135-.303-.54-1.523.105-3.176
+        0 0 1.005-.322 3.3 1.23
+        .96-.267 1.98-.399 3-.405
+        1.02.006 2.04.138 3 .405
+        2.28-1.552 3.285-1.23 3.285-1.23
+        .645 1.653.24 2.873.12 3.176
+        .765.84 1.23 1.91 1.23 3.22
+        0 4.61-2.805 5.625-5.475 5.92
+        .435.375.81 1.102.81 2.222
+        0 1.606-.015 2.896-.015 3.286
+        0 .315.21.69.825.57
+        C20.565 21.795 24 17.295 24 12
+        24 5.37 18.63 0 12 0z" />
+
+            </svg>
+
+          </span>
+
+        </button>
+
+      </div>
+
       <p class="error" id="loginError"></p>
       <p class="success" id="loginSuccess"></p>
 
@@ -219,6 +346,63 @@
 
       <button type="submit" class="btn-primary">Create account</button>
 
+      <div class="social-divider">
+        <span>OR</span>
+      </div>
+      <div class="social-login">
+
+        <!-- Google -->
+        <button type="button" class="social-btn" id="googleSignupBtn" aria-label="Continue with Google"
+          title="Continue with Google">
+
+          <span class="social-icon google-icon">
+            G
+          </span>
+
+        </button>
+
+
+        <!-- GitHub -->
+        <button type="button" class="social-btn" id="githubSignupBtn" aria-label="Continue with GitHub"
+          title="Continue with GitHub">
+
+          <span class="social-icon github-icon">
+
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+
+              <path d="M12 0C5.37 0 0 5.37 0 12
+        c0 5.3 3.438 9.8 8.205 11.385
+        .6.113.82-.258.82-.577
+        0-.285-.01-1.04-.015-2.04
+        -3.338.724-4.042-1.61-4.042-1.61
+        -.546-1.387-1.333-1.756-1.333-1.756
+        -1.089-.745.084-.729.084-.729
+        1.205.084 1.84 1.237 1.84 1.237
+        1.07 1.835 2.809 1.305 3.495.998
+        .108-.776.418-1.305.762-1.605
+        -2.665-.3-5.466-1.332-5.466-5.93
+        0-1.31.465-2.38 1.235-3.22
+        -.135-.303-.54-1.523.105-3.176
+        0 0 1.005-.322 3.3 1.23
+        .96-.267 1.98-.399 3-.405
+        1.02.006 2.04.138 3 .405
+        2.28-1.552 3.285-1.23 3.285-1.23
+        .645 1.653.24 2.873.12 3.176
+        .765.84 1.23 1.91 1.23 3.22
+        0 4.61-2.805 5.625-5.475 5.92
+        .435.375.81 1.102.81 2.222
+        0 1.606-.015 2.896-.015 3.286
+        0 .315.21.69.825.57
+        C20.565 21.795 24 17.295 24 12
+        24 5.37 18.63 0 12 0z" />
+
+            </svg>
+
+          </span>
+
+        </button>
+
+      </div>
       <p class="error" id="signupError"></p>
       <p class="success" id="signupSuccess"></p>
 
@@ -273,7 +457,11 @@
     const signupError = document.getElementById("signupError");
     const signupSuccess = document.getElementById("signupSuccess");
 
-    const API_BASE = "https://cybershield-hub-nu.vercel.app/api";
+    const API_BASE =
+      window.location.hostname === "localhost" ||
+        window.location.hostname === "127.0.0.1"
+        ? "http://127.0.0.1:5001/api"
+        : "https://cybershield-hub.vercel.app/api";
 
     // ✅ LOGIN
     loginForm.addEventListener("submit", async function (e) {
@@ -376,6 +564,201 @@
         signupError.style.display = "block";
       }
     });
+
+
+    // =====================================================
+    // SOCIAL LOGIN
+    // =====================================================
+
+    const BACKEND_BASE =
+      window.location.hostname === "localhost" ||
+        window.location.hostname === "127.0.0.1"
+        ? "http://127.0.0.1:5001"
+        : "https://cybershield-hub.vercel.app";
+
+
+
+    // =====================================================
+    // GOOGLE LOGIN
+    // =====================================================
+
+    // Login page
+    document
+      .getElementById("googleLoginBtn")
+      .addEventListener("click", () => {
+
+        window.location.href =
+          `${BACKEND_BASE}/auth/google-login?mode=login`;
+
+      });
+
+
+    // Signup page
+    document
+      .getElementById("googleSignupBtn")
+      .addEventListener("click", () => {
+
+        window.location.href =
+          `${BACKEND_BASE}/auth/google-login?mode=signup`;
+
+      });
+
+
+    // =====================================================
+    // GITHUB LOGIN
+    // =====================================================
+
+    // Login page
+    document
+      .getElementById("githubLoginBtn")
+      .addEventListener("click", () => {
+
+        window.location.href =
+          `${BACKEND_BASE}/auth/github?mode=login`;
+
+      });
+
+    // Signup page
+    document
+      .getElementById("githubSignupBtn")
+      .addEventListener("click", () => {
+
+        window.location.href =
+          `${BACKEND_BASE}/auth/github?mode=signup`;
+
+      });
+
+
+    // =====================================================
+    // HANDLE OAUTH CALLBACK
+    // =====================================================
+
+    function handleOAuthLogin() {
+
+      // ---------------------------------------------
+      // HANDLE OAUTH ERROR
+      // ---------------------------------------------
+
+      const queryParams =
+        new URLSearchParams(window.location.search);
+
+      const oauthError =
+        queryParams.get("oauth_error");
+
+      if (oauthError) {
+
+        showLogin();
+
+        loginError.textContent =
+          oauthError;
+
+        loginError.style.display =
+          "block";
+
+        // Remove error from URL
+        window.history.replaceState(
+          {},
+          document.title,
+          window.location.pathname
+        );
+
+        return;
+      }
+
+
+      // ---------------------------------------------
+      // HANDLE OAUTH SUCCESS
+      // ---------------------------------------------
+
+      const hash =
+        window.location.hash;
+
+      if (!hash || !hash.startsWith("#oauth_")) {
+        return;
+      }
+
+
+      // ---------------------------------------------
+      // READ OAUTH DATA
+      // ---------------------------------------------
+
+      const params =
+        new URLSearchParams(
+          hash.substring(1)
+        );
+
+      const token =
+        params.get("oauth_token");
+
+      const name =
+        params.get("name");
+
+      const email =
+        params.get("email");
+
+      const provider =
+        params.get("provider");
+
+
+      // ---------------------------------------------
+      // VALIDATE OAUTH DATA
+      // ---------------------------------------------
+
+      if (!token || !email) {
+
+        console.error(
+          "OAuth login data missing."
+        );
+
+        return;
+      }
+
+
+      // ---------------------------------------------
+      // STORE LOGIN INFORMATION
+      // ---------------------------------------------
+
+      localStorage.setItem(
+        "token",
+        token
+      );
+
+      localStorage.setItem(
+        "userEmail",
+        email
+      );
+
+      localStorage.setItem(
+        "userName",
+        name || "User"
+      );
+
+      localStorage.setItem(
+        "authProvider",
+        provider || "google"
+      );
+
+
+      // ---------------------------------------------
+      // REMOVE TOKEN FROM URL
+      // ---------------------------------------------
+
+      window.history.replaceState(
+        {},
+        document.title,
+        window.location.pathname
+      );
+
+
+      // ---------------------------------------------
+      // REDIRECT TO DASHBOARD
+      // ---------------------------------------------
+
+      window.location.href =
+        "index.html";
+    }
+
+    handleOAuthLogin();
   </script>
 </body>
 
