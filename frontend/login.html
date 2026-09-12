@@ -461,7 +461,7 @@
       window.location.hostname === "localhost" ||
         window.location.hostname === "127.0.0.1"
         ? "http://127.0.0.1:5001/api"
-        : "https://cybershield-hub.vercel.app/api";
+        : "https://cybershield-hub-nu.vercel.app/api";
 
     // ✅ LOGIN
     loginForm.addEventListener("submit", async function (e) {
@@ -570,11 +570,11 @@
     // SOCIAL LOGIN
     // =====================================================
 
-    const BACKEND_BASE =
-      window.location.hostname === "localhost" ||
-        window.location.hostname === "127.0.0.1"
-        ? "http://127.0.0.1:5001"
-        : "https://cybershield-hub.vercel.app";
+    const OAUTH_BASE =
+    window.location.hostname === "localhost" ||
+    window.location.hostname === "127.0.0.1"
+    ? "http://127.0.0.1:5001"
+    : "https://cybershield-hub-nu.vercel.app";
 
 
 
@@ -588,7 +588,7 @@
       .addEventListener("click", () => {
 
         window.location.href =
-          `${BACKEND_BASE}/auth/google-login?mode=login`;
+          `${OAUTH_BASE}/auth/google-login?mode=login`;
 
       });
 
@@ -599,7 +599,7 @@
       .addEventListener("click", () => {
 
         window.location.href =
-          `${BACKEND_BASE}/auth/google-login?mode=signup`;
+          `${OAUTH_BASE}/auth/google-login?mode=signup`;
 
       });
 
@@ -614,7 +614,7 @@
       .addEventListener("click", () => {
 
         window.location.href =
-          `${BACKEND_BASE}/auth/github?mode=login`;
+          `${OAUTH_BASE}/auth/github?mode=login`;
 
       });
 
@@ -624,7 +624,7 @@
       .addEventListener("click", () => {
 
         window.location.href =
-          `${BACKEND_BASE}/auth/github?mode=signup`;
+          `${OAUTH_BASE}/auth/github?mode=signup`;
 
       });
 
