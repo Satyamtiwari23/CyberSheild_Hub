@@ -102,7 +102,7 @@
                     <p>Install our real-time browser guard to block phishing & malicious sites.</p>
                     <span class="tool-badge popular">Popular</span>
                 </a>
-                <a href="https://cybershield-ai-jet.vercel.app" class="tool-card">
+                <a href="#" class="tool-card" id="aiAssistantLink">
                     <div class="tool-icon">🛡️</div>
                     <h3>CyberShield AI Assistant</h3>
                     <p>AI-powered cybersecurity copilot that explains threats, analyzes suspicious content, and provides
@@ -228,11 +228,39 @@
     <script src="https://unpkg.com/aos@2.3.4/dist/aos.js">
     </script>
     <script src="script.js"></script>
+    <script>
+        document.getElementById("aiAssistantLink").addEventListener("click", function (e) {
 
-    <!-- Additional styles for the new interactive elements -->
-    <style>
+            e.preventDefault();
 
-    </style>
+            const token = localStorage.getItem("token");
+
+            if (!token) {
+                window.location.href = "login.html";
+                return;
+            }
+
+            // Send the existing JWT to the AI authentication endpoint.
+            const form = document.createElement("form");
+
+            form.method = "POST";
+            form.action = "https://cybershield-ai-jet.vercel.app/auth";
+            form.style.display = "none";
+
+            const input = document.createElement("input");
+
+            input.type = "hidden";
+            input.name = "token";
+            input.value = token;
+
+            form.appendChild(input);
+
+            document.body.appendChild(form);
+
+            form.submit();
+
+        });
+    </script>
 
 </body>
 

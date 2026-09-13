@@ -1,11 +1,11 @@
 from flask_cors import CORS
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, redirect, make_response
 from groq import Groq
 from dotenv import load_dotenv
 import os
 import json
 import re
-
+import jwt
 load_dotenv()
 
 api_key = os.getenv("GROQ_API_KEY")
@@ -19,6 +19,49 @@ client = Groq(
     api_key=api_key
 )
 
+# ============================================================
+# AUTHENTICATION
+# ============================================================
+
+JWT_SECRET = os.getenv("JWT_SECRET")
+
+
+def verify_token(token):
+
+    try:
+
+        decoded = jwt.decode(
+            token,
+            JWT_SECRET,
+            algorithms=["HS256"]
+        )
+
+        return decoded
+
+    except jwt.ExpiredSignatureError:
+
+        print("AI AUTH: Token expired")
+        return None
+
+    except jwt.InvalidTokenError:
+
+        print("AI AUTH: Invalid token")
+        return None
+
+    except Exception as e:
+
+        print("AI AUTH ERROR:", e)
+        return None
+
+
+def authenticate_ai_request():
+
+    token = request.cookies.get("ai_auth_token")
+
+    if not token:
+        return None
+
+    return verify_token(token)
 
 # ============================================================
 # OBVIOUS CYBERSECURITY CHECK
@@ -675,8 +718,54 @@ Return ONLY the JSON object.
 @app.route("/")
 def home():
 
+    user = authenticate_ai_request()
+
+    if not user:
+
+        return redirect(
+            "https://satyamtiwari23.github.io/CyberSheild_Hub/login.html"
+        )
+
     return render_template("index.html")
 
+
+# ============================================================
+# AI AUTHENTICATION HANDOFF
+# ============================================================
+
+@app.route("/auth", methods=["POST"])
+def ai_auth():
+
+    token = request.form.get("token", "").strip()
+
+    if not token:
+
+        return redirect(
+            "https://satyamtiwari23.github.io/CyberSheild_Hub/login.html"
+        )
+
+    decoded = verify_token(token)
+
+    if not decoded:
+
+        return redirect(
+            "https://satyamtiwari23.github.io/CyberSheild_Hub/login.html"
+        )
+
+    response = make_response(
+        redirect("/")
+    )
+
+    response.set_cookie(
+        "ai_auth_token",
+        token,
+        httponly=True,
+        secure=True,
+        samesite="Lax",
+        max_age=7 * 24 * 60 * 60
+    )
+
+    return response
 
 # ============================================================
 # AI GENERATION
@@ -686,6 +775,15 @@ def home():
 def generate():
 
     try:
+
+        user = authenticate_ai_request()
+
+        if not user:
+
+            return jsonify({
+                "answer": "❌ Authentication required."
+            }), 401
+
 
         data = request.get_json()
 
