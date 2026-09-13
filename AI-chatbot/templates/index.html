@@ -1225,11 +1225,6 @@
     </div>
 
     <script>
-        // ===== LOGIN REDIRECT =====
-
-        if (!localStorage.getItem("token")) {
-            window.location.replace("login.html");
-        }
         let chats =
             JSON.parse(
                 localStorage.getItem("history")
