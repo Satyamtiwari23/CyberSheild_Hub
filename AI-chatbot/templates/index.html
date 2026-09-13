@@ -726,6 +726,429 @@
             transform: scale(1.1);
 
         }
+
+        /* =========================================================
+           RESPONSIVE FRONTEND FIXES
+           No existing ID or class names are changed.
+        ========================================================= */
+
+        /* Keep the application inside the viewport. */
+        html,
+        body {
+            width: 100%;
+            min-height: 100%;
+            overflow: hidden;
+        }
+
+        .app {
+            width: 100%;
+            min-width: 0;
+            position: relative;
+        }
+
+        .sidebar {
+            position: relative;
+            flex: 0 0 280px;
+            min-width: 0;
+            z-index: 1000;
+        }
+
+        .chat-area {
+            min-width: 0;
+            position: relative;
+            z-index: 1;
+        }
+
+        .topbar {
+            position: relative;
+            z-index: 20;
+            min-width: 0;
+        }
+
+        .topbar > button:not(#themeBtn) {
+            position: relative;
+            flex: 0 0 38px;
+            width: 38px;
+            height: 38px;
+            min-width: 38px;
+            min-height: 38px;
+            padding: 0;
+            margin: 0;
+            border: 0;
+            border-radius: 9px;
+            background: transparent;
+            color: currentColor;
+            font-size: 0;
+            line-height: 1;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+            z-index: 2001;
+        }
+
+        /* Three hamburger lines. */
+        .topbar > button:not(#themeBtn)::before,
+        .sidebar > button:not(.new-chat)::before {
+            content: "";
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 18px;
+            height: 2px;
+            border-radius: 999px;
+            background: currentColor;
+            transform: translate(-50%, -50%);
+            box-shadow:
+                0 -6px 0 currentColor,
+                0 6px 0 currentColor;
+            opacity: 1;
+            transition:
+                transform .30s cubic-bezier(.4,0,.2,1),
+                box-shadow .30s cubic-bezier(.4,0,.2,1),
+                background .20s ease,
+                opacity .18s ease;
+        }
+
+        /* Second diagonal stroke for the X. */
+        .topbar > button:not(#themeBtn)::after,
+        .sidebar > button:not(.new-chat)::after {
+            content: "";
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 18px;
+            height: 2px;
+            border-radius: 999px;
+            background: currentColor;
+            transform: translate(-50%, -50%) rotate(-45deg) scaleX(0);
+            opacity: 0;
+            pointer-events: none;
+            transition:
+                transform .30s cubic-bezier(.4,0,.2,1),
+                opacity .18s ease;
+        }
+
+        /* Open = X. Middle hamburger stroke disappears. */
+        .topbar > button:not(#themeBtn)[data-open="true"]::before,
+        .sidebar > button:not(.new-chat)[data-open="true"]::before {
+            box-shadow:
+                0 0 0 transparent,
+                0 0 0 transparent;
+            transform: translate(-50%, -50%) rotate(45deg);
+        }
+
+        .topbar > button:not(#themeBtn)[data-open="true"]::after,
+        .sidebar > button:not(.new-chat)[data-open="true"]::after {
+            transform: translate(-50%, -50%) rotate(-45deg) scaleX(1);
+            opacity: 1;
+        }
+
+        /* AI responses always begin at the left edge of the message area. */
+        #messages > .ai-message,
+        #messages > .thinking-box {
+            align-self: flex-start;
+            margin-left: 0;
+            margin-right: auto;
+        }
+
+        #messages > .ai-message {
+            width: min(95%, 1100px);
+            max-width: 1100px;
+        }
+
+        /* ------------------------- TABLET / PHONE ------------------------- */
+        @media (max-width: 900px) {
+
+            .app {
+                overflow: hidden;
+            }
+
+            .sidebar {
+                position: fixed;
+                left: 0;
+                top: 0;
+                bottom: 0;
+                width: min(82vw, 300px);
+                height: 100vh;
+                flex: none;
+                padding: 24px;
+                transform: translateX(-105%);
+                transition: transform .30s cubic-bezier(.4,0,.2,1);
+                z-index: 1000;
+                box-shadow: 14px 0 35px rgba(0,0,0,.28);
+            }
+
+            .sidebar[data-open="true"] {
+                transform: translateX(0);
+            }
+
+            /* The SAME hamburger button is physically moved here on open. */
+            .sidebar > button:not(.new-chat) {
+                position: absolute;
+                top: 12px;
+                right: 10px;
+                display: flex;
+                flex: 0 0 38px;
+                width: 38px;
+                height: 38px;
+                z-index: 2005;
+                color: #f8fafc;
+                background: rgba(15,23,42,.92);
+                border: 1px solid rgba(148,163,184,.28);
+                box-shadow: 0 5px 18px rgba(0,0,0,.35);
+            }
+
+            .sidebar .logo {
+                padding-right: 48px;
+                margin-top: 0;
+            }
+
+            /* Overlay is below the sidebar, so it can never hide the X. */
+            .app[data-sidebar-open="true"]::after {
+                content: "";
+                position: fixed;
+                inset: 0;
+                background: rgba(0,0,0,.45);
+                backdrop-filter: blur(3px);
+                z-index: 900;
+                pointer-events: auto;
+            }
+
+            .chat-area {
+                width: 100%;
+                min-width: 0;
+                height: 100vh;
+            }
+
+            .topbar {
+                height: 58px;
+                padding: 0 10px 0 7px;
+                gap: 3px;
+                justify-content: flex-start;
+            }
+
+            .topbar > button:not(#themeBtn) {
+                display: flex;
+                flex: 0 0 38px;
+                width: 38px;
+                height: 38px;
+            }
+
+            .topbar h2 {
+                flex: 1 1 auto;
+                min-width: 0;
+                margin: 0;
+                padding: 0;
+                font-size: 16px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                text-align: left;
+            }
+
+            .topbar .theme-btn {
+                flex: 0 0 42px;
+                width: 42px;
+                height: 42px;
+                margin-left: auto;
+            }
+
+            #messages {
+                min-width: 0;
+                padding: 18px 16px;
+                gap: 16px;
+            }
+
+            #messages > .ai-message {
+                width: 100%;
+                max-width: none;
+                padding: 18px;
+                border-radius: 18px;
+                overflow-wrap: anywhere;
+                word-break: normal;
+            }
+
+            #messages > .ai-message ul,
+            #messages > .ai-message ol {
+                padding-left: 22px;
+                margin-left: 0;
+            }
+
+            #messages > .ai-message pre {
+                max-width: 100%;
+                overflow-x: auto;
+                white-space: pre-wrap;
+                overflow-wrap: anywhere;
+            }
+
+            .input-area {
+                width: 100%;
+                min-width: 0;
+                gap: 8px;
+                padding: 10px;
+            }
+
+            .input-area input[type="text"] {
+                min-width: 0;
+                width: auto;
+            }
+
+            .input-area button,
+            .input-area label {
+                flex: 0 0 42px;
+                width: 42px;
+                height: 42px;
+                min-width: 42px;
+                min-height: 42px;
+            }
+        }
+
+        /* ------------------------- SMALL PHONE ------------------------- */
+        @media (max-width: 600px) {
+
+            .sidebar {
+                width: min(84vw, 300px);
+                padding: 18px;
+            }
+
+            .topbar {
+                height: 56px;
+                gap: 2px;
+                padding-left: 5px;
+            }
+
+            .topbar > button:not(#themeBtn) {
+                flex-basis: 36px;
+                width: 36px;
+                min-width: 36px;
+                height: 36px;
+                min-height: 36px;
+            }
+
+            .topbar h2 {
+                font-size: 15px;
+            }
+
+            .topbar .theme-btn {
+                flex-basis: 38px;
+                width: 38px;
+                height: 38px;
+                min-width: 38px;
+            }
+
+            #messages {
+                padding: 14px 10px;
+                gap: 12px;
+            }
+
+            #messages > .ai-message {
+                padding: 14px;
+                border-radius: 16px;
+                width: 100%;
+            }
+
+            .input-area {
+                gap: 5px;
+                padding: 7px;
+            }
+
+            .input-area button,
+            .input-area label {
+                flex: 0 0 38px;
+                width: 38px;
+                height: 38px;
+                min-width: 38px;
+                min-height: 38px;
+            }
+
+            .input-area input[type="text"] {
+                flex: 1 1 auto;
+                min-width: 0;
+                padding: 12px 11px;
+                font-size: 13px;
+            }
+        }
+
+        /* ------------------------- VERY SMALL PHONE ------------------------- */
+        @media (max-width: 380px) {
+
+            .sidebar {
+                width: min(88vw, 290px);
+            }
+
+            #messages {
+                padding-left: 8px;
+                padding-right: 8px;
+            }
+
+            .input-area {
+                gap: 4px;
+                padding-left: 5px;
+                padding-right: 5px;
+            }
+
+            /* Gallery and microphone NEVER disappear. */
+            .input-area label,
+            .input-area button {
+                display: flex !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+            }
+
+            .input-area label,
+            .input-area button {
+                flex: 0 0 34px;
+                width: 34px;
+                height: 34px;
+                min-width: 34px;
+                min-height: 34px;
+            }
+
+            .input-area button:last-child {
+                flex-basis: 36px;
+                width: 36px;
+                min-width: 36px;
+            }
+
+            .input-area input[type="text"] {
+                min-width: 0;
+                flex: 1 1 auto;
+                font-size: 12px;
+                padding-left: 9px;
+                padding-right: 9px;
+            }
+        }
+
+        /* ------------------------- THEME BUTTON ------------------------- */
+        body:not(.light-mode) .theme-btn {
+            background: #111827;
+            color: #f8fafc;
+            border: 1px solid rgba(148,163,184,.22);
+        }
+
+        body.light-mode .theme-btn {
+            background: #ffffff;
+            color: #0f172a;
+            border: 1px solid #dbe4f0;
+        }
+
+        /* Desktop: permanent sidebar, no hamburger. */
+        @media (min-width: 901px) {
+            .topbar > button:not(#themeBtn) {
+                display: none !important;
+            }
+
+            .topbar {
+                padding-left: 18px;
+            }
+
+            .topbar h2 {
+                margin-left: 0;
+            }
+        }
+
     </style>
 </head>
 
@@ -755,6 +1178,8 @@
         <div class="chat-area">
 
             <div class="topbar">
+
+                <button type="button" aria-label="Open sidebar" aria-expanded="false" data-open="false"></button>
 
                 <h2>🛡️ AI Cyber Assistant</h2>
 
@@ -1027,27 +1452,36 @@
         loadHistory();
 
         /* Theme */
-        window.addEventListener("DOMContentLoaded", () => {
+        function applyTheme(isLight) {
+
+            document.body.classList.toggle(
+                "light-mode",
+                isLight
+            );
 
             const themeBtn =
                 document.getElementById("themeBtn");
 
-            const savedTheme =
-                localStorage.getItem("theme");
+            if (!themeBtn) return;
 
-            if (savedTheme === "light") {
+            themeBtn.innerHTML =
+                isLight ? "🌙" : "☀️";
 
-                document.body.classList.add("light-mode");
-                themeBtn.innerHTML = "🌙";
+            themeBtn.setAttribute(
+                "aria-label",
+                isLight
+                    ? "Switch to dark mode"
+                    : "Switch to light mode"
+            );
 
-            }
-            else {
+            themeBtn.setAttribute(
+                "title",
+                isLight
+                    ? "Switch to dark mode"
+                    : "Switch to light mode"
+            );
 
-                themeBtn.innerHTML = "☀️";
-
-            }
-
-        });
+        }
         /* Voice */
 
         function startVoice() {
@@ -1140,55 +1574,449 @@
 
 
         function newChat() {
-            document.getElementById("messages").innerHTML = "";
+
+            document.getElementById(
+                "messages"
+            ).innerHTML = "";
+
+            const topicInput =
+                document.getElementById("topic");
+
+            if (topicInput) {
+                topicInput.value = "";
+            }
+
+            const sidebar =
+                document.querySelector(".sidebar");
+
+            const app =
+                document.querySelector(".app");
+
+            const menuButton =
+                document.querySelector(
+                    ".sidebar > button:not(.new-chat)"
+                );
+
+            if (
+                window.innerWidth <= 900 &&
+                sidebar &&
+                app
+            ) {
+
+                sidebar.setAttribute(
+                    "data-open",
+                    "false"
+                );
+
+                app.setAttribute(
+                    "data-sidebar-open",
+                    "false"
+                );
+
+                if (menuButton) {
+                    menuButton.setAttribute(
+                        "data-open",
+                        "false"
+                    );
+                }
+
+                const topbar =
+                    document.querySelector(".topbar");
+
+                if (
+                    topbar &&
+                    menuButton
+                ) {
+                    topbar.insertBefore(
+                        menuButton,
+                        topbar.firstChild
+                    );
+                }
+
+            }
 
         }
 
 
 
-        window.addEventListener("DOMContentLoaded",() => {
-            const scrollBtn =document.getElementById( "scrollBottomBtn");
-                loadHistory();
+        window.addEventListener("DOMContentLoaded", () => {
 
-                const themeBtn = document.getElementById("themeBtn");
+            const scrollBtn =
+                document.getElementById("scrollBottomBtn");
 
-                themeBtn.addEventListener("click",() => {
-                        document.body.classList.toggle("light-mode");
+            const themeBtn =
+                document.getElementById("themeBtn");
 
-                        const isLight = document.body.classList.contains("light-mode");
+            const sidebar =
+                document.querySelector(".sidebar");
 
-                        localStorage.setItem("theme",isLight? "light": "dark");
+            const app =
+                document.querySelector(".app");
 
-                        themeBtn.addEventListener("click", () => {
+            const topbar =
+                document.querySelector(".topbar");
 
-                            document.body.classList.toggle("light-mode");
+            /*
+              The hamburger has NO ID and NO class by design.
+              On open, the exact same element is moved into the sidebar.
+            */
+            let menuButton =
+                document.querySelector(
+                    ".topbar > button:not(#themeBtn)"
+                );
 
-                            const isLight = document.body.classList.contains("light-mode");
+            function setMenuState(open) {
 
-                            localStorage.setItem("theme",isLight ? "light" : "dark");
+                if (!menuButton) return;
 
-                            themeBtn.innerHTML = isLight ? "🌙" : "☀️";
+                menuButton.setAttribute(
+                    "data-open",
+                    open ? "true" : "false"
+                );
 
-                        });
+                menuButton.setAttribute(
+                    "aria-expanded",
+                    open ? "true" : "false"
+                );
+
+                menuButton.setAttribute(
+                    "aria-label",
+                    open
+                        ? "Close sidebar"
+                        : "Open sidebar"
+                );
+
+            }
+
+            function moveMenuToSidebar() {
+
+                if (!sidebar || !menuButton) return;
+
+                if (menuButton.parentElement !== sidebar) {
+                    sidebar.insertBefore(
+                        menuButton,
+                        sidebar.firstChild
+                    );
+                }
+
+                menuButton.setAttribute(
+                    "data-open",
+                    "true"
+                );
+
+            }
+
+            function moveMenuToTopbar() {
+
+                if (!topbar || !menuButton) return;
+
+                if (menuButton.parentElement !== topbar) {
+                    topbar.insertBefore(
+                        menuButton,
+                        topbar.firstChild
+                    );
+                }
+
+                setMenuState(false);
+
+            }
+
+            function openSidebar() {
+
+                if (!sidebar || !app || !menuButton) return;
+
+                /*
+                  Move first, then open. This means the X is physically
+                  attached to the sidebar rather than being behind it.
+                */
+                moveMenuToSidebar();
+
+                sidebar.setAttribute(
+                    "data-open",
+                    "true"
+                );
+
+                app.setAttribute(
+                    "data-sidebar-open",
+                    "true"
+                );
+
+                setMenuState(true);
+
+            }
+
+            function closeSidebar() {
+
+                if (!sidebar || !app || !menuButton) return;
+
+                /*
+                  Reverse the X while it is still on the sidebar.
+                */
+                setMenuState(false);
+
+                sidebar.setAttribute(
+                    "data-open",
+                    "false"
+                );
+
+                app.setAttribute(
+                    "data-sidebar-open",
+                    "false"
+                );
+
+                /*
+                  Let the reverse animation complete before returning
+                  the same button to the topbar.
+                */
+                window.setTimeout(() => {
+
+                    if (
+                        window.innerWidth <= 900 &&
+                        sidebar.getAttribute(
+                            "data-open"
+                        ) === "false"
+                    ) {
+                        moveMenuToTopbar();
+                    }
+
+                }, 300);
+
+            }
+
+            function toggleSidebar() {
+
+                if (
+                    sidebar &&
+                    sidebar.getAttribute(
+                        "data-open"
+                    ) === "true"
+                ) {
+                    closeSidebar();
+                }
+                else {
+                    openSidebar();
+                }
+
+            }
+
+            /* Initial mobile sidebar state. */
+            if (sidebar) {
+                sidebar.setAttribute(
+                    "data-open",
+                    "false"
+                );
+            }
+
+            if (app) {
+                app.setAttribute(
+                    "data-sidebar-open",
+                    "false"
+                );
+            }
+
+            setMenuState(false);
+
+            /* Theme: ONE listener only. */
+            if (themeBtn) {
+
+                const savedTheme =
+                    localStorage.getItem("theme");
+
+                applyTheme(
+                    savedTheme === "light"
+                );
+
+                themeBtn.addEventListener(
+                    "click",
+                    (event) => {
+
+                        event.preventDefault();
+                        event.stopPropagation();
+
+                        const isLight =
+                            !document.body.classList.contains(
+                                "light-mode"
+                            );
+
+                        applyTheme(isLight);
+
+                        localStorage.setItem(
+                            "theme",
+                            isLight
+                                ? "light"
+                                : "dark"
+                        );
+
                     }
                 );
 
-                window.addEventListener("keydown", (e) => {
+            }
 
-                    if (e.key === "Enter") {
+            /* Hamburger. */
+            if (menuButton) {
 
-                        console.log("ENTER");
+                menuButton.addEventListener(
+                    "click",
+                    (event) => {
 
-                        generateAnswer();
+                        event.preventDefault();
+                        event.stopPropagation();
+
+                        toggleSidebar();
+
+                    }
+                );
+
+            }
+
+            /* Enter sends the message only when the input is focused. */
+            const topicInput =
+                document.getElementById("topic");
+
+            if (topicInput) {
+
+                topicInput.addEventListener(
+                    "keydown",
+                    (event) => {
+
+                        if (
+                            event.key === "Enter" &&
+                            !event.shiftKey
+                        ) {
+
+                            event.preventDefault();
+
+                            generateAnswer();
+
+                        }
+
+                    }
+                );
+
+            }
+
+            /* Close with Escape. */
+            window.addEventListener(
+                "keydown",
+                (event) => {
+
+                    if (
+                        event.key === "Escape" &&
+                        sidebar &&
+                        sidebar.getAttribute(
+                            "data-open"
+                        ) === "true"
+                    ) {
+                        closeSidebar();
+                    }
+
+                }
+            );
+
+            /* Close by clicking the overlay area. */
+            document.addEventListener(
+                "click",
+                (event) => {
+
+                    if (window.innerWidth > 900) return;
+
+                    if (
+                        !sidebar ||
+                        sidebar.getAttribute(
+                            "data-open"
+                        ) !== "true"
+                    ) {
+                        return;
+                    }
+
+                    if (
+                        sidebar.contains(event.target) ||
+                        (
+                            menuButton &&
+                            menuButton.contains(event.target)
+                        )
+                    ) {
+                        return;
+                    }
+
+                    closeSidebar();
+
+                }
+            );
+
+            /* If resized to desktop, restore the button to the topbar. */
+            window.addEventListener(
+                "resize",
+                () => {
+
+                    if (window.innerWidth > 900) {
+
+                        if (
+                            sidebar &&
+                            sidebar.getAttribute(
+                                "data-open"
+                            ) === "true"
+                        ) {
+                            sidebar.setAttribute(
+                                "data-open",
+                                "false"
+                            );
+                        }
+
+                        if (app) {
+                            app.setAttribute(
+                                "data-sidebar-open",
+                                "false"
+                            );
+                        }
+
+                        moveMenuToTopbar();
 
                     }
 
-                });
+                }
+            );
+
+            /*
+              Scroll-to-bottom button behavior.
+              The original ID is preserved.
+            */
+            if (scrollBtn) {
+
+                scrollBtn.addEventListener(
+                    "click",
+                    scrollToBottom
+                );
+
+                const messagesBox =
+                    document.getElementById(
+                        "messages"
+                    );
+
+                if (messagesBox) {
+
+                    messagesBox.addEventListener(
+                        "scroll",
+                        () => {
+
+                            const distance =
+                                messagesBox.scrollHeight -
+                                messagesBox.scrollTop -
+                                messagesBox.clientHeight;
+
+                            scrollBtn.style.display =
+                                distance > 150
+                                    ? "block"
+                                    : "none";
+
+                        }
+                    );
+
+                }
 
             }
-        );
 
-
+        });
 
 
 
