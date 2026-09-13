@@ -1389,46 +1389,49 @@
 
                                 body: JSON.stringify({
 
+                                    source: "qr_analyzer",
+
                                     topic: `
-                                    Analyze this QR code.
-                                    
-                                    QR Type:
-                                    ${detectQRType(lastPayload)}
-                                    
-                                    Payload:
-                                    ${lastPayload}
-                                    
-                                    Risk Score:
-                                    ${riskScoreSpan.innerText}
-                                    
-                                    Verdict:
-                                    ${verdictSpan.innerText}
-                                    
-                                    Reasons:
-                                    ${Array.from(reasonListQR.children)
+Analyze this QR code.
+
+QR Type:
+${detectQRType(lastPayload)}
+
+Payload:
+${lastPayload}
+
+Risk Score:
+${riskScoreSpan.innerText}
+
+Verdict:
+${verdictSpan.innerText}
+
+Reasons:
+${Array.from(reasonListQR.children)
                                             .map(li => li.innerText)
                                             .join("\n")}
-                                    
-                                    Return:
-                                    
-                                    🔍 QR Type
-                                    
-                                    🟢 or 🔴 Verdict
-                                    
-                                    📌 Key Findings
-                                    • Maximum 3 points
-                                    
-                                    ⚠️ Risks
-                                    • Maximum 3 points
-                                    
-                                    🛡️ Recommendation
-                                    One short sentence
-                                    
-                                    Maximum 250 words.
-                                    No markdown.`
-                                })
-                            });
 
+Return:
+
+🔍 QR Type
+
+🟢 or 🔴 Verdict
+
+📌 Key Findings
+• Maximum 3 points
+
+⚠️ Risks
+• Maximum 3 points
+
+🛡️ Recommendation
+One short sentence
+
+Maximum 250 words.
+No markdown.
+`
+                                })
+                            }
+                        );
                     const data =
                         await response.json();
 
