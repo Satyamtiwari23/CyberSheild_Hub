@@ -1227,19 +1227,9 @@
     <script>
         // ===== LOGIN REDIRECT =====
 
-        function checkAuthentication() {
-
-            if (!localStorage.getItem("token")) {
-                window.location.replace("https://satyamtiwari23.github.io/CyberSheild_Hub/login.html");
-            }
-
+        if (!localStorage.getItem("token")) {
+            window.location.replace("login.html");
         }
-
-        checkAuthentication();
-
-        window.addEventListener("pageshow", () => {
-            checkAuthentication();
-        });
         let chats =
             JSON.parse(
                 localStorage.getItem("history")
