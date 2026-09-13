@@ -2,9 +2,19 @@
 AOS.init({ duration: 600, once: true });
 
 // ===== LOGIN REDIRECT =====
-if (!localStorage.getItem("token")) {
-    window.location.href = "login.html";
+function checkAuthentication() {
+
+    if (!localStorage.getItem("token")) {
+        window.location.replace("login.html");
+    }
+
 }
+
+checkAuthentication();
+
+window.addEventListener("pageshow", () => {
+    checkAuthentication();
+});
 
 // ===== DOM REFS =====
 const accountMenu = document.getElementById("accountMenu");
@@ -92,6 +102,380 @@ document.addEventListener('click', (e) => {
     if (!accountBtn?.contains(e.target) && !accountMenu?.contains(e.target)) {
         accountMenu?.classList.remove('show');
     }
+});
+
+
+// ===== ACCOUNT SETTINGS =====
+
+const accountSettingsBtn =
+    document.getElementById("accountSettingsBtn");
+
+const accountSettingsOverlay =
+    document.getElementById("accountSettingsOverlay");
+
+const closeAccountSettings =
+    document.getElementById("closeAccountSettings");
+
+const passwordAuthStatus =
+    document.getElementById("passwordAuthStatus");
+
+const passwordStatus =
+    document.getElementById("passwordStatus");
+
+const googleStatus =
+    document.getElementById("googleStatus");
+
+const githubStatus =
+    document.getElementById("githubStatus");
+
+const linkGoogleBtn =
+    document.getElementById("linkGoogleBtn");
+
+const linkGithubBtn =
+    document.getElementById("linkGithubBtn");
+
+const settingsMessage =
+    document.getElementById("settingsMessage");
+
+
+// Open settings
+accountSettingsBtn?.addEventListener("click", async (e) => {
+
+    e.preventDefault();
+
+    accountMenu?.classList.remove("show");
+
+    accountSettingsOverlay?.classList.add("show");
+
+    await loadAuthProviders();
+    startAuthProviderRefresh();
+
+});
+
+
+// Close settings
+closeAccountSettings?.addEventListener("click", () => {
+
+    accountSettingsOverlay?.classList.remove("show");
+    stopAuthProviderRefresh();
+
+});
+
+
+// Close when clicking outside modal
+accountSettingsOverlay?.addEventListener("click", (e) => {
+
+    if (e.target === accountSettingsOverlay) {
+
+        accountSettingsOverlay.classList.remove("show");
+
+    }
+
+});
+
+
+// Load authentication methods
+async function loadAuthProviders() {
+
+    const token =
+        localStorage.getItem("token");
+
+    if (!token) {
+        return;
+    }
+
+    try {
+
+        const res =
+            await fetch(
+                "http://127.0.0.1:5001/api/account/auth-providers",
+                {
+                    method: "GET",
+
+                    headers: {
+                        "Authorization":
+                            `Bearer ${token}`
+                    }
+                }
+            );
+
+        const data =
+            await res.json();
+
+        if (!res.ok) {
+
+            console.error(
+                data.message ||
+                "Unable to load authentication methods."
+            );
+
+            return;
+        }
+
+        const providers =
+            data.authProviders || [];
+
+
+        // Password
+        if (providers.includes("password")) {
+
+            passwordStatus.textContent =
+                "Linked";
+
+            passwordAuthStatus.textContent =
+                "✓ Linked";
+
+            passwordAuthStatus.style.color =
+                "#4ade80";
+
+        } else {
+
+            passwordStatus.textContent =
+                "Not linked";
+
+            passwordAuthStatus.textContent =
+                "Not linked";
+
+            passwordAuthStatus.style.color =
+                "#9ca3af";
+
+        }
+
+
+        // Google
+        if (providers.includes("google")) {
+
+            googleStatus.textContent =
+                "Linked";
+
+            linkGoogleBtn.textContent =
+                "✓ Linked";
+
+            linkGoogleBtn.disabled =
+                true;
+
+        } else {
+
+            googleStatus.textContent =
+                "Not linked";
+
+            linkGoogleBtn.textContent =
+                "Link";
+
+            linkGoogleBtn.disabled =
+                false;
+
+        }
+
+
+        // GitHub
+        if (providers.includes("github")) {
+
+            githubStatus.textContent =
+                "Linked";
+
+            linkGithubBtn.textContent =
+                "✓ Linked";
+
+            linkGithubBtn.disabled =
+                true;
+
+        } else {
+
+            githubStatus.textContent =
+                "Not linked";
+
+            linkGithubBtn.textContent =
+                "Link";
+
+            linkGithubBtn.disabled =
+                false;
+
+        }
+
+    } catch (error) {
+
+        console.error(
+            "Auth providers error:",
+            error
+        );
+
+    }
+
+}
+
+// Refresh authentication methods while settings is open
+let authProviderRefreshInterval = null;
+
+function startAuthProviderRefresh() {
+
+    if (authProviderRefreshInterval) {
+        clearInterval(authProviderRefreshInterval);
+    }
+
+    authProviderRefreshInterval =
+        setInterval(() => {
+
+            if (
+                accountSettingsOverlay?.classList.contains("show")
+            ) {
+                loadAuthProviders();
+            }
+
+        }, 1000);
+}
+
+function stopAuthProviderRefresh() {
+
+    if (authProviderRefreshInterval) {
+        clearInterval(authProviderRefreshInterval);
+        authProviderRefreshInterval = null;
+    }
+}
+
+
+// ===== LINK GOOGLE ACCOUNT =====
+
+linkGoogleBtn?.addEventListener("click", async () => {
+
+    const token =
+        localStorage.getItem("token");
+
+    if (!token) {
+        return;
+    }
+
+    try {
+
+        linkGoogleBtn.disabled = true;
+        linkGoogleBtn.textContent = "Opening...";
+
+        const res =
+            await fetch(
+                "http://127.0.0.1:5001/api/auth/link/google/start",
+                {
+                    method: "POST",
+
+                    credentials: "include",
+
+                    headers: {
+                        "Authorization":
+                            `Bearer ${token}`
+                    }
+                }
+            );
+
+        const data =
+            await res.json();
+
+        if (!res.ok) {
+
+            linkGoogleBtn.disabled = false;
+            linkGoogleBtn.textContent = "Link";
+
+            settingsMessage.textContent =
+                data.message ||
+                "Unable to start Google linking.";
+
+            settingsMessage.style.color =
+                "#ef4444";
+
+            return;
+        }
+
+        // Redirect to Google
+        window.location.href =
+            data.authUrl;
+
+    } catch (error) {
+
+        console.error(
+            "Google linking error:",
+            error
+        );
+
+        linkGoogleBtn.disabled = false;
+        linkGoogleBtn.textContent = "Link";
+
+        settingsMessage.textContent =
+            "Unable to connect to the server.";
+
+        settingsMessage.style.color =
+            "#ef4444";
+
+    }
+
+});
+
+// ===== LINK GITHUB ACCOUNT =====
+
+linkGithubBtn?.addEventListener("click", async () => {
+
+    const token =
+        localStorage.getItem("token");
+
+    if (!token) {
+        return;
+    }
+
+    try {
+
+        linkGithubBtn.disabled = true;
+        linkGithubBtn.textContent = "Opening...";
+
+        const res =
+            await fetch(
+                "http://127.0.0.1:5001/api/auth/link/github/start",
+                {
+                    method: "GET",
+                    credentials: "include",
+
+                    headers: {
+                        "Authorization":
+                            `Bearer ${token}`
+                    }
+                }
+            );
+
+        if (!res.ok) {
+
+            linkGithubBtn.disabled = false;
+            linkGithubBtn.textContent = "Link";
+
+            settingsMessage.textContent =
+                "Unable to start GitHub linking.";
+
+            settingsMessage.style.color =
+                "#ef4444";
+
+            return;
+        }
+
+        // GitHub OAuth starts from this endpoint
+        const data =
+            await res.json();
+
+        window.location.href =
+            data.authUrl;
+
+    } catch (error) {
+
+        console.error(
+            "GitHub linking error:",
+            error
+        );
+
+        linkGithubBtn.disabled = false;
+        linkGithubBtn.textContent = "Link";
+
+        settingsMessage.textContent =
+            "Unable to connect to the server.";
+
+        settingsMessage.style.color =
+            "#ef4444";
+
+    }
+
 });
 
 // ===== THEME =====

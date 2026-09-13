@@ -47,7 +47,15 @@
                         </div>
                         <hr>
                         <div class="account-actions">
-                            <a href="#" id="authBtn">Login</a>
+
+                            <a href="#" id="accountSettingsBtn">
+                                Settings
+                            </a>
+
+                            <a href="#" id="authBtn">
+                                Login
+                            </a>
+
                         </div>
                     </div>
                 </div>
@@ -108,6 +116,112 @@
         <footer>
             ⚡ CyberShield Hub • Real-time threat intelligence • Disclaimer: AI-assisted analysis, not 100% foolproof.
         </footer>
+    </div>
+
+    <!-- ====== ACCOUNT SETTINGS MODAL ====== -->
+
+    <div class="account-settings-overlay" id="accountSettingsOverlay">
+
+        <div class="account-settings-modal">
+
+            <div class="account-settings-header">
+
+                <div>
+                    <h2>Account Settings</h2>
+                    <p>Manage your authentication methods.</p>
+                </div>
+
+                <button id="closeAccountSettings" class="close-settings-btn" type="button">
+                    ×
+                </button>
+
+            </div>
+
+            <div class="auth-methods">
+
+                <h3>Authentication Methods</h3>
+
+                <!-- Password -->
+                <div class="auth-method">
+
+                    <div class="auth-method-info">
+
+                        <span class="auth-method-icon">
+                            🔑
+                        </span>
+
+                        <div>
+                            <strong>Password</strong>
+                            <small id="passwordStatus">
+                                Checking...
+                            </small>
+                        </div>
+
+                    </div>
+
+                    <span class="auth-status" id="passwordAuthStatus">
+                        ...
+                    </span>
+
+                </div>
+
+
+                <!-- Google -->
+                <div class="auth-method">
+
+                    <div class="auth-method-info">
+
+                        <span class="auth-method-icon">
+                            🔵
+                        </span>
+
+                        <div>
+                            <strong>Google</strong>
+                            <small id="googleStatus">
+                                Not linked
+                            </small>
+                        </div>
+
+                    </div>
+
+                    <button type="button" class="link-provider-btn" id="linkGoogleBtn">
+                        Link
+                    </button>
+
+                </div>
+
+
+                <!-- GitHub -->
+                <div class="auth-method">
+
+                    <div class="auth-method-info">
+
+                        <span class="auth-method-icon">
+                            ⚫
+                        </span>
+
+                        <div>
+                            <strong>GitHub</strong>
+                            <small id="githubStatus">
+                                Not linked
+                            </small>
+                        </div>
+
+                    </div>
+
+                    <button type="button" class="link-provider-btn" id="linkGithubBtn">
+                        Link
+                    </button>
+
+                </div>
+
+            </div>
+
+            <p class="settings-message" id="settingsMessage">
+            </p>
+
+        </div>
+
     </div>
 
     <!-- ====== SCRIPTS ====== -->

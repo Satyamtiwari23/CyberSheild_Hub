@@ -122,7 +122,7 @@ body.light-mode {
 }
 
 #authBtn {
-    padding: 8px 8px 8px 84px;
+    padding: 8px 0;
 }
 
 .brand {
@@ -242,11 +242,21 @@ body.light-mode {
     font-size: 28px;
 }
 
+.account-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
 .account-actions a {
     display: block;
+    width: 100%;
     padding: 8px 0;
     color: var(--text);
     text-decoration: none;
+    text-align: center;
+    font-size: 1rem;
+    font-weight: 500;
 }
 
 
@@ -1209,3 +1219,123 @@ footer {
 }
 
 
+/* ===== ACCOUNT SETTINGS ===== */
+
+.account-settings-overlay {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(8px);
+    z-index: 9999;
+}
+
+.account-settings-overlay.show {
+    display: flex;
+}
+
+.account-settings-modal {
+    width: min(92%, 460px);
+    background: #14151b;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.account-settings-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+}
+
+.account-settings-header h2 {
+    margin: 0 0 5px;
+    color: #ffffff;
+}
+
+.account-settings-header p {
+    margin: 0;
+    color: #9ca3af;
+    font-size: 0.85rem;
+}
+
+.close-settings-btn {
+    width: 34px;
+    height: 34px;
+    border: none;
+    border-radius: 50%;
+    background: #0f1014;
+    color: #ffffff;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.auth-methods h3 {
+    margin-bottom: 12px;
+    color: #e5e7eb;
+    font-size: 1rem;
+}
+
+.auth-method {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px;
+    margin-bottom: 10px;
+    border-radius: 14px;
+    background: #0f1014;
+    border: 1px solid #252936;
+}
+
+.auth-method-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.auth-method-icon {
+    font-size: 22px;
+}
+
+.auth-method-info strong {
+    display: block;
+    color: #f9fafb;
+    font-size: 0.9rem;
+}
+
+.auth-method-info small {
+    display: block;
+    margin-top: 3px;
+    color: #9ca3af;
+    font-size: 0.75rem;
+}
+
+.link-provider-btn {
+    border: 1px solid #4f46e5;
+    background: transparent;
+    color: #a5b4fc;
+    border-radius: 999px;
+    padding: 6px 14px;
+    cursor: pointer;
+    font-size: 0.8rem;
+}
+
+.link-provider-btn:hover {
+    background: #312e81;
+}
+
+.auth-status {
+    color: #4ade80;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.settings-message {
+    margin: 15px 0 0;
+    text-align: center;
+    font-size: 0.8rem;
+}

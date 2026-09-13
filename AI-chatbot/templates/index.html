@@ -765,7 +765,7 @@
             min-width: 0;
         }
 
-        .topbar > button:not(#themeBtn) {
+        .topbar>button:not(#themeBtn) {
             position: relative;
             flex: 0 0 38px;
             width: 38px;
@@ -789,8 +789,8 @@
         }
 
         /* Three hamburger lines. */
-        .topbar > button:not(#themeBtn)::before,
-        .sidebar > button:not(.new-chat)::before {
+        .topbar>button:not(#themeBtn)::before,
+        .sidebar>button:not(.new-chat)::before {
             content: "";
             position: absolute;
             left: 50%;
@@ -805,15 +805,15 @@
                 0 6px 0 currentColor;
             opacity: 1;
             transition:
-                transform .30s cubic-bezier(.4,0,.2,1),
-                box-shadow .30s cubic-bezier(.4,0,.2,1),
+                transform .30s cubic-bezier(.4, 0, .2, 1),
+                box-shadow .30s cubic-bezier(.4, 0, .2, 1),
                 background .20s ease,
                 opacity .18s ease;
         }
 
         /* Second diagonal stroke for the X. */
-        .topbar > button:not(#themeBtn)::after,
-        .sidebar > button:not(.new-chat)::after {
+        .topbar>button:not(#themeBtn)::after,
+        .sidebar>button:not(.new-chat)::after {
             content: "";
             position: absolute;
             left: 50%;
@@ -826,34 +826,34 @@
             opacity: 0;
             pointer-events: none;
             transition:
-                transform .30s cubic-bezier(.4,0,.2,1),
+                transform .30s cubic-bezier(.4, 0, .2, 1),
                 opacity .18s ease;
         }
 
         /* Open = X. Middle hamburger stroke disappears. */
-        .topbar > button:not(#themeBtn)[data-open="true"]::before,
-        .sidebar > button:not(.new-chat)[data-open="true"]::before {
+        .topbar>button:not(#themeBtn)[data-open="true"]::before,
+        .sidebar>button:not(.new-chat)[data-open="true"]::before {
             box-shadow:
                 0 0 0 transparent,
                 0 0 0 transparent;
             transform: translate(-50%, -50%) rotate(45deg);
         }
 
-        .topbar > button:not(#themeBtn)[data-open="true"]::after,
-        .sidebar > button:not(.new-chat)[data-open="true"]::after {
+        .topbar>button:not(#themeBtn)[data-open="true"]::after,
+        .sidebar>button:not(.new-chat)[data-open="true"]::after {
             transform: translate(-50%, -50%) rotate(-45deg) scaleX(1);
             opacity: 1;
         }
 
         /* AI responses always begin at the left edge of the message area. */
-        #messages > .ai-message,
-        #messages > .thinking-box {
+        #messages>.ai-message,
+        #messages>.thinking-box {
             align-self: flex-start;
             margin-left: 0;
             margin-right: auto;
         }
 
-        #messages > .ai-message {
+        #messages>.ai-message {
             width: min(95%, 1100px);
             max-width: 1100px;
         }
@@ -875,9 +875,9 @@
                 flex: none;
                 padding: 24px;
                 transform: translateX(-105%);
-                transition: transform .30s cubic-bezier(.4,0,.2,1);
+                transition: transform .30s cubic-bezier(.4, 0, .2, 1);
                 z-index: 1000;
-                box-shadow: 14px 0 35px rgba(0,0,0,.28);
+                box-shadow: 14px 0 35px rgba(0, 0, 0, .28);
             }
 
             .sidebar[data-open="true"] {
@@ -885,7 +885,7 @@
             }
 
             /* The SAME hamburger button is physically moved here on open. */
-            .sidebar > button:not(.new-chat) {
+            .sidebar>button:not(.new-chat) {
                 position: absolute;
                 top: 12px;
                 right: 10px;
@@ -895,9 +895,9 @@
                 height: 38px;
                 z-index: 2005;
                 color: #f8fafc;
-                background: rgba(15,23,42,.92);
-                border: 1px solid rgba(148,163,184,.28);
-                box-shadow: 0 5px 18px rgba(0,0,0,.35);
+                background: rgba(15, 23, 42, .92);
+                border: 1px solid rgba(148, 163, 184, .28);
+                box-shadow: 0 5px 18px rgba(0, 0, 0, .35);
             }
 
             .sidebar .logo {
@@ -910,7 +910,7 @@
                 content: "";
                 position: fixed;
                 inset: 0;
-                background: rgba(0,0,0,.45);
+                background: rgba(0, 0, 0, .45);
                 backdrop-filter: blur(3px);
                 z-index: 900;
                 pointer-events: auto;
@@ -929,7 +929,7 @@
                 justify-content: flex-start;
             }
 
-            .topbar > button:not(#themeBtn) {
+            .topbar>button:not(#themeBtn) {
                 display: flex;
                 flex: 0 0 38px;
                 width: 38px;
@@ -961,7 +961,7 @@
                 gap: 16px;
             }
 
-            #messages > .ai-message {
+            #messages>.ai-message {
                 width: 100%;
                 max-width: none;
                 padding: 18px;
@@ -970,13 +970,13 @@
                 word-break: normal;
             }
 
-            #messages > .ai-message ul,
-            #messages > .ai-message ol {
+            #messages>.ai-message ul,
+            #messages>.ai-message ol {
                 padding-left: 22px;
                 margin-left: 0;
             }
 
-            #messages > .ai-message pre {
+            #messages>.ai-message pre {
                 max-width: 100%;
                 overflow-x: auto;
                 white-space: pre-wrap;
@@ -1019,7 +1019,7 @@
                 padding-left: 5px;
             }
 
-            .topbar > button:not(#themeBtn) {
+            .topbar>button:not(#themeBtn) {
                 flex-basis: 36px;
                 width: 36px;
                 min-width: 36px;
@@ -1043,7 +1043,7 @@
                 gap: 12px;
             }
 
-            #messages > .ai-message {
+            #messages>.ai-message {
                 padding: 14px;
                 border-radius: 16px;
                 width: 100%;
@@ -1125,7 +1125,7 @@
         body:not(.light-mode) .theme-btn {
             background: #111827;
             color: #f8fafc;
-            border: 1px solid rgba(148,163,184,.22);
+            border: 1px solid rgba(148, 163, 184, .22);
         }
 
         body.light-mode .theme-btn {
@@ -1136,7 +1136,7 @@
 
         /* Desktop: permanent sidebar, no hamburger. */
         @media (min-width: 901px) {
-            .topbar > button:not(#themeBtn) {
+            .topbar>button:not(#themeBtn) {
                 display: none !important;
             }
 
@@ -1148,7 +1148,6 @@
                 margin-left: 0;
             }
         }
-
     </style>
 </head>
 
@@ -1226,6 +1225,21 @@
     </div>
 
     <script>
+        // ===== LOGIN REDIRECT =====
+
+        function checkAuthentication() {
+
+            if (!localStorage.getItem("token")) {
+                window.location.replace("login.html");
+            }
+
+        }
+
+        checkAuthentication();
+
+        window.addEventListener("pageshow", () => {
+            checkAuthentication();
+        });
         let chats =
             JSON.parse(
                 localStorage.getItem("history")
@@ -1493,7 +1507,7 @@
 
             recognition.onresult =
                 function (event) {
-                    document.getElementById("topic").value =event.results[0][0].transcript;
+                    document.getElementById("topic").value = event.results[0][0].transcript;
                 }
 
         }

@@ -237,6 +237,69 @@
       flex: 1;
       background: #2d3038;
     }
+
+    .password-wrapper {
+      position: relative;
+      width: 100%;
+    }
+
+    .password-toggle {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+
+      width: 30px;
+      height: 30px;
+
+      padding: 0;
+      border: none;
+      outline: none;
+
+      background: transparent;
+
+      color: #9ca3af;
+
+      cursor: pointer;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      z-index: 10;
+    }
+
+    .password-toggle:hover {
+      color: #ffffff;
+    }
+
+    /* Remove browser focus box */
+    .password-toggle:focus,
+    .password-toggle:focus-visible {
+      outline: none;
+      box-shadow: none;
+    }
+
+    .eye-icon {
+      width: 20px;
+      height: 20px;
+
+      display: block;
+    }
+
+    /* Initially password is hidden */
+    .eye-open {
+      display: none;
+    }
+
+    /* When password is visible */
+    .password-toggle.showing .eye-closed {
+      display: none;
+    }
+
+    .password-toggle.showing .eye-open {
+      display: block;
+    }
   </style>
 </head>
 
@@ -259,7 +322,30 @@
 
       <div class="field">
         <label for="loginPassword">Password</label>
-        <input id="loginPassword" type="password" required placeholder="••••••••" />
+        <div class="password-wrapper">
+          <input id="loginPassword" type="password" required placeholder="••••••••" />
+
+          <button type="button" class="password-toggle" onclick="togglePassword('loginPassword', this)"
+            aria-label="Show password">
+            <!-- CLOSED EYE -->
+            <svg class="eye-icon eye-closed" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M3 12C3 12 6.5 18 12 18C17.5 18 21 12 21 12" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" />
+
+              <path d="M6 16L4.5 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+
+              <path d="M18 16L19.5 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            </svg>
+
+            <!-- OPEN EYE -->
+            <svg class="eye-icon eye-open" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M3 12C3 12 6.5 6 12 6C17.5 6 21 12 21 12C21 12 17.5 18 12 18C6.5 18 3 12 3 12Z"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+
+              <circle cx="12" cy="12" r="2.5" fill="currentColor" />
+            </svg>
+          </button>
+        </div>
       </div>
 
       <div class="actions">
@@ -339,10 +425,64 @@
           placeholder="Your name" /></div>
       <div class="field"><label for="signupEmail">Email</label><input id="signupEmail" type="email" required
           placeholder="you@example.com" /></div>
-      <div class="field"><label for="signupPassword">Password</label><input id="signupPassword" type="password" required
-          placeholder="Create a password" /></div>
-      <div class="field"><label for="signupConfirmPassword">Confirm password</label><input id="signupConfirmPassword"
-          type="password" required placeholder="Repeat your password" /></div>
+      <div class="field">
+        <label for="signupPassword">Password</label>
+
+        <div class="password-wrapper">
+          <input id="signupPassword" type="password" required placeholder="Create a password" />
+
+          <button type="button" class="password-toggle" onclick="togglePassword('signupPassword', this)"
+            aria-label="Show password">
+            <!-- CLOSED EYE -->
+            <svg class="eye-icon eye-closed" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M3 12C3 12 6.5 18 12 18C17.5 18 21 12 21 12" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" />
+
+              <path d="M6 16L4.5 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+
+              <path d="M18 16L19.5 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            </svg>
+
+            <!-- OPEN EYE -->
+            <svg class="eye-icon eye-open" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M3 12C3 12 6.5 6 12 6C17.5 6 21 12 21 12C21 12 17.5 18 12 18C6.5 18 3 12 3 12Z"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+
+              <circle cx="12" cy="12" r="2.5" fill="currentColor" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+
+      <div class="field">
+        <label for="signupConfirmPassword">Confirm password</label>
+
+        <div class="password-wrapper">
+          <input id="signupConfirmPassword" type="password" required placeholder="Repeat your password" />
+
+          <button type="button" class="password-toggle" onclick="togglePassword('signupConfirmPassword', this)"
+            aria-label="Show password">
+            <!-- CLOSED EYE -->
+            <svg class="eye-icon eye-closed" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M3 12C3 12 6.5 18 12 18C17.5 18 21 12 21 12" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" />
+
+              <path d="M6 16L4.5 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+
+              <path d="M18 16L19.5 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            </svg>
+
+            <!-- OPEN EYE -->
+            <svg class="eye-icon eye-open" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M3 12C3 12 6.5 6 12 6C17.5 6 21 12 21 12C21 12 17.5 18 12 18C6.5 18 3 12 3 12Z"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+
+              <circle cx="12" cy="12" r="2.5" fill="currentColor" />
+            </svg>
+          </button>
+        </div>
+      </div>
 
       <button type="submit" class="btn-primary">Create account</button>
 
@@ -443,6 +583,36 @@
     signupTab.addEventListener("click", showSignup);
     goToSignup.addEventListener("click", (e) => { e.preventDefault(); showSignup(); });
     goToLogin.addEventListener("click", (e) => { e.preventDefault(); showLogin(); });
+
+    function togglePassword(inputId, button) {
+
+      const input = document.getElementById(inputId);
+
+      if (input.type === "password") {
+
+        // Show password
+        input.type = "text";
+
+        button.classList.add("showing");
+
+        button.setAttribute(
+          "aria-label",
+          "Hide password"
+        );
+
+      } else {
+
+        // Hide password
+        input.type = "password";
+
+        button.classList.remove("showing");
+
+        button.setAttribute(
+          "aria-label",
+          "Show password"
+        );
+      }
+    }
 
     document.addEventListener("DOMContentLoaded", () => {
       if (location.hash === "#register") {
@@ -571,10 +741,10 @@
     // =====================================================
 
     const OAUTH_BASE =
-    window.location.hostname === "localhost" ||
-    window.location.hostname === "127.0.0.1"
-    ? "http://127.0.0.1:5001"
-    : "https://cybershield-hub-nu.vercel.app";
+      window.location.hostname === "localhost" ||
+        window.location.hostname === "127.0.0.1"
+        ? "http://127.0.0.1:5001"
+        : "https://cybershield-hub-nu.vercel.app";
 
 
 
