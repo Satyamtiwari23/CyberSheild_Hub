@@ -9,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@zxing/browser@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+
     <style>
         * {
             margin: 0;
@@ -23,8 +24,9 @@
             --text: #e5e7eb;
             --muted: #9ca3af;
             --accent: #3b82f6;
-            --danger: #ef4444;
             --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
         }
 
         body {
@@ -67,16 +69,33 @@
             padding: 24px;
         }
 
-        .back-link {
-            color: var(--accent);
-            text-decoration: none;
-            font-weight: 500;
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: nowrap;
+
+            width: 100%;
+
+            margin-bottom: 32px;
+
+            border-bottom: 1px solid rgba(59, 130, 246, 0.3);
+
+            padding-bottom: 16px;
+
+            gap: 20px;
         }
 
         .brand {
             display: flex;
             gap: 12px;
             align-items: center;
+
+            min-width: 0;
+        }
+
+        .brand>div:last-child {
+            min-width: 0;
         }
 
         .brand-logo {
@@ -90,20 +109,17 @@
             font-size: 24px;
         }
 
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            margin-bottom: 32px;
-            border-bottom: 1px solid rgba(59, 130, 246, 0.3);
-            padding-bottom: 16px;
+        .back-link {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 500;
         }
 
         .two-col {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 28px;
+            margin: 24px 0;
         }
 
         .card {
@@ -112,7 +128,41 @@
             border-radius: 28px;
             padding: 24px;
 
+            opacity: 0;
+            transform: translateY(20px);
+            animation: cardAppear .6s ease forwards;
+
             transition: all 0.25s ease;
+        }
+
+        .two-col .card:nth-child(1) {
+            animation-delay: .05s;
+        }
+
+        .two-col .card:nth-child(2) {
+            animation-delay: .10s;
+        }
+
+        #visitCard {
+            animation-delay: .15s;
+        }
+
+        #aiCard {
+            animation-delay: .20s;
+        }
+
+        @keyframes cardAppear {
+
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
         }
 
         .card:hover {
@@ -128,33 +178,25 @@
 
         textarea,
         input {
-            width: 100%;
-            background: rgba(0, 0, 0, 0.2);
+            background: rgba(0, 0, 0, 0.3);
             border: 1px solid var(--card-border);
-            border-radius: 20px;
-            padding: 14px;
+            border-radius: 60px;
+            padding: 14px 20px;
             color: var(--text);
+            font-size: 1rem;
+            width: 100%;
+            outline: none;
         }
 
         button {
-            background:
-                linear-gradient(135deg,
-                    var(--accent),
-                    #2563eb);
-
+            background: linear-gradient(135deg, var(--accent), #2563eb);
             border: none;
-
             padding: 12px 24px;
-
             border-radius: 40px;
-
             color: white;
-
             font-weight: 600;
-
             cursor: pointer;
-
-            transition: .25s ease;
+            transition: 0.2s;
         }
 
         button:hover {
@@ -176,10 +218,11 @@
         }
 
         .result-list li {
+            padding: 8px 12px;
             background: rgba(59, 130, 246, 0.1);
-            border-radius: 14px;
-            padding: 10px;
+            border-radius: 16px;
             margin-bottom: 8px;
+            font-size: 0.85rem;
         }
 
         .report-sec {
@@ -188,47 +231,50 @@
         }
 
         .report-sec button {
-            background: #ef4444;
+            background: linear-gradient(135deg, #ff4d4d, #cc0000);
         }
 
         .badge-danger {
-            background: #ef4444;
-            color: white;
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid var(--danger);
+            color: #fecaca;
         }
 
         .badge-warning {
-            background: #f59e0b;
-            color: white;
+            background: rgba(245, 158, 11, 0.2);
+            border: 1px solid var(--warning);
         }
 
         .badge-safe {
-            background: #22c55e;
-            color: white;
+            background: rgba(34, 197, 94, 0.2);
+            border: 1px solid var(--success);
+            color: var(--success);
         }
 
         #visitCard {
-            margin: 25px 0px 0px 0px;
+            margin-top: 25px;
         }
 
         #openQRSection {
             display: flex;
-
             justify-content: space-between;
-
-            align-items: center;
-
+            align-items: stretch;
             gap: 24px;
-
-            margin-top: 0;
+            margin-top: 24px;
         }
 
         #visitBtn {
             margin-left: auto;
+            display: block;
 
             background:
                 linear-gradient(135deg,
                     #16a34a,
                     #15803d);
+        }
+
+        #visitBtn:hover {
+            transform: translateY(-2px);
         }
 
         #aiCard {
@@ -256,17 +302,6 @@
                     #7c3aed);
         }
 
-        #visitBtn {
-            margin-left: 550px;
-            background: linear-gradient(135deg,
-                    #16a34a,
-                    #15803d);
-        }
-
-        #visitBtn:hover {
-            transform: translateY(-2px);
-        }
-
         footer {
             text-align: center;
             margin-top: 48px;
@@ -274,9 +309,89 @@
             font-size: 0.75rem;
         }
 
-        @media (max-width:800px) {
+        @media (max-width: 800px) {
+
             .two-col {
                 grid-template-columns: 1fr;
+            }
+
+            header {
+                flex-wrap: nowrap;
+                align-items: center;
+                gap: 10px;
+            }
+
+            header .brand {
+                flex: 1;
+                min-width: 0;
+            }
+
+            header .brand h2 {
+                font-size: 1.25rem;
+                line-height: 1.2;
+                white-space: nowrap;
+            }
+
+            header .brand p {
+                font-size: 0.8rem;
+                line-height: 1.2;
+                white-space: nowrap;
+            }
+
+            header .brand-logo {
+                width: 42px;
+                height: 42px;
+                flex-shrink: 0;
+            }
+
+            .back-link {
+                flex-shrink: 0;
+                white-space: nowrap;
+                font-size: 0.85rem;
+            }
+
+            #openQRSection {
+                margin-top: 24px;
+            }
+
+            #visitCard {
+                padding: 20px;
+            }
+
+            #actionDetails {
+                margin-top: 10px !important;
+                line-height: 1.5;
+            }
+
+            #visitBtn {
+                margin-left: auto;
+                margin-top: 14px !important;
+            }
+        }
+
+        @media (max-width: 420px) {
+
+            .container {
+                padding: 16px;
+            }
+
+            header .brand h2 {
+                font-size: 0.92rem;
+            }
+
+            header .brand p {
+                font-size: 0.62rem;
+            }
+
+            .back-link {
+                font-size: 0.62rem;
+            }
+
+            #visitCard {
+                padding: 18px;
+            }
+            #startScannerBtn{
+                margin-bottom: 10px;
             }
         }
 
@@ -287,20 +402,37 @@
 </head>
 
 <body>
+
     <div class="container">
+
         <header>
+
             <div class="brand">
+
                 <div class="brand-logo">📱</div>
+
                 <div>
                     <h2> Malicious QR Code Analyzer</h2>
                     <p>Upload QR image or paste decoded content</p>
                 </div>
+
             </div>
-            <a href="index.html" style="color:var(--accent);" class="back-link">← Return to Dashboard</a>
+
+            <a href="index.html"
+                style="color:var(--accent);"
+                class="back-link">
+                ← Return to Dashboard
+            </a>
+
         </header>
+
+
         <div class="two-col">
+
             <div class="card">
+
                 <h3>🔎 QR Input</h3>
+
                 <h3>📷 QR Scanner</h3>
 
                 <div id="reader" style="width:100%;"></div>
@@ -308,32 +440,71 @@
                 <button id="startScannerBtn">
                     Start Camera Scan
                 </button>
-                <input type="file" id="qrImageInput" accept="image/*" hidden>
 
-                <button id="galleryBtn" type="button" style="margin-left:10px;">
+                <input
+                    type="file"
+                    id="qrImageInput"
+                    accept="image/*"
+                    hidden>
+
+                <button
+                    id="galleryBtn"
+                    type="button"
+                    style="margin-left:10px;">
+
                     🖼️ Choose from Gallery
+
                 </button>
 
                 <p style="font-size:0.8rem;margin-top:12px;">
                     Point your camera at a QR code.
                 </p>
-                <p style="font-size:0.7rem; margin-top:12px;">📸 In production: upload QR image for OCR. Demo uses text
-                    analysis.</p>
+
+                <p style="font-size:0.7rem; margin-top:12px;">
+                    📸 In production: upload QR image for OCR. Demo uses text analysis.
+                </p>
+
             </div>
+
+
             <div class="card" id="resultPanel">
+
                 <h3>⚠️ Risk Assessment</h3>
-                <div><span id="riskBadge" class="badge">—</span></div>
-                <div style="margin-top:12px;">
-                    <strong>Scanned Content:</strong>
-                    <p id="scannedContent">---</p>
+
+                <div>
+                    <span id="riskBadge" class="badge">—</span>
                 </div>
-                <div><strong>Risk Score:</strong> <span id="riskScore">0</span>/100</div>
-                <div><strong>Verdict:</strong> <span id="verdict">Not analyzed</span></div>
+
+                <div style="margin-top:12px;">
+
+                    <strong>Scanned Content:</strong>
+
+                    <p id="scannedContent">---</p>
+
+                </div>
+
+                <div>
+                    <strong>Risk Score:</strong>
+                    <span id="riskScore">0</span>/100
+                </div>
+
+                <div>
+                    <strong>Verdict:</strong>
+                    <span id="verdict">Not analyzed</span>
+                </div>
+
                 <ul id="reasonListQR" class="result-list">
-                    <li>⚡ Enter QR payload</li>
+
+                    <li>
+                        ⚡ Enter QR payload
+                    </li>
+
                 </ul>
+
             </div>
+
         </div>
+
 
         <div id="openQRSection" class="hidden">
 
@@ -343,39 +514,71 @@
                     🔗 QR Action
                 </h3>
 
-                <div id="actionDetails" style="margin-top:12px;">
+                <div
+                    id="actionDetails"
+                    style="margin-top:12px;">
+
                     Review the QR content before continuing.
+
                 </div>
 
-                <button id="visitBtn" style="margin-top:16px;">
+                <button
+                    id="visitBtn"
+                    style="margin-top:16px;">
+
                     Continue →
+
                 </button>
 
             </div>
 
         </div>
 
+
         <div id="aiCard" class="card">
-            <h3>🛡️ CyberShield AI Assistant</h3>
+
+            <h3>
+                🛡️ CyberShield AI Assistant
+            </h3>
 
             <p id="aiExplanation">
-                Understand why this URL was flagged, potential risks, and how to stay protected.
+
+                Understand why this URL was flagged,
+                potential risks, and how to stay protected.
+
             </p>
 
             <button id="explainBtn">
+
                 🤖 Analyze with AI
+
             </button>
+
         </div>
+
+
         <div id="reportQR" class="report-sec hidden">
+
             <button id="reportQrBtn">
+
                 📢 Report Malicious QR
+
             </button>
+
         </div>
-        <footer style="margin-top:48px; text-align:center; color:var(--muted);">
+
+
+        <footer
+            style="margin-top:48px; text-align:center; color:var(--muted);">
+
             Detects phishing URLs, malware links,
             and suspicious patterns inside QR codes.
+
         </footer>
+
     </div>
+
+
     <script src="theme.js"></script>
     <script>
         if (!localStorage.getItem("token")) {
