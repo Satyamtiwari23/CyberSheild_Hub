@@ -5,11 +5,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="images/Favicon.png">
-    <title>CyberShield - Malicious QR Detector</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/@zxing/browser@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
-
+    <title>CyberShield - Phishing Link Scanner</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;500;600;700&display=swap"
+        rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -63,7 +62,7 @@
             background: #ffffff;
         }
 
-        .container {
+        .app-container {
             max-width: 1280px;
             margin: 0 auto;
             padding: 24px;
@@ -90,12 +89,12 @@
             display: flex;
             gap: 12px;
             align-items: center;
+
             min-width: 0;
         }
 
         .brand>div:last-child {
             min-width: 0;
-            overflow: hidden;
         }
 
         .brand-logo {
@@ -109,46 +108,38 @@
             font-size: 24px;
         }
 
-        .back-link {
-            color: var(--accent);
-            text-decoration: none;
-            font-weight: 500;
-        }
-
-        .two-col {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 28px;
-            margin: 24px 0;
-        }
-
         .card {
-            background: var(--card);
-            border: 1px solid var(--card-border);
-            border-radius: 28px;
-            padding: 24px;
-
             opacity: 0;
             transform: translateY(20px);
             animation: cardAppear .6s ease forwards;
-
-            transition: all 0.25s ease;
         }
 
-        .two-col .card:nth-child(1) {
+        .card:nth-child(1) {
             animation-delay: .05s;
         }
 
-        .two-col .card:nth-child(2) {
+        .card:nth-child(2) {
             animation-delay: .10s;
         }
 
-        #visitCard {
+        .card:nth-child(3) {
             animation-delay: .15s;
         }
 
-        #aiCard {
+        .card:nth-child(4) {
             animation-delay: .20s;
+        }
+
+        .card:nth-child(5) {
+            animation-delay: .25s;
+        }
+
+        .card:nth-child(6) {
+            animation-delay: .30s;
+        }
+
+        .card:nth-child(7) {
+            animation-delay: .35s;
         }
 
         @keyframes cardAppear {
@@ -165,6 +156,28 @@
 
         }
 
+        .back-link {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .tool-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 28px;
+            margin: 24px 0;
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--card-border);
+            border-radius: 28px;
+            padding: 24px;
+
+            transition: all 0.25s ease;
+        }
+
         .card:hover {
 
             border-color: #3b82f6;
@@ -174,6 +187,13 @@
                 0 0 25px rgba(59, 130, 246, 0.25);
 
             transform: translateY(-2px);
+        }
+
+        .input-group {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
         }
 
         textarea,
@@ -199,11 +219,11 @@
             transition: 0.2s;
         }
 
-        button:hover {
-            transform: translateY(-2px);
-
-            box-shadow:
-                0 0 18px rgba(59, 130, 246, .35);
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            flex-wrap: wrap;
         }
 
         .badge {
@@ -212,26 +232,10 @@
             font-size: 0.8rem;
         }
 
-        .result-list {
-            list-style: none;
-            margin-top: 16px;
-        }
-
-        .result-list li {
-            padding: 8px 12px;
-            background: rgba(59, 130, 246, 0.1);
-            border-radius: 16px;
-            margin-bottom: 8px;
-            font-size: 0.85rem;
-        }
-
-        .report-sec {
-            margin-top: 24px;
-            text-align: right;
-        }
-
-        .report-sec button {
-            background: linear-gradient(135deg, #ff4d4d, #cc0000);
+        .badge-safe {
+            background: rgba(34, 197, 94, 0.2);
+            border: 1px solid var(--success);
+            color: var(--success);
         }
 
         .badge-danger {
@@ -245,36 +249,23 @@
             border: 1px solid var(--warning);
         }
 
-        .badge-safe {
-            background: rgba(34, 197, 94, 0.2);
-            border: 1px solid var(--success);
-            color: var(--success);
+        .score {
+            font-size: 2.4rem;
+            font-weight: 700;
+            margin: 8px 0;
         }
 
-        #visitCard {
-            margin-top: 25px;
+        .reason-list {
+            list-style: none;
+            margin-top: 16px;
         }
 
-        #openQRSection {
-            display: flex;
-            justify-content: space-between;
-            align-items: stretch;
-            gap: 24px;
-            margin-top: 24px;
-        }
-
-        #visitBtn {
-            margin-left: auto;
-            display: block;
-
-            background:
-                linear-gradient(135deg,
-                    #16a34a,
-                    #15803d);
-        }
-
-        #visitBtn:hover {
-            transform: translateY(-2px);
+        .reason-list li {
+            padding: 8px 12px;
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: 16px;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
         }
 
         #aiCard {
@@ -302,6 +293,67 @@
                     #7c3aed);
         }
 
+        #visitWarning {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 24px;
+            margin-top: 10px;
+            line-height: 1.5;
+        }
+
+        #visitBtn {
+            margin: 0;
+            flex-shrink: 0;
+            background: linear-gradient(135deg,
+                    #16a34a,
+                    #15803d);
+        }
+
+        #visitBtn:hover {
+            transform: translateY(-2px);
+        }
+
+        #visitCard {
+            margin-top: 25px;
+        }
+
+        .report-section {
+            margin-top: 24px;
+            text-align: right;
+        }
+
+        .report-section button {
+            background: linear-gradient(135deg, #ff4d4d, #cc0000);
+        }
+
+        .visit-danger {
+            border: 1px solid #ef4444;
+            background: rgba(239, 68, 68, .08);
+        }
+
+        .visit-safe {
+            border: 1px solid #22c55e;
+            background: rgba(34, 197, 94, .08);
+        }
+
+        #explainBtn {
+            background: linear-gradient(135deg,
+                    #4f46e5,
+                    #7c3aed);
+
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 999px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        #explainBtn:hover {
+            transform: translateY(-2px);
+        }
+
         footer {
             text-align: center;
             margin-top: 48px;
@@ -309,21 +361,22 @@
             font-size: 0.75rem;
         }
 
-        @media (max-width: 900px) {
-
-            .two-col {
+        @media (max-width: 800px) {
+            .tool-grid {
                 grid-template-columns: 1fr;
             }
 
             header {
                 flex-wrap: nowrap;
                 align-items: center;
-                gap: 10px;
+                gap: 8px;
+                margin-bottom: 24px;
             }
 
             header .brand {
                 flex: 1;
                 min-width: 0;
+                gap: 8px;
             }
 
             header .brand h2 {
@@ -339,40 +392,39 @@
             }
 
             header .brand-logo {
-                width: 42px;
-                height: 42px;
+                width: 34px;
+                height: 34px;
+                border-radius: 10px;
+                font-size: 18px;
                 flex-shrink: 0;
             }
 
             .back-link {
                 flex-shrink: 0;
                 white-space: nowrap;
-                font-size: 0.85rem;
-            }
-
-            #openQRSection {
-                margin-top: 24px;
+                font-size: 0.68rem;
             }
 
             #visitCard {
-                width: 100%;
-                margin-top: 0;
+                padding: 20px;
             }
 
-            #actionDetails {
-                margin-top: 10px !important;
+            #visitWarning {
+                display: flex;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+                margin: 10px 0 0;
                 line-height: 1.5;
             }
 
             #visitBtn {
-                margin-left: auto;
-                margin-top: 14px !important;
+                margin: 0;
             }
         }
 
         @media (max-width: 420px) {
-
-            .container {
+            .app-container {
                 padding: 16px;
             }
 
@@ -387,187 +439,84 @@
             .back-link {
                 font-size: 0.62rem;
             }
-
-            #visitCard {
-                padding: 18px;
-            }
-
-            #startScannerBtn {
-                margin-top: 10px;
-                margin-bottom: 10px;
-                margin-left: 10px;
-            }
         }
 
         .hidden {
             display: none;
         }
+
+        .error-msg {
+            color: var(--danger);
+            font-size: 0.75rem;
+            margin-top: 8px;
+        }
     </style>
 </head>
 
 <body>
-
-    <div class="container">
-
+    <div class="app-container">
         <header>
-
             <div class="brand">
-
-                <div class="brand-logo">📱</div>
-
+                <div class="brand-logo">🔗</div>
                 <div>
-                    <h2> Malicious QR Analyzer</h2>
-                    <p>Real-time QR code risk analysis</p>
+                    <h2>Phishing Link Scanner</h2>
+                    <p>Real‑time URL risk analysis</p>
                 </div>
-
             </div>
-
-            <a href="index.html" style="color:var(--accent);" class="back-link">
-                ← Return to Dashboard
-            </a>
-
+            <a href="index.html" class="back-link">← Return to Dashboard</a>
         </header>
 
-
-        <div class="two-col">
-
+        <div class="tool-grid">
+            <!-- LEFT: Input Card -->
             <div class="card">
-
-                <h3>🔎 QR Input</h3>
-
-                <h3>📷 QR Scanner</h3>
-
-                <div id="reader" style="width:100%;"></div>
-
-                <button id="startScannerBtn">
-                    Start Camera Scan
-                </button>
-
-                <input type="file" id="qrImageInput" accept="image/*" hidden>
-
-                <button id="galleryBtn" type="button" style="margin-left:10px;">
-
-                    🖼️ Choose from Gallery
-
-                </button>
-
-                <p style="font-size:0.8rem;margin-top:12px;">
-                    Point your camera at a QR code.
-                </p>
-
-                <p style="font-size:0.7rem; margin-top:12px;">
-                    📸 In production: upload QR image for OCR. Demo uses text analysis.
-                </p>
-
+                <h3>🔍 Enter suspicious link</h3>
+                <div class="input-group">
+                    <input type="text" id="urlInput" placeholder="https://example.com/login">
+                    <button id="scanBtn">🚀 Scan URL</button>
+                    <p id="inputError" class="error-msg hidden">Please enter a valid URL (http:// or https://)</p>
+                </div>
             </div>
 
-
-            <div class="card" id="resultPanel">
-
-                <h3>⚠️ Risk Assessment</h3>
-
-                <div>
-                    <span id="riskBadge" class="badge">—</span>
+            <!-- RIGHT: Results Card -->
+            <div class="card" id="resultCard">
+                <div class="result-header">
+                    <h3>📋 Analysis Result</h3><span id="riskBadge" class="badge">—</span>
                 </div>
-
-                <div style="margin-top:12px;">
-
-                    <strong>Scanned Content:</strong>
-
-                    <p id="scannedContent">---</p>
-
-                </div>
-
-                <div>
-                    <strong>Risk Score:</strong>
-                    <span id="riskScore">0</span>/100
-                </div>
-
-                <div>
-                    <strong>Verdict:</strong>
-                    <span id="verdict">Not analyzed</span>
-                </div>
-
-                <ul id="reasonListQR" class="result-list">
-
-                    <li>
-                        ⚡ Enter QR payload
-                    </li>
-
+                <div><span class="score" id="riskScore">0</span><span> / 100 (risk score)</span></div>
+                <div><strong>Status:</strong> <span id="riskStatus">Waiting for scan</span></div>
+                <ul class="reason-list" id="reasonList">
+                    <li>⚡ Enter a URL and click Scan</li>
                 </ul>
-
             </div>
-
         </div>
-
-
-        <div id="openQRSection" class="hidden">
-
-            <div id="visitCard" class="card">
-
-                <h3 id="actionTitle">
-                    🔗 QR Action
-                </h3>
-
-                <div id="actionDetails" style="margin-top:12px;">
-
-                    Review the QR content before continuing.
-
-                </div>
-
-                <button id="visitBtn" style="margin-top:16px;">
-
-                    Continue →
-
+        <div id="visitCard" class="card">
+            <h3>🌐 Open Website</h3>
+            <p id="visitWarning">
+                This website may be unsafe. Proceed only if you trust the source.
+                <button id="visitBtn">
+                    Continue to Website →
                 </button>
-
-            </div>
-
+            </p>
         </div>
-
-
         <div id="aiCard" class="card">
-
-            <h3>
-                🛡️ CyberShield AI Assistant
-            </h3>
+            <h3>🛡️ CyberShield AI Assistant</h3>
 
             <p id="aiExplanation">
-
-                Understand why this URL was flagged,
-                potential risks, and how to stay protected.
-
+                Understand why this URL was flagged, potential risks, and how to stay protected.
             </p>
 
             <button id="explainBtn">
-
                 🤖 Analyze with AI
-
             </button>
-
         </div>
 
-
-        <div id="reportQR" class="report-sec hidden">
-
-            <button id="reportQrBtn">
-
-                📢 Report Malicious QR
-
-            </button>
-
+        <!-- REPORT SECTION (mid, under both cards) -->
+        <div id="reportSection" class="report-section hidden">
+            <button id="reportBtn">🚩 Report this website to global blocklist</button>
         </div>
 
-
-        <footer style="margin-top:48px; text-align:center; color:var(--muted);">
-
-            Detects phishing URLs, malware links,
-            and suspicious patterns inside QR codes.
-
-        </footer>
-
+        <footer>⚠️ Heuristic analysis – not 100% accurate. Always double-check suspicious links.</footer>
     </div>
-
 
     <script src="theme.js"></script>
     <script>
