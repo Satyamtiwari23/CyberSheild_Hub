@@ -252,14 +252,13 @@
         }
 
         #visitCard {
-            margin-top: 25px;
+            width: 100%;
+            max-width: none;
+            margin-top: 0;
         }
 
         #openQRSection {
-            display: flex;
-            justify-content: space-between;
-            align-items: stretch;
-            gap: 24px;
+            width: 100%;
             margin-top: 24px;
         }
 
@@ -390,8 +389,11 @@
             #visitCard {
                 padding: 18px;
             }
-            #startScannerBtn{
+
+            #startScannerBtn {
                 margin-bottom: 10px;
+                margin-top: 10px;
+                margin-left: 10px;
             }
         }
 
@@ -412,15 +414,13 @@
                 <div class="brand-logo">📱</div>
 
                 <div>
-                    <h2> Malicious QR Code Analyzer</h2>
-                    <p>Upload QR image or paste decoded content</p>
+                    <h2> Malicious QR Analyzer</h2>
+                    <p>Real-time QR code risk analysis</p>
                 </div>
 
             </div>
 
-            <a href="index.html"
-                style="color:var(--accent);"
-                class="back-link">
+            <a href="index.html" style="color:var(--accent);" class="back-link">
                 ← Return to Dashboard
             </a>
 
@@ -441,16 +441,9 @@
                     Start Camera Scan
                 </button>
 
-                <input
-                    type="file"
-                    id="qrImageInput"
-                    accept="image/*"
-                    hidden>
+                <input type="file" id="qrImageInput" accept="image/*" hidden>
 
-                <button
-                    id="galleryBtn"
-                    type="button"
-                    style="margin-left:10px;">
+                <button id="galleryBtn" type="button" style="margin-left:10px;">
 
                     🖼️ Choose from Gallery
 
@@ -506,32 +499,18 @@
         </div>
 
 
-        <div id="openQRSection" class="hidden">
-
+        <div id="openQRSection">
             <div id="visitCard" class="card">
-
                 <h3 id="actionTitle">
                     🔗 QR Action
                 </h3>
-
-                <div
-                    id="actionDetails"
-                    style="margin-top:12px;">
-
+                <div id="actionDetails" style="margin-top:12px;">
                     Review the QR content before continuing.
-
                 </div>
-
-                <button
-                    id="visitBtn"
-                    style="margin-top:16px;">
-
+                <button id="visitBtn" style="margin-top:16px;">
                     Continue →
-
                 </button>
-
             </div>
-
         </div>
 
 
@@ -568,8 +547,7 @@
         </div>
 
 
-        <footer
-            style="margin-top:48px; text-align:center; color:var(--muted);">
+        <footer style="margin-top:48px; text-align:center; color:var(--muted);">
 
             Detects phishing URLs, malware links,
             and suspicious patterns inside QR codes.
