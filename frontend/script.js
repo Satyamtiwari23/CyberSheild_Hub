@@ -188,7 +188,7 @@ async function loadAuthProviders() {
 
         const res =
             await fetch(
-                "http://127.0.0.1:5001/api/account/auth-providers",
+                "https://cybersheild-hub-osjl.onrender.com/api/account/auth-providers",
                 {
                     method: "GET",
 
@@ -352,7 +352,7 @@ linkGoogleBtn?.addEventListener("click", async () => {
 
         const res =
             await fetch(
-                "http://127.0.0.1:5001/api/auth/link/google/start",
+                "https://cybersheild-hub-osjl.onrender.com/api/auth/link/google/start",
                 {
                     method: "POST",
 
@@ -425,7 +425,7 @@ linkGithubBtn?.addEventListener("click", async () => {
 
         const res =
             await fetch(
-                "http://127.0.0.1:5001/api/auth/link/github/start",
+                "https://cybersheild-hub-osjl.onrender.com/api/auth/link/github/start",
                 {
                     method: "GET",
                     credentials: "include",
