@@ -865,6 +865,15 @@ app.post("/api/reset-password", async (req, res) => {
     user.password = await bcrypt.hash(password, 10);
     user.passwordSet = true;
 
+    // Enable password authentication
+    if (!user.authProviders) {
+      user.authProviders = [];
+    }
+
+    if (!user.authProviders.includes("password")) {
+      user.authProviders.push("password");
+    }
+
     // Remove reset credentials
     user.resetToken = undefined;
     user.resetTokenExpiry = undefined;
@@ -1027,9 +1036,9 @@ app.get("/api/auth/link/github/start", authenticateToken, (req, res) => {
     process.env.NODE_ENV === "production";
 
   res.setHeader(
-  "Set-Cookie",
-  `github_link_session=${linkSession}; HttpOnly; Secure; SameSite=None; Path=/; Max-Age=600`
-);
+    "Set-Cookie",
+    `github_link_session=${linkSession}; HttpOnly; Secure; SameSite=None; Path=/; Max-Age=600`
+  );
 
   const githubAuthUrl =
     "https://github.com/login/oauth/authorize" +

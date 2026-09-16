@@ -224,6 +224,7 @@ async function loadAuthProviders() {
 
 
         // Password
+        // Password
         if (providers.includes("password")) {
 
             passwordStatus.textContent =
@@ -241,7 +242,7 @@ async function loadAuthProviders() {
                 "Not linked";
 
             passwordActionBtn.textContent =
-                "Reset";
+                "Set Password";
 
             passwordActionBtn.disabled =
                 false;
