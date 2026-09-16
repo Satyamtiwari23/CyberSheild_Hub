@@ -105,6 +105,12 @@ document.addEventListener('click', (e) => {
 });
 
 
+const API_BASE =
+    window.location.hostname === "localhost" ||
+        window.location.hostname === "127.0.0.1"
+        ? "http://127.0.0.1:5001"
+        : "https://cybersheild-hub-osjl.onrender.com";
+
 // ===== ACCOUNT SETTINGS =====
 
 const accountSettingsBtn =
@@ -116,8 +122,9 @@ const accountSettingsOverlay =
 const closeAccountSettings =
     document.getElementById("closeAccountSettings");
 
-const passwordAuthStatus =
-    document.getElementById("passwordAuthStatus");
+
+const passwordActionBtn =
+    document.getElementById("passwordActionBtn");
 
 const passwordStatus =
     document.getElementById("passwordStatus");
@@ -188,7 +195,7 @@ async function loadAuthProviders() {
 
         const res =
             await fetch(
-                "https://cybersheild-hub-osjl.onrender.com/api/account/auth-providers",
+                `${API_BASE}/api/account/auth-providers`,
                 {
                     method: "GET",
 
@@ -222,22 +229,22 @@ async function loadAuthProviders() {
             passwordStatus.textContent =
                 "Linked";
 
-            passwordAuthStatus.textContent =
-                "✓ Linked";
+            passwordActionBtn.textContent =
+                "Reset";
 
-            passwordAuthStatus.style.color =
-                "#4ade80";
+            passwordActionBtn.disabled =
+                false;
 
         } else {
 
             passwordStatus.textContent =
                 "Not linked";
 
-            passwordAuthStatus.textContent =
-                "Not linked";
+            passwordActionBtn.textContent =
+                "Reset";
 
-            passwordAuthStatus.style.color =
-                "#9ca3af";
+            passwordActionBtn.disabled =
+                false;
 
         }
 
@@ -352,7 +359,7 @@ linkGoogleBtn?.addEventListener("click", async () => {
 
         const res =
             await fetch(
-                "https://cybersheild-hub-osjl.onrender.com/api/auth/link/google/start",
+                `${API_BASE}/api/auth/link/google/start`,
                 {
                     method: "POST",
 
@@ -425,7 +432,7 @@ linkGithubBtn?.addEventListener("click", async () => {
 
         const res =
             await fetch(
-                "https://cybersheild-hub-osjl.onrender.com/api/auth/link/github/start",
+                `${API_BASE}/api/auth/link/github/start`,
                 {
                     method: "GET",
                     credentials: "include",
@@ -475,6 +482,15 @@ linkGithubBtn?.addEventListener("click", async () => {
             "#ef4444";
 
     }
+
+});
+
+
+// ===== RESET PASSWORD =====
+
+passwordActionBtn?.addEventListener("click", () => {
+
+    window.location.href = "forgot-password.html";
 
 });
 

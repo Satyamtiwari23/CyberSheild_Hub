@@ -231,7 +231,7 @@ app.post("/api/auth/link/google/start", authenticateToken, (req, res) => {
 
   res.setHeader(
     "Set-Cookie",
-    `google_link_session=${linkSession}; HttpOnly; ${isProduction ? "Secure; " : ""}SameSite=Lax; Path=/; Max-Age=600`
+    `google_link_session=${linkSession}; HttpOnly; Secure; SameSite=None; Path=/; Max-Age=600`
   );
 
   const authUrl =
@@ -1027,9 +1027,9 @@ app.get("/api/auth/link/github/start", authenticateToken, (req, res) => {
     process.env.NODE_ENV === "production";
 
   res.setHeader(
-    "Set-Cookie",
-    `github_link_session=${linkSession}; HttpOnly; ${isProduction ? "Secure; " : ""}SameSite=Lax; Path=/; Max-Age=600`
-  );
+  "Set-Cookie",
+  `github_link_session=${linkSession}; HttpOnly; Secure; SameSite=None; Path=/; Max-Age=600`
+);
 
   const githubAuthUrl =
     "https://github.com/login/oauth/authorize" +
