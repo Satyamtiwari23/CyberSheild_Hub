@@ -767,6 +767,24 @@ def ai_auth():
 
     return response
 
+
+@app.route("/logout")
+def ai_logout():
+
+    response = make_response(
+        redirect(
+            "https://satyamtiwari23.github.io/CyberSheild_Hub/login.html"
+        )
+    )
+
+    response.delete_cookie(
+        "ai_auth_token",
+        secure=True,
+        samesite="Lax"
+    )
+
+    return response
+
 # ============================================================
 # AI GENERATION
 # ============================================================

@@ -1225,9 +1225,7 @@
     </div>
 
     <script>
-        if (!localStorage.getItem("token")) {
-            window.location.replace("login.html");
-        }
+        
         let chats =
             JSON.parse(
                 localStorage.getItem("history")
@@ -1264,7 +1262,7 @@
                 const response = await fetch("/generate", {
 
                     method: "POST",
-
+                    credentials: "include",
                     headers: {
                         "Content-Type": "application/json"
                     },

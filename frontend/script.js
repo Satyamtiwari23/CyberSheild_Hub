@@ -81,7 +81,7 @@ function logout() {
     localStorage.removeItem("token");
     localStorage.removeItem("userEmail");
     localStorage.removeItem("userName");
-    window.location.href = "login.html";
+    window.location.href = "https://cybershield-ai-jet.vercel.app/logout";
 }
 
 authBtn?.addEventListener("click", (e) => {
@@ -797,6 +797,33 @@ document.addEventListener('keydown', (e) => {
         scanBtn?.click();
     }
 });
+
+
+function openAIChatbot() {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+        window.location.href = "login.html";
+        return;
+    }
+
+    const form = document.createElement("form");
+
+    form.method = "POST";
+    form.action = "https://cybershield-ai-jet.vercel.app/auth";
+
+    const input = document.createElement("input");
+
+    input.type = "hidden";
+    input.name = "token";
+    input.value = token;
+
+    form.appendChild(input);
+
+    document.body.appendChild(form);
+
+    form.submit();
+}
 
 // ===== CONSOLE EASTER EGG =====
 console.log('%c🛡️ CyberShield Hub v3.2.1', 'font-size:20px; font-weight:bold; color:#3b82f6;');
