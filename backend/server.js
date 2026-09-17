@@ -989,10 +989,18 @@ app.post("/api/ai/explain", async (req, res) => {
       });
     }
 
+    const authHeader =
+      req.headers.authorization;
+
     const response = await axios.post(
       `${AI_SERVICE_URL}/generate`,
       {
         topic: topic
+      },
+      {
+        headers: {
+          Authorization: authHeader || ""
+        }
       }
     );
 
