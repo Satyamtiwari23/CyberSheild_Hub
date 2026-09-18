@@ -1010,12 +1010,17 @@ app.post("/api/ai/explain", async (req, res) => {
 
     console.error(
       "AI Chatbot Error:",
-      error.message
+      error.response?.status,
+      error.response?.data || error.message
     );
 
-    return res.status(500).json({
-      error: "AI service unavailable"
-    });
+    return res.status(
+      error.response?.status || 500
+    ).json(
+      error.response?.data || {
+        error: "AI service unavailable"
+      }
+    );
   }
 });
 
