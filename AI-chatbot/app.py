@@ -203,23 +203,7 @@ Return ONLY the JSON object.
             temperature=0,
 
             response_format={
-                "type": "json_schema",
-                "json_schema": {
-                    "name": "cybersecurity_scope",
-                    "strict": True,
-                    "schema": {
-                        "type": "object",
-                        "properties": {
-                            "is_cyber": {
-                                "type": "boolean"
-                            }
-                        },
-                        "required": [
-                            "is_cyber"
-                        ],
-                        "additionalProperties": False
-                    }
-                }
+                "type": "json_object"
             },
 
             max_tokens=50
