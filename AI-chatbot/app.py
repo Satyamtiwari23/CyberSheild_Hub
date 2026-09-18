@@ -56,7 +56,15 @@ def verify_token(token):
 
 def authenticate_ai_request():
 
+    # First try AI authentication cookie
     token = request.cookies.get("ai_auth_token")
+
+    # If cookie is not available, accept CyberShield JWT
+    if not token:
+        auth_header = request.headers.get("Authorization", "")
+
+        if auth_header.startswith("Bearer "):
+            token = auth_header.split(" ", 1)[1].strip()
 
     if not token:
         return None
