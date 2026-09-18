@@ -206,7 +206,9 @@ Return ONLY the JSON object.
                 "type": "json_object"
             },
 
-            max_tokens=50
+            reasoning_format="hidden",
+
+            max_tokens=100
         )
 
         result = json.loads(
