@@ -5,8 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="images/Favicon.png">
-    <title>CyberShield Extension</title>
+    <title>CyberShield Browser Guard</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
     <style>
         * {
             margin: 0;
@@ -17,223 +18,506 @@
         :root {
             --bg: #020617;
             --card: #020617;
+            --card-border: rgba(51, 65, 85, .9);
             --text: #e5e7eb;
+            --muted: #9ca3af;
             --accent: #3b82f6;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
         }
 
         body {
             font-family: 'Inter', sans-serif;
-
             background:
-                radial-gradient(circle at 0% 0%,
-                    rgba(59, 130, 246, .20),
-                    transparent 60%),
-
-                radial-gradient(circle at 100% 100%,
-                    rgba(34, 197, 94, .15),
-                    transparent 55%),
-
-                linear-gradient(145deg,
-                    var(--bg) 0%,
-                    #020617 100%);
-
+                radial-gradient(circle at 0% 0%, rgba(59, 130, 246, .20), transparent 60%),
+                radial-gradient(circle at 100% 100%, rgba(34, 197, 94, .15), transparent 55%),
+                linear-gradient(145deg, var(--bg) 0%, #020617 100%);
             background-attachment: fixed;
-
             color: var(--text);
-
             min-height: 100vh;
-        }
-
-        .ext-card {
-            background: var(--card);
-
-            border: 1px solid #334155;
-
-            border-radius: 48px;
-
-            padding: 40px;
-
-            text-align: center;
-
-            transition: all .25s ease;
-        }
-
-        .ext-card:hover {
-
-            border-color: #3b82f6;
-
-            box-shadow:
-                0 0 0 1px rgba(59, 130, 246, .30),
-                0 0 30px rgba(59, 130, 246, .20);
-
-            transform: translateY(-2px);
-        }
-
-        body.light-mode .ext-card {
-
-            background: #ffffff;
-
-            border: 1px solid #475569;
-
-            box-shadow:
-                0 4px 12px rgba(15, 23, 42, .04),
-                0 1px 3px rgba(15, 23, 42, .05);
-        }
-
-        body.light-mode .ext-card:hover {
-
-            border-color: #3b82f6;
-
-            box-shadow:
-                0 0 0 1px rgba(59, 130, 246, .30),
-                0 0 30px rgba(59, 130, 246, .18);
-
-            transform: translateY(-2px);
-        }
-
-        .feature {
-
-            background: rgba(59, 130, 246, .10);
-
-            border: 1px solid transparent;
-
-            border-radius: 28px;
-
-            padding: 24px;
-
-            width: 200px;
-
-            transition: all .25s ease;
-        }
-
-        .feature:hover {
-
-            border-color: #3b82f6;
-
-            box-shadow:
-                0 0 0 1px rgba(59, 130, 246, .30),
-                0 0 20px rgba(59, 130, 246, .18);
-
-            transform: translateY(-2px);
-        }
-
-        .light-mode {
-            --bg: #ffffff;
-            --card: #ffffff;
-            --card-border: #e2e8f0;
-            --text: #0f172a;
-            --accent: #3b82f6;
+            line-height: 1.6;
         }
 
         body.light-mode {
-            background: #ffffff;
-        }
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --card-border: #e2e8f0;
+            --text: #0f172a;
+            --muted: #64748b;
+            --accent: #2563eb;
 
-        body.light-mode .card {
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 4px 12px rgba(15, 23, 42, .05);
-        }
-
-        body.light-mode input {
-            background: #ffffff;
-            color: #0f172a;
-            border: 1px solid #cbd5e1;
-        }
-
-        body.light-mode .drop-zone {
-            border-color: #3b82f6;
-            background: #f8fafc;
-        }
-
-        body.light-mode footer {
-            color: #64748b;
+            background:
+                radial-gradient(circle at 0% 0%, rgba(59, 130, 246, .10), transparent 55%),
+                radial-gradient(circle at 100% 100%, rgba(34, 197, 94, .07), transparent 50%),
+                #f8fafc;
         }
 
         .container {
-            max-width: 1100px;
+            max-width: 1280px;
             margin: 0 auto;
-            padding: 32px;
+            padding: 24px;
         }
 
-        .ext-card {
+        /* Header — same visual language as the other CyberShield tools */
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            padding: 6px 0 22px;
+            margin-bottom: 28px;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            min-width: 0;
+        }
+
+        .brand-logo {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            display: grid;
+            place-items: center;
+            flex: 0 0 auto;
+            font-size: 25px;
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, .20);
+        }
+
+        .brand-text h1 {
+            font-size: 1.35rem;
+            font-weight: 700;
+            line-height: 1.2;
+            color: var(--text);
+        }
+
+        .brand-text p {
+            color: var(--muted);
+            font-size: .88rem;
+            margin-top: 4px;
+        }
+
+        .back-link {
+            color: var(--accent);
+            text-decoration: none;
+            font-size: .9rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .hero-card {
             background: var(--card);
-            border: 1px solid #334155;
-            border-radius: 48px;
-            padding: 40px;
+            border: 1px solid var(--card-border);
+            border-radius: 28px;
+            padding: 34px;
             text-align: center;
+            box-shadow: 0 14px 40px rgba(0, 0, 0, .12);
+            animation: cardAppear .45s ease both;
+        }
+
+        .hero-icon {
+            width: 76px;
+            height: 76px;
+            margin: 0 auto 18px;
+            border-radius: 22px;
+            display: grid;
+            place-items: center;
+            font-size: 40px;
+            background: rgba(59, 130, 246, .10);
+            border: 1px solid rgba(59, 130, 246, .25);
+        }
+
+        .hero-card h2 {
+            font-size: clamp(1.7rem, 3vw, 2.25rem);
+            line-height: 1.2;
+            margin-bottom: 9px;
+        }
+
+        .hero-card > p {
+            max-width: 700px;
+            margin: 0 auto;
+            color: var(--muted);
+            font-size: .98rem;
         }
 
         .chrome-btn {
-            display: inline-block;
-            background: #fbbf24;
-            color: #020617;
-            padding: 16px 32px;
-            border-radius: 60px;
-            font-weight: 700;
-            margin: 24px 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin: 25px 0 13px;
+            padding: 13px 23px;
+            border: 0;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #2563eb, #3b82f6);
+            color: #fff;
             text-decoration: none;
+            font-weight: 700;
+            box-shadow: 0 10px 25px rgba(37, 99, 235, .22);
+            transition: all .25s ease;
+        }
+
+        .chrome-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 30px rgba(37, 99, 235, .30);
+        }
+
+        .demo-note {
+            color: var(--muted);
+            font-size: .78rem;
+        }
+
+        .status-row {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 9px;
+            margin-top: 22px;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 11px;
+            border-radius: 999px;
+            background: rgba(34, 197, 94, .08);
+            border: 1px solid rgba(34, 197, 94, .18);
+            color: var(--text);
+            font-size: .78rem;
+        }
+
+        .section-title {
+            margin: 32px 0 16px;
+            font-size: 1.05rem;
+            font-weight: 700;
         }
 
         .features {
-            display: flex;
-            gap: 28px;
-            justify-content: center;
-            margin: 40px 0;
-            flex-wrap: wrap;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 18px;
         }
 
         .feature {
-            background: rgba(59, 130, 246, 0.1);
-            border-radius: 28px;
+            background: var(--card);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 22px;
+            text-align: left;
+            transition: all .25s ease;
+            animation: cardAppear .45s ease both;
+        }
+
+        .feature:hover {
+            border-color: rgba(59, 130, 246, .75);
+            box-shadow:
+                0 0 0 1px rgba(59, 130, 246, .18),
+                0 0 25px rgba(59, 130, 246, .12);
+            transform: translateY(-2px);
+        }
+
+        .feature-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            display: grid;
+            place-items: center;
+            background: rgba(59, 130, 246, .10);
+            border: 1px solid rgba(59, 130, 246, .16);
+            font-size: 20px;
+            margin-bottom: 14px;
+        }
+
+        .feature h3 {
+            font-size: .96rem;
+            margin-bottom: 5px;
+        }
+
+        .feature p {
+            color: var(--muted);
+            font-size: .82rem;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
             padding: 24px;
-            width: 200px;
+        }
+
+        .card h3 {
+            font-size: 1rem;
+            margin-bottom: 15px;
+        }
+
+        .steps {
+            padding-left: 21px;
+            color: var(--muted);
+            font-size: .88rem;
+        }
+
+        .steps li {
+            margin-bottom: 9px;
+            padding-left: 4px;
+        }
+
+        .steps strong {
+            color: var(--text);
+        }
+
+        .security-note {
+            background: rgba(59, 130, 246, .07);
+            border: 1px solid rgba(59, 130, 246, .18);
+            border-radius: 16px;
+            padding: 16px;
+            color: var(--muted);
+            font-size: .82rem;
+        }
+
+        .security-note strong {
+            color: var(--text);
         }
 
         footer {
             text-align: center;
-            margin-top: 56px;
-            color: #9ca3af;
+            margin: 34px 0 8px;
+            color: var(--muted);
+            font-size: .8rem;
+        }
+
+        @keyframes cardAppear {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 800px) {
+            .container {
+                padding: 18px;
+            }
+
+            .page-header {
+                align-items: flex-start;
+            }
+
+            .features,
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-card {
+                padding: 28px 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 14px;
+            }
+
+            .page-header {
+                gap: 12px;
+                margin-bottom: 20px;
+                padding-bottom: 17px;
+            }
+
+            .brand-logo {
+                width: 42px;
+                height: 42px;
+                border-radius: 12px;
+                font-size: 22px;
+            }
+
+            .brand-text h1 {
+                font-size: 1.08rem;
+            }
+
+            .brand-text p {
+                font-size: .75rem;
+            }
+
+            .back-link {
+                font-size: .78rem;
+            }
+
+            .hero-card {
+                border-radius: 22px;
+                padding: 24px 16px;
+            }
+
+            .hero-icon {
+                width: 64px;
+                height: 64px;
+                border-radius: 18px;
+                font-size: 33px;
+            }
+
+            .hero-card h2 {
+                font-size: 1.55rem;
+            }
+
+            .chrome-btn {
+                width: 100%;
+            }
+
+            .feature,
+            .card {
+                padding: 19px;
+            }
         }
     </style>
 </head>
 
 <body>
     <div class="container">
-        <div class="ext-card">
-            <span style="font-size:56px;">🧩</span>
-            <h1 style="font-size:2rem;margin:8px 0;">CyberShield Browser Guard</h1>
-            <p>Real-time phishing & scam protection directly in Chrome</p>
-            <a href="#" class="chrome-btn" id="installFakeBtn">➕ Add to Chrome (Demo)</a>
-            <p style="font-size:0.8rem;">✔️ Blocks malicious URLs ✔️ Scans emails on-the-fly ✔️ QR risk overlay</p>
-            <div class="features">
-                <div class="feature">🔗 Auto link analysis</div>
-                <div class="feature">📧 Gmail phishing filter</div>
-                <div class="feature">⚡ Lightweight & free</div>
+
+        <header class="page-header">
+            <div class="brand">
+                <div class="brand-logo">🧩</div>
+                <div class="brand-text">
+                    <h1>CyberShield Browser Guard</h1>
+                    <p>Real-time phishing & scam protection</p>
+                </div>
             </div>
-            <hr style="margin:24px 0;border-color:#334155;">
-            <h3>📥 Installation instructions (simulated)</h3>
-            <ol style="text-align:left;display:inline-block;margin-top:12px;">
-                <li>1. Download the extension .crx file</li>
-                <li>2. Go to chrome://extensions</li>
-                <li>3. Enable Developer mode → Load unpacked</li>
-                <li>4. Select the CyberShield folder</li>
-            </ol>
-            <div style="margin-top:32px;"><a href="index.html" style="color:var(--accent);">← Return to Dashboard</a>
-            </div>
-        </div>
-        <footer>🚀 Extension will be published on Chrome Web Store soon. Demo interface.</footer>
+
+            <a href="index.html" class="back-link">← Dashboard</a>
+        </header>
+
+        <main>
+
+            <section class="hero-card">
+                <div class="hero-icon">🧩</div>
+
+                <h2>CyberShield Browser Guard</h2>
+
+                <p>
+                    A lightweight browser security layer designed to help detect
+                    phishing links, suspicious emails, and risky QR-based content
+                    while you browse.
+                </p>
+
+                <a href="#" class="chrome-btn" id="installFakeBtn">
+                    ➕ Add to Chrome <span style="opacity:.75;">(Demo)</span>
+                </a>
+
+                <div class="demo-note">
+                    Demo interface — browser extension package is not being installed from this page.
+                </div>
+
+                <div class="status-row">
+                    <span class="status-pill">✔️ Malicious URL analysis</span>
+                    <span class="status-pill">✔️ Email threat detection</span>
+                    <span class="status-pill">✔️ QR risk assistance</span>
+                </div>
+            </section>
+
+            <h2 class="section-title">Browser Protection Features</h2>
+
+            <section class="features">
+
+                <div class="feature">
+                    <div class="feature-icon">🔗</div>
+                    <h3>Auto Link Analysis</h3>
+                    <p>
+                        Analyze suspicious URLs and identify common phishing
+                        and malicious-link indicators.
+                    </p>
+                </div>
+
+                <div class="feature">
+                    <div class="feature-icon">📧</div>
+                    <h3>Email Phishing Filter</h3>
+                    <p>
+                        Assist with identifying suspicious email content and
+                        common social-engineering patterns.
+                    </p>
+                </div>
+
+                <div class="feature">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Lightweight Protection</h3>
+                    <p>
+                        Designed as a simple security companion without adding
+                        unnecessary complexity to the browsing experience.
+                    </p>
+                </div>
+
+            </section>
+
+            <section class="info-grid">
+
+                <div class="card">
+                    <h3>📥 Installation Instructions</h3>
+
+                    <ol class="steps">
+                        <li><strong>Download</strong> the extension package when available.</li>
+                        <li>Open <strong>chrome://extensions</strong> in Chrome.</li>
+                        <li>Enable <strong>Developer mode</strong>.</li>
+                        <li>Select <strong>Load unpacked</strong>.</li>
+                        <li>Choose the CyberShield extension folder.</li>
+                    </ol>
+                </div>
+
+                <div class="card">
+                    <h3>🛡️ About Browser Guard</h3>
+
+                    <div class="security-note">
+                        <strong>CyberShield Browser Guard</strong> is intended
+                        as an additional security layer. Always verify suspicious
+                        websites, messages, and requests independently before
+                        entering passwords, payment information, or other sensitive data.
+                    </div>
+                </div>
+
+            </section>
+
+        </main>
+
+        <footer>
+            🚀 CyberShield Browser Guard · Demo interface · Chrome Web Store publication planned
+        </footer>
+
     </div>
+
     <script src="theme.js"></script>
+
     <script>
         if (!localStorage.getItem("token")) {
             window.location.replace("login.html");
         }
+
         document.getElementById('installFakeBtn')?.addEventListener('click', (e) => {
             e.preventDefault();
-            alert('Demo: In a real scenario, you would download the extension package.\nCyberShield protects against phishing & scams.');
+
+            alert(
+                'Demo: In a real scenario, you would download the extension package.\\nCyberShield protects against phishing & scams.'
+            );
         });
     </script>
+
 </body>
 
 </html>

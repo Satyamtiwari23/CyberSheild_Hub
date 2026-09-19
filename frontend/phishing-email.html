@@ -2,12 +2,22 @@
 <html lang="en">
 
 <head>
+
     <meta charset="UTF-8">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <link rel="icon" type="image/png" href="images/Favicon.png">
-    <title>Phishing Email Test - CyberShield</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <title>CyberShield - Phishing Email Analyzer</title>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@400;500;600;700&display=swap"
+        rel="stylesheet"
+    >
+
     <style>
+
         * {
             margin: 0;
             padding: 0;
@@ -17,10 +27,13 @@
         :root {
             --bg: #020617;
             --card: #020617;
-            --card-border: rgba(51, 65, 85, .9);
+            --card-border: rgba(51, 65, 85, 0.9);
             --text: #e5e7eb;
             --muted: #9ca3af;
             --accent: #3b82f6;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
         }
 
         body {
@@ -46,6 +59,13 @@
             min-height: 100vh;
         }
 
+        .light-mode {
+            --bg: #f1f5f9;
+            --card: #ffffff;
+            --text: #020617;
+            --muted: #475569;
+        }
+
         body.light-mode {
             background: #ffffff;
         }
@@ -56,47 +76,33 @@
             padding: 24px;
         }
 
-        .two-col {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 28px;
-            align-items: stretch;
-        }
-
-        .two-col .card {
-            height: 100%;
-        }
-
-        #explainBtn {
-            background:
-                linear-gradient(135deg,
-                    #4f46e5,
-                    #7c3aed);
-        }
-
-
-        #emailResultCard strong {
-            display: inline-block;
-            margin-top: 4px;
-        }
-
         header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap;
+            flex-wrap: nowrap;
+
+            width: 100%;
 
             margin-bottom: 32px;
 
-            border-bottom: 1px solid rgba(59, 130, 246, .3);
+            border-bottom: 1px solid rgba(59, 130, 246, 0.3);
 
             padding-bottom: 16px;
+
+            gap: 20px;
         }
 
         .brand {
             display: flex;
             gap: 12px;
             align-items: center;
+
+            min-width: 0;
+        }
+
+        .brand>div:last-child {
+            min-width: 0;
         }
 
         .brand-logo {
@@ -120,67 +126,84 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 28px;
+            margin: 24px 0;
         }
 
         .card {
             background: var(--card);
-
             border: 1px solid var(--card-border);
-
             border-radius: 28px;
-
             padding: 24px;
 
-            transition: .25s ease;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: cardAppear .6s ease forwards;
+
+            transition: all 0.25s ease;
+        }
+
+        .two-col .card:nth-child(1) {
+            animation-delay: .05s;
+        }
+
+        .two-col .card:nth-child(2) {
+            animation-delay: .10s;
+        }
+
+        #visitCard {
+            animation-delay: .15s;
+        }
+
+        #aiCard {
+            animation-delay: .20s;
+        }
+
+        @keyframes cardAppear {
+
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
         }
 
         .card:hover {
+
             border-color: #3b82f6;
 
             box-shadow:
-                0 0 0 1px rgba(59, 130, 246, .3),
-                0 0 25px rgba(59, 130, 246, .25);
+                0 0 0 1px rgba(59, 130, 246, 0.3),
+                0 0 25px rgba(59, 130, 246, 0.25);
 
             transform: translateY(-2px);
         }
 
-        textarea {
-            width: 100%;
-
-            background: rgba(0, 0, 0, .2);
-
+        textarea,
+        input {
+            background: rgba(0, 0, 0, 0.3);
             border: 1px solid var(--card-border);
-
-            border-radius: 20px;
-
-            padding: 14px;
-
+            border-radius: 60px;
+            padding: 14px 20px;
             color: var(--text);
-
-            resize: none;
+            font-size: 1rem;
+            width: 100%;
+            outline: none;
         }
 
         button {
-            background:
-                linear-gradient(135deg,
-                    #3b82f6,
-                    #8b5cf6);
-
+            background: linear-gradient(135deg, var(--accent), #2563eb);
             border: none;
-
             padding: 12px 24px;
-
             border-radius: 40px;
-
             color: white;
-
             font-weight: 600;
-
             cursor: pointer;
-
-            transition: .25s ease;
-
-            margin-top: 16px;
+            transition: 0.2s;
         }
 
         button:hover {
@@ -190,205 +213,10 @@
                 0 0 18px rgba(59, 130, 246, .35);
         }
 
-        /* =========================
-   LIGHT MODE
-========================= */
-
-        body.light-mode {
-
-            --bg: #f8fafc;
-            --card: #ffffff;
-            --text: #0f172a;
-            --muted: #64748b;
-            --card-border: #dbe4f0;
-
-            background:
-                radial-gradient(circle at top left,
-                    rgba(59, 130, 246, .08),
-                    transparent 40%),
-
-                radial-gradient(circle at bottom right,
-                    rgba(34, 197, 94, .05),
-                    transparent 45%),
-
-                #f8fafc;
-
-            color: var(--text);
-        }
-
-        /* Container */
-
-        body.light-mode .container,
-        body.light-mode .wrap {
-
-            color: var(--text);
-        }
-
-        /* Header */
-
-        body.light-mode header {
-
-            border-bottom: 1px solid #dbe4f0;
-        }
-
-        /* Cards */
-
-        body.light-mode .card {
-
-            background: #ffffff;
-
-            border: 1px solid #64748b;
-
-            box-shadow:
-                0 4px 12px rgba(15, 23, 42, .04),
-                0 1px 3px rgba(15, 23, 42, .06);
-
-            color: #0f172a;
-        }
-
-        body.light-mode .card:hover {
-
-            border-color: #3b82f6 !important;
-
-            box-shadow:
-                0 0 0 2px rgba(59, 130, 246, .25),
-                0 10px 30px rgba(59, 130, 246, .15);
-
-            transform: translateY(-2px);
-        }
-
-        /* Textareas */
-
-        body.light-mode textarea,
-        body.light-mode input {
-
-            background: #f8fafc;
-
-            color: #0f172a;
-
-            border: 1px solid #dbe4f0;
-        }
-
-        body.light-mode textarea::placeholder,
-        body.light-mode input::placeholder {
-
-            color: #94a3b8;
-        }
-
-        /* Analysis Box */
-
-        body.light-mode .result-list li {
-
-            background: #eff6ff;
-
-            color: #1e293b;
-
-            border: 1px solid #dbeafe;
-        }
-
-        /* Risk Input Box */
-
-        body.light-mode #urlInput,
-        body.light-mode #qrPayload {
-
-            background: #eff6ff;
-
-            border: 1px solid #dbeafe;
-
-            color: #1e293b;
-        }
-
-        /* Buttons */
-
-        body.light-mode button {
-
-            background:
-                linear-gradient(135deg,
-                    #3b82f6,
-                    #6366f1);
-
-            color: white;
-
-            box-shadow:
-                0 4px 12px rgba(59, 130, 246, .25);
-        }
-
-        body.light-mode button:hover {
-
-            box-shadow:
-                0 8px 20px rgba(59, 130, 246, .35);
-        }
-
-        /* Green Button */
-
-        body.light-mode #visitBtn {
-
-            background:
-                linear-gradient(135deg,
-                    #22c55e,
-                    #16a34a);
-        }
-
-        /* Footer */
-
-        body.light-mode footer {
-
-            color: #64748b;
-        }
-
-        /* Links */
-
-        body.light-mode a {
-
-            color: #2563eb;
-        }
-
         .badge {
             padding: 4px 12px;
             border-radius: 40px;
-            font-size: .8rem;
-        }
-
-        .badge-danger {
-            background: #ef4444;
-            color: white;
-        }
-
-        #visitCard {
-            margin-top: 25px;
-        }
-
-        #openEmailSection {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 24px;
-            padding: 3px;
-        }
-
-        #visitBtn {
-            margin: 0;
-
-            background:
-                linear-gradient(135deg,
-                    #16a34a,
-                    #15803d);
-        }
-
-        #emailResultCard {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .badge-warning {
-            background: #f59e0b;
-            color: white;
-        }
-
-        .badge-safe {
-            background: #22c55e;
-            color: white;
+            font-size: 0.8rem;
         }
 
         .result-list {
@@ -397,14 +225,215 @@
         }
 
         .result-list li {
-            background:
-                rgba(59, 130, 246, .1);
-
-            border-radius: 14px;
-
-            padding: 10px;
-
+            padding: 8px 12px;
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: 16px;
             margin-bottom: 8px;
+            font-size: 0.85rem;
+        }
+
+        .report-sec {
+            margin-top: 24px;
+            text-align: right;
+        }
+
+        .report-sec button {
+            background: linear-gradient(135deg, #ff4d4d, #cc0000);
+        }
+
+        .badge-danger {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid var(--danger);
+            color: #fecaca;
+        }
+
+        .badge-warning {
+            background: rgba(245, 158, 11, 0.2);
+            border: 1px solid var(--warning);
+        }
+
+        .badge-safe {
+            background: rgba(34, 197, 94, 0.2);
+            border: 1px solid var(--success);
+            color: var(--success);
+        }
+
+        #visitCard {
+            width: 100%;
+            max-width: none;
+            margin-top: 0;
+        }
+
+        #openQRSection {
+            width: 100%;
+            margin-top: 24px;
+        }
+
+        #visitBtn {
+            margin-left: auto;
+            display: block;
+
+            background:
+                linear-gradient(135deg,
+                    #16a34a,
+                    #15803d);
+        }
+
+        #visitBtn:hover {
+            transform: translateY(-2px);
+        }
+
+        #aiCard {
+            margin-top: 25px;
+        }
+
+        #aiExplanation {
+
+            margin-top: 12px;
+
+            line-height: 1.8;
+
+            color: var(--text);
+
+            font-size: .95rem;
+        }
+
+        #explainBtn {
+
+            margin-top: 16px;
+
+            background:
+                linear-gradient(135deg,
+                    #4f46e5,
+                    #7c3aed);
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 48px;
+            color: var(--muted);
+            font-size: 0.75rem;
+        }
+
+        @media (max-width: 800px) {
+
+            .two-col {
+                grid-template-columns: 1fr;
+            }
+
+            header {
+                flex-wrap: nowrap;
+                align-items: center;
+                gap: 10px;
+            }
+
+            header .brand {
+                flex: 1;
+                min-width: 0;
+            }
+
+            header .brand h2 {
+                font-size: 1.25rem;
+                line-height: 1.2;
+                white-space: nowrap;
+            }
+
+            header .brand p {
+                font-size: 0.8rem;
+                line-height: 1.2;
+                white-space: nowrap;
+            }
+
+            header .brand-logo {
+                width: 42px;
+                height: 42px;
+                flex-shrink: 0;
+            }
+
+            .back-link {
+                flex-shrink: 0;
+                white-space: nowrap;
+                font-size: 0.85rem;
+            }
+
+            #openQRSection {
+                margin-top: 24px;
+            }
+
+            #visitCard {
+                padding: 20px;
+            }
+
+            #actionDetails {
+                margin-top: 10px !important;
+                line-height: 1.5;
+            }
+
+            #visitBtn {
+                margin-left: auto;
+                margin-top: 14px !important;
+            }
+        }
+
+        @media (max-width: 420px) {
+
+            .container {
+                padding: 16px;
+            }
+
+            header .brand h2 {
+                font-size: 0.92rem;
+            }
+
+            header .brand p {
+                font-size: 0.62rem;
+            }
+
+            .back-link {
+                font-size: 0.62rem;
+            }
+
+            #visitCard {
+                padding: 18px;
+            }
+
+            #startScannerBtn {
+                margin-bottom: 10px;
+                margin-top: 10px;
+                margin-left: 10px;
+            }
+        }
+
+        .hidden {
+            display: none;
+        }
+    
+
+
+        /* ==========================================
+           PHISHING EMAIL ANALYZER
+           Same visual system as Malicious QR Analyzer
+           ========================================== */
+
+        #emailResultCard {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        #openEmailSection {
+            width: 100%;
+            margin-top: 24px;
+        }
+
+        #visitCard {
+            width: 100%;
+            max-width: none;
+            margin-top: 0;
+        }
+
+        #openEmailSection > #visitCard {
+            animation-delay: .15s;
         }
 
         #extractedLinksBox {
@@ -415,10 +444,6 @@
             word-break: break-all;
         }
 
-        .hidden {
-            display: none;
-        }
-
         #aiCard {
             margin-top: 25px;
         }
@@ -426,126 +451,253 @@
         #aiExplanation {
             margin-top: 12px;
             line-height: 1.8;
+            color: var(--text);
+            font-size: .95rem;
+        }
+
+        #explainBtn {
+            margin-top: 16px;
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
         }
 
         #reportEmailSection {
-            margin-top: 24px;
-            text-align: right;
+            margin-top: 24px !important;
+            text-align: right !important;
         }
 
         #reportEmailBtn {
-            background: #dc2626;
+            background: linear-gradient(135deg, #ff4d4d, #cc0000) !important;
         }
 
-        footer {
-            text-align: center;
-            margin-top: 48px;
-            color: var(--muted);
-            font-size: .75rem;
+        #scanEmailBtn {
+            width: 100%;
         }
 
-        .hidden {
-            display: none;
+        #emailBody {
+            min-height: 170px;
+            border-radius: 20px;
+            line-height: 1.6;
         }
 
-        @media(max-width:800px) {
-            .two-col {
-                grid-template-columns: 1fr;
+        #emailRiskBadge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-size: .8rem;
+        }
+
+        /* Keep the same compact tablet behavior as the QR analyzer. */
+        @media (max-width: 800px) {
+
+            #openEmailSection {
+                margin-top: 24px;
+            }
+
+            #visitCard {
+                padding: 20px;
+            }
+
+            #openEmailSection {
+                display: block;
+            }
+
+            #visitBtn {
+                margin-left: auto;
+                margin-top: 14px !important;
             }
         }
+
+        @media (max-width: 420px) {
+
+            .container {
+                padding: 16px;
+            }
+
+            header .brand h2 {
+                font-size: 0.92rem;
+            }
+
+            header .brand p {
+                font-size: 0.62rem;
+            }
+
+            .back-link {
+                font-size: 0.62rem;
+            }
+
+            #visitCard {
+                padding: 18px;
+            }
+
+            #emailBody {
+                min-height: 150px;
+                font-size: .9rem;
+            }
+
+            #scanEmailBtn {
+                width: 100%;
+            }
+        }
+
     </style>
+
 </head>
 
 <body>
     <div class="container">
+
         <header>
+
             <div class="brand">
+
                 <div class="brand-logo">📧</div>
+
                 <div>
                     <h2>Phishing Email Analyzer</h2>
-                    <p>Paste email content or upload email data for threat assessment</p>
+                    <p>Real-time email threat analysis</p>
                 </div>
+
             </div>
-            <a href="index.html" style="color:var(--accent);" class="back-link">← Return to Dashboard</a>
+
+            <a href="index.html" style="color:var(--accent);" class="back-link">
+                ← Return to Dashboard
+            </a>
+
         </header>
+
+
         <div class="two-col">
+
             <div class="card">
-                <h3>✉️ Paste email content</h3>
-                <textarea id="emailBody" rows="6"
-                    placeholder="Enter Complete Email including Sender Email ID"></textarea>
-                <button id="scanEmailBtn" class="full-btn">Scan Email</button>
+
+                <h3>✉️ Email Input</h3>
+
+                <textarea
+                    id="emailBody"
+                    rows="6"
+                    placeholder="Enter Complete Email including Sender Email ID"
+                ></textarea>
+
+                <button id="scanEmailBtn" class="full-btn">
+                    Scan Email
+                </button>
+
+                <p style="font-size:0.8rem;margin-top:12px;">
+                    Paste the complete email content for threat assessment.
+                </p>
+
             </div>
+
+
             <div class="card" id="emailResultCard">
-                <h3>🔍 Threat Analysis</h3>
+
+                <h3>⚠️ Risk Assessment</h3>
+
                 <div>
                     <span id="emailRiskBadge">—</span>
                 </div>
-                <div>
+
+                <div style="margin-top:12px;">
                     <strong>Risk Score:</strong>
                     <span id="emailScore">0</span>/100
                 </div>
+
                 <div>
-                    <strong>Verdict:</strong> <span id="emailVerdict">—</span>
+                    <strong>Verdict:</strong>
+                    <span id="emailVerdict">Not analyzed</span>
                 </div>
+
                 <ul id="emailReasonList" class="result-list">
-
+                    <li>⚡ Enter email content</li>
                 </ul>
+
             </div>
+
         </div>
-        <div id="visitCard" class="card">
 
-            <div id="openEmailSection">
 
-                <div>
+        <div id="openEmailSection">
+
+            <div id="visitCard" class="card">
+
+                <div id="openEmailSectionInner">
 
                     <h3>📧 Email Investigation</h3>
 
-                    <p>
-                        Review links, sender information, and indicators extracted from the email before taking any
-                        action.
-                    </p>
+                    <div style="margin-top:12px;">
+                        Review links, sender information, and indicators
+                        extracted from the email before taking any action.
+                    </div>
 
                 </div>
 
-                <button id="visitBtn">
+                <button id="visitBtn" style="margin-top:16px;">
                     🔍 View Extracted Links →
                 </button>
 
+                <div id="extractedLinksBox" class="hidden">
+
+                    <h4 style="margin-top:20px;">
+                        🔗 Extracted Links
+                    </h4>
+
+                    <ul id="linksList" class="result-list"></ul>
+
+                </div>
+
             </div>
-            <div id="extractedLinksBox" class="hidden">
-
-                <h4 style="margin-top:20px;">
-                    🔗 Extracted Links
-                </h4>
-
-                <ul id="linksList" class="result-list">
-                </ul>
-
-            </div>
-
 
         </div>
+
+
         <div id="aiCard" class="card">
-            <h3>🛡️ CyberShield AI Assistant</h3>
+
+            <h3>
+                🛡️ CyberShield AI Assistant
+            </h3>
 
             <p id="aiExplanation">
-                Understand why this URL was flagged, potential risks, and how to stay protected.
+                Understand why this email was flagged,
+                potential phishing risks, and how to stay protected.
             </p>
 
             <button id="explainBtn">
                 🤖 Analyze with AI
             </button>
+
         </div>
 
-        <div id="reportEmailSection" class="hidden" style="text-align:right;margin-top:20px;">
-            <button id="reportEmailBtn" style="background:#dc2626;">📬 Report Phishing Email</button>
+
+        <div id="reportEmailSection" class="hidden"
+            style="text-align:right;margin-top:20px;">
+
+            <button id="reportEmailBtn">
+                📬 Report Phishing Email
+            </button>
+
         </div>
-        <footer>⚠️ Heuristic analysis – not 100% accurate. Always double-check suspicious links.</footer>
-        <script src="theme.js"></script>
-        <script>
+
+
+        <footer style="margin-top:48px;text-align:center;color:var(--muted);">
+            ⚠️ Heuristic analysis – not 100% accurate.
+            Always double-check suspicious links.
+        </footer>
+
+    </div>
+
+    <script src="theme.js"></script>
+
+    <script>
+
             if (!localStorage.getItem("token")) {
                 window.location.replace("login.html");
             }
+            const API_BASE_URL =
+                window.location.hostname === "localhost" ||
+                    window.location.hostname === "127.0.0.1"
+                    ? "http://127.0.0.1:5001"
+                    : "https://cybersheild-hub-osjl.onrender.com";
+
             const emailText = document.getElementById('emailBody');
             const scanBtn = document.getElementById('scanEmailBtn');
             const riskSpan = document.getElementById('emailRiskBadge');
@@ -897,16 +1049,18 @@
 
                         const response =
                             await fetch(
-                                "http://127.0.0.1:5000/generate",
+                                `${API_BASE_URL}/api/ai/explain`,
                                 {
                                     method: "POST",
 
                                     headers: {
-                                        "Content-Type":
-                                            "application/json"
+                                        "Content-Type": "application/json",
+                                        "Authorization": `Bearer ${localStorage.getItem("token")}`
                                     },
 
                                     body: JSON.stringify({
+
+                                        source: "phishing_email_analyzer",
 
                                         topic: `
 Analyze this email.
@@ -968,8 +1122,9 @@ No markdown.
                     'click', () =>
                     alert(`Reported email:\n${lastEmail.substring(0, 150)}`
                     ));
-        </script>
-    </div>
+        
+    </script>
+
 </body>
 
 </html>

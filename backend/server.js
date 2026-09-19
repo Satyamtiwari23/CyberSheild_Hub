@@ -1,12 +1,16 @@
 require("dotenv").config();
 const axios = require("axios");
+const FormData = require("form-data");
 const { google } = require("googleapis");
 const crypto = require("crypto");
+const dns = require("dns").promises;
+const net = require("net");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const express = require('express');
 const cors = require('cors');
 const mongoose = require("mongoose");
+const multer = require("multer");
 
 const SECURITY_ENGINE_URL =
   process.env.SECURITY_ENGINE_URL ||
@@ -72,6 +76,17 @@ app.use(cors({
 }));
 
 app.use(express.json());
+
+// =====================================================
+// SIGHTENGINE AI IMAGE DETECTION
+// =====================================================
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 15 * 1024 * 1024
+  }
+});
 
 // ✅ Connect MongoDB
 mongoose.connect(process.env.MONGODB_URI)
@@ -942,6 +957,799 @@ app.get("/", (req, res) => {
   res.send("CyberShield Hub Backend is running successfully 🚀");
 });
 
+
+// =====================================================
+// SAFE REMOTE MEDIA FETCH
+// =====================================================
+
+function isPrivateIPv4(ip) {
+  const parts = ip.split(".").map(Number);
+
+  if (parts.length !== 4 || parts.some(Number.isNaN)) {
+    return true;
+  }
+
+  const [a, b] = parts;
+
+  return (
+    a === 10 ||
+    a === 127 ||
+    (a === 169 && b === 254) ||
+    (a === 172 && b >= 16 && b <= 31) ||
+    (a === 192 && b === 168)
+  );
+}
+
+
+function isPrivateIPv6(ip) {
+  const normalized = ip.toLowerCase();
+
+  return (
+    normalized === "::1" ||
+    normalized.startsWith("fc") ||
+    normalized.startsWith("fd") ||
+    normalized.startsWith("fe80:")
+  );
+}
+
+
+async function validatePublicMediaUrl(rawUrl) {
+
+  let parsed;
+
+  try {
+    parsed = new URL(rawUrl);
+  } catch {
+    throw new Error("Invalid media URL.");
+  }
+
+
+  if (!["http:", "https:"].includes(parsed.protocol)) {
+    throw new Error(
+      "Only HTTP and HTTPS media URLs are supported."
+    );
+  }
+
+
+  if (!parsed.hostname) {
+    throw new Error("Invalid media hostname.");
+  }
+
+
+  // Prevent requests to localhost/private network addresses.
+  const addresses =
+    await dns.lookup(
+      parsed.hostname,
+      {
+        all: true
+      }
+    );
+
+
+  for (const address of addresses) {
+
+    const ip = address.address;
+
+    if (
+      net.isIPv4(ip) &&
+      isPrivateIPv4(ip)
+    ) {
+      throw new Error(
+        "Private or local network URLs are not allowed."
+      );
+    }
+
+    if (
+      net.isIPv6(ip) &&
+      isPrivateIPv6(ip)
+    ) {
+      throw new Error(
+        "Private or local network URLs are not allowed."
+      );
+    }
+
+  }
+
+
+  return parsed.toString();
+
+}
+
+
+// =====================================================
+// SIGHTENGINE AI MEDIA DETECTION
+// Supports:
+// 1. Uploaded image/video
+// 2. Public image/video URL
+// =====================================================
+
+app.post(
+  "/api/deepfake/analyze",
+  upload.single("media"),
+  async (req, res) => {
+
+    try {
+
+      // -------------------------------------------------
+      // CHECK SIGHTENGINE CREDENTIALS
+      // -------------------------------------------------
+
+      if (
+        !process.env.SIGHTENGINE_API_USER ||
+        !process.env.SIGHTENGINE_SECRET_KEY
+      ) {
+        return res.status(500).json({
+          success: false,
+          error: "Sightengine API credentials are not configured."
+        });
+      }
+
+
+      // -------------------------------------------------
+      // GET MEDIA
+      // -------------------------------------------------
+
+      let mediaBuffer;
+      let mediaType;
+      let mediaName;
+
+
+      // -------------------------------------------------
+      // OPTION 1 — UPLOADED FILE
+      // -------------------------------------------------
+
+      if (req.file) {
+
+        mediaBuffer = req.file.buffer;
+
+        mediaType = req.file.mimetype;
+
+        mediaName = req.file.originalname;
+
+      }
+
+
+      // -------------------------------------------------
+      // OPTION 2 — PUBLIC MEDIA URL
+      // -------------------------------------------------
+
+      else if (req.body?.url) {
+
+        const mediaUrl =
+          await validatePublicMediaUrl(
+            req.body.url
+          );
+
+
+        const remoteResponse =
+          await axios.get(
+            mediaUrl,
+            {
+              responseType: "arraybuffer",
+
+              timeout: 30000,
+
+              maxContentLength:
+                15 * 1024 * 1024,
+
+              maxBodyLength:
+                15 * 1024 * 1024,
+
+              maxRedirects: 0,
+
+              validateStatus:
+                status =>
+                  status >= 200 &&
+                  status < 300
+            }
+          );
+
+
+        mediaBuffer =
+          Buffer.from(
+            remoteResponse.data
+          );
+
+
+        mediaType =
+          (
+            remoteResponse.headers[
+              "content-type"
+            ] || ""
+          ).split(";")[0].trim();
+
+
+        const supportedTypes = [
+
+          "image/jpeg",
+          "image/png",
+          "image/webp",
+          "image/gif",
+
+          "video/mp4",
+          "video/webm",
+          "video/avi",
+          "video/x-msvideo",
+          "video/x-matroska",
+          "video/x-ms-wmv",
+          "video/quicktime"
+
+        ];
+
+
+        if (
+          !supportedTypes.includes(
+            mediaType
+          )
+        ) {
+
+          throw new Error(
+            "The URL does not point directly to a supported image or video file."
+          );
+
+        }
+
+
+        mediaName =
+          new URL(mediaUrl)
+            .pathname
+            .split("/")
+            .pop() ||
+          "remote-media";
+
+      }
+
+
+      // -------------------------------------------------
+      // NOTHING SUPPLIED
+      // -------------------------------------------------
+
+      else {
+
+        return res.status(400).json({
+          success: false,
+          error:
+            "Upload an image/video or provide a public media URL."
+        });
+
+      }
+
+
+      // -------------------------------------------------
+      // SIZE CHECK
+      // -------------------------------------------------
+
+      if (
+        mediaBuffer.length >
+        15 * 1024 * 1024
+      ) {
+
+        return res.status(413).json({
+          success: false,
+          error:
+            "Media file is too large. Maximum size is 15 MB."
+        });
+
+      }
+
+
+      // -------------------------------------------------
+      // DETECT IMAGE OR VIDEO
+      // -------------------------------------------------
+
+      const isVideo =
+        mediaType.startsWith("video/");
+
+
+      // -------------------------------------------------
+      // SIGHTENGINE REQUEST
+      // -------------------------------------------------
+
+      let sightResponse;
+
+
+      // =================================================
+      // IMAGE
+      // =================================================
+
+      if (!isVideo) {
+
+        const form =
+          new FormData();
+
+        form.append(
+          "media",
+          mediaBuffer,
+          {
+            filename: mediaName,
+            contentType: mediaType
+          }
+        );
+
+        form.append(
+          "models",
+          "genai,deepfake"
+        );
+
+        form.append(
+          "api_user",
+          process.env.SIGHTENGINE_API_USER
+        );
+
+        form.append(
+          "api_secret",
+          process.env.SIGHTENGINE_SECRET_KEY
+        );
+
+
+        sightResponse =
+          await axios.post(
+            "https://api.sightengine.com/1.0/check.json",
+            form,
+            {
+              headers:
+                form.getHeaders(),
+
+              timeout: 60000,
+
+              maxContentLength:
+                Infinity,
+
+              maxBodyLength:
+                Infinity
+            }
+          );
+
+      }
+
+
+      // =================================================
+      // VIDEO
+      // =================================================
+
+      else {
+
+        const form =
+          new FormData();
+
+        form.append(
+          "media",
+          mediaBuffer,
+          {
+            filename: mediaName,
+            contentType: mediaType
+          }
+        );
+
+        form.append(
+          "models",
+          "genai,deepfake"
+        );
+
+        form.append(
+          "api_user",
+          process.env.SIGHTENGINE_API_USER
+        );
+
+        form.append(
+          "api_secret",
+          process.env.SIGHTENGINE_SECRET_KEY
+        );
+
+        // Analyze approximately every 2 seconds.
+        // This helps control free-plan operation usage.
+        form.append(
+          "interval",
+          "2"
+        );
+
+
+        sightResponse =
+          await axios.post(
+            "https://api.sightengine.com/1.0/video/check-sync.json",
+            form,
+            {
+              headers:
+                form.getHeaders(),
+
+              timeout: 120000,
+
+              maxContentLength:
+                Infinity,
+
+              maxBodyLength:
+                Infinity
+            }
+          );
+
+      }
+
+
+      const sightData =
+        sightResponse.data;
+
+
+      // -------------------------------------------------
+      // CHECK API RESPONSE
+      // -------------------------------------------------
+
+      if (
+        sightData?.status !== "success"
+      ) {
+
+        return res.status(502).json({
+          success: false,
+          error:
+            "Sightengine returned an unsuccessful response."
+        });
+
+      }
+
+
+      // =================================================
+      // NORMALIZE IMAGE RESULT
+      // =================================================
+
+      if (!isVideo) {
+
+        const aiGenerated =
+          Number(
+            sightData?.type?.ai_generated || 0
+          );
+
+        const deepfake =
+          Number(
+            sightData?.type?.deepfake || 0
+          );
+
+
+        const overall =
+          Math.max(
+            aiGenerated,
+            deepfake
+          );
+
+
+        let verdict;
+
+
+        if (
+          aiGenerated >= 0.5 &&
+          deepfake >= 0.5
+        ) {
+
+          verdict =
+            "Potential AI-Generated / Deepfake";
+
+        }
+
+        else if (
+          aiGenerated >= 0.5
+        ) {
+
+          verdict =
+            "Potential AI-Generated Media";
+
+        }
+
+        else if (
+          deepfake >= 0.5
+        ) {
+
+          verdict =
+            "Potential Deepfake";
+
+        }
+
+        else {
+
+          verdict =
+            "Likely Authentic";
+
+        }
+
+
+        return res.json({
+
+          success: true,
+
+          filename:
+            mediaName,
+
+          mimeType:
+            mediaType,
+
+          score:
+            Math.round(
+              overall * 100
+            ),
+
+          aiGeneratedScore:
+            Math.round(
+              aiGenerated * 100
+            ),
+
+          deepfakeScore:
+            Math.round(
+              deepfake * 100
+            ),
+
+          confidence:
+            Math.round(
+              overall * 100
+            ),
+
+          verdict,
+
+          aiGeneratedDetected:
+            aiGenerated >= 0.5,
+
+          deepfakeDetected:
+            deepfake >= 0.5,
+
+          frames: 1,
+
+          frameResults: [
+            {
+              frameIndex: 0,
+
+              timestamp: 0,
+
+              probability:
+                overall,
+
+              aiGenerated,
+
+              deepfake
+            }
+          ],
+
+          source: null,
+
+          sourceScore: 0,
+
+          sightengine: {
+            requestId:
+              sightData?.request?.id ||
+              null,
+
+            operations:
+              sightData?.request?.operations ||
+              0
+          }
+
+        });
+
+      }
+
+
+      // =================================================
+      // NORMALIZE VIDEO RESULT
+      // =================================================
+
+      const videoResults =
+        Array.isArray(
+          sightData?.data
+        )
+          ? sightData.data
+          : Array.isArray(
+              sightData?.frames
+            )
+            ? sightData.frames
+            : [];
+
+
+      const frameResults =
+        videoResults.map(
+          (frame, index) => {
+
+            const aiGenerated =
+              Number(
+                frame?.type?.ai_generated ??
+                frame?.ai_generated ??
+                0
+              );
+
+            const deepfake =
+              Number(
+                frame?.type?.deepfake ??
+                frame?.deepfake ??
+                0
+              );
+
+            const probability =
+              Math.max(
+                aiGenerated,
+                deepfake
+              );
+
+
+            return {
+
+              frameIndex:
+                frame?.frame_index ??
+                index,
+
+              timestamp:
+                Number(
+                  frame?.timestamp ??
+                  frame?.time ??
+                  0
+                ),
+
+              probability,
+
+              aiGenerated,
+
+              deepfake
+
+            };
+
+          }
+        );
+
+
+      const aiGeneratedScore =
+        frameResults.length
+          ? Math.max(
+              ...frameResults.map(
+                frame =>
+                  frame.aiGenerated
+              )
+            )
+          : 0;
+
+
+      const deepfakeScore =
+        frameResults.length
+          ? Math.max(
+              ...frameResults.map(
+                frame =>
+                  frame.deepfake
+              )
+            )
+          : 0;
+
+
+      const overallProbability =
+        Math.max(
+          aiGeneratedScore,
+          deepfakeScore
+        );
+
+
+      let verdict;
+
+
+      if (
+        aiGeneratedScore >= 0.5 &&
+        deepfakeScore >= 0.5
+      ) {
+
+        verdict =
+          "Potential AI-Generated / Deepfake";
+
+      }
+
+      else if (
+        aiGeneratedScore >= 0.5
+      ) {
+
+        verdict =
+          "Potential AI-Generated Media";
+
+      }
+
+      else if (
+        deepfakeScore >= 0.5
+      ) {
+
+        verdict =
+          "Potential Deepfake";
+
+      }
+
+      else {
+
+        verdict =
+          "Likely Authentic";
+
+      }
+
+
+      return res.json({
+
+        success: true,
+
+        filename:
+          mediaName,
+
+        mimeType:
+          mediaType,
+
+        score:
+          Math.round(
+            overallProbability * 100
+          ),
+
+        aiGeneratedScore:
+          Math.round(
+            aiGeneratedScore * 100
+          ),
+
+        deepfakeScore:
+          Math.round(
+            deepfakeScore * 100
+          ),
+
+        confidence:
+          Math.round(
+            overallProbability * 100
+          ),
+
+        verdict,
+
+        aiGeneratedDetected:
+          aiGeneratedScore >= 0.5,
+
+        deepfakeDetected:
+          deepfakeScore >= 0.5,
+
+        frames:
+          frameResults.length,
+
+        frameResults,
+
+        source: null,
+
+        sourceScore: 0,
+
+        sightengine: {
+
+          requestId:
+            sightData?.request?.id ||
+            null,
+
+          operations:
+            sightData?.request?.operations ||
+            0
+
+        }
+
+      });
+
+    }
+
+    catch (error) {
+
+      console.error(
+        "Sightengine Deepfake Analysis Error:",
+        error.response?.data ||
+        error.message
+      );
+
+
+      return res.status(
+        error.response?.status ||
+        500
+      ).json({
+
+        success: false,
+
+        error:
+          error.response?.data?.error?.message ||
+          error.response?.data?.message ||
+          error.message ||
+          "Sightengine analysis failed."
+
+      });
+
+    }
+
+  }
+);
+
+
 app.post("/api/url/analyze", async (req, res) => {
 
   try {
@@ -981,7 +1789,7 @@ app.post("/api/ai/explain", async (req, res) => {
 
   try {
 
-    const { topic } = req.body;
+    const { topic, source } = req.body;
 
     if (!topic) {
       return res.status(400).json({
@@ -995,7 +1803,8 @@ app.post("/api/ai/explain", async (req, res) => {
     const response = await axios.post(
       `${AI_SERVICE_URL}/generate`,
       {
-        topic: topic
+        topic: topic,
+        source: source || "user"
       },
       {
         headers: {

@@ -7,7 +7,6 @@
     <link rel="icon" type="image/png" href="images/Favicon.png">
     <title>CyberShield - Deepfake Detector</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@400,500,600,700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/face-api.js"></script>
     <style>
         * {
             margin: 0;
@@ -20,7 +19,11 @@
             --card: #020617;
             --card-border: rgba(51, 65, 85, 0.9);
             --text: #e5e7eb;
+            --muted: #9ca3af;
             --accent: #3b82f6;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
         }
 
         body {
@@ -47,64 +50,49 @@
         }
 
         .light-mode {
-            --bg: #ffffff;
+            --bg: #f1f5f9;
             --card: #ffffff;
-            --card-border: #e2e8f0;
-            --text: #0f172a;
-            --accent: #3b82f6;
+            --text: #020617;
+            --muted: #475569;
         }
 
         body.light-mode {
             background: #ffffff;
         }
 
-        body.light-mode .card {
-            background: #ffffff;
-            border: 1px solid #cbd5e1;
-            box-shadow: 0 4px 12px rgba(15, 23, 42, .05);
-            transition: all .25s ease;
-        }
-
-        body.light-mode .card:hover {
-
-            border-color: #3b82f6 !important;
-
-            box-shadow:
-                0 0 0 1px rgba(59, 130, 246, .25),
-                0 0 25px rgba(59, 130, 246, .20);
-
-            transform: translateY(-2px);
-        }
-
-        body.light-mode input {
-            background: #ffffff;
-            color: #0f172a;
-            border: 1px solid #cbd5e1;
-        }
-
-        body.light-mode .drop-zone {
-            border-color: #3b82f6;
-            background: #f8fafc;
-        }
-
-        body.light-mode footer {
-            color: #64748b;
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 24px;
         }
 
         header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap;
+            flex-wrap: nowrap;
+
+            width: 100%;
+
             margin-bottom: 32px;
+
             border-bottom: 1px solid rgba(59, 130, 246, 0.3);
+
             padding-bottom: 16px;
+
+            gap: 20px;
         }
 
         .brand {
             display: flex;
             gap: 12px;
             align-items: center;
+
+            min-width: 0;
+        }
+
+        .brand>div:last-child {
+            min-width: 0;
         }
 
         .brand-logo {
@@ -124,167 +112,225 @@
             font-weight: 500;
         }
 
-        .container {
-            max-width: 1280px;
-            margin: 0 auto;
-            padding: 24px;
-        }
-
-        .grid2 {
+        .two-col {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 28px;
+            margin: 24px 0;
         }
 
         .card {
             background: var(--card);
-
             border: 1px solid var(--card-border);
-
             border-radius: 28px;
-
             padding: 24px;
 
-            transition: all .25s ease;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: cardAppear .6s ease forwards;
+
+            transition: all 0.25s ease;
+        }
+
+        .two-col .card:nth-child(1) {
+            animation-delay: .05s;
+        }
+
+        .two-col .card:nth-child(2) {
+            animation-delay: .10s;
+        }
+
+        #visitCard {
+            animation-delay: .15s;
+        }
+
+        #aiCard {
+            animation-delay: .20s;
+        }
+
+        @keyframes cardAppear {
+
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
         }
 
         .card:hover {
 
-            border-color: #3b82f6 !important;
+            border-color: #3b82f6;
 
             box-shadow:
-                0 0 0 2px rgba(59, 130, 246, .25),
-                0 10px 30px rgba(59, 130, 246, .15);
+                0 0 0 1px rgba(59, 130, 246, 0.3),
+                0 0 25px rgba(59, 130, 246, 0.25);
 
-            transform: translateY(-3px);
+            transform: translateY(-2px);
         }
 
+        textarea,
         input {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--card-border);
+            border-radius: 60px;
+            padding: 14px 20px;
+            color: var(--text);
+            font-size: 1rem;
             width: 100%;
-            padding: 14px;
-            border-radius: 40px;
-            margin-top: 12px;
+            outline: none;
         }
 
         button {
-            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            background: linear-gradient(135deg, var(--accent), #2563eb);
             border: none;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-            padding: 14px;
+            padding: 12px 24px;
             border-radius: 40px;
-            margin-top: 12px;
-        }
-
-        #analyzeMedia {
-            width: 100%;
-        }
-
-        .grid2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 28px;
-            align-items: stretch;
-        }
-
-        .grid2 .card {
-            height: 100%;
-        }
-
-        .score-big {
-            font-size: 2.2rem;
-            font-weight: 700;
-        }
-
-        .source-tabs {
-            display: flex;
-            gap: 10px;
-            margin: 18px 0;
-        }
-
-        .source-tabs button {
-            flex: 1;
-            margin: 0;
-        }
-
-        .active-tab {
-            background: linear-gradient(135deg,
-                    #3b82f6,
-                    #8b5cf6);
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        #previewContainer {
-            margin-top: 15px;
-        }
-
-        #previewContainer img,
-        #previewContainer video {
-            width: 100%;
-            max-height: 280px;
-            object-fit: cover;
-            border-radius: 18px;
-        }
-
-        .drop-zone {
-            margin-top: 15px;
-            border: 2px dashed #3b82f6;
-            border-radius: 20px;
-            padding: 40px 20px;
-            text-align: center;
+            color: white;
+            font-weight: 600;
             cursor: pointer;
-            transition: .3s;
+            transition: 0.2s;
         }
 
-        .drop-zone:hover {
-            background: rgba(59, 130, 246, .08);
+        button:hover {
+            transform: translateY(-2px);
+
+            box-shadow:
+                0 0 18px rgba(59, 130, 246, .35);
         }
 
-        .drop-zone.drag-over {
-            background: rgba(59, 130, 246, .15);
-            border-color: #8b5cf6;
+        .badge {
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-size: 0.8rem;
+        }
+
+        .result-list {
+            list-style: none;
+            margin-top: 16px;
+        }
+
+        .result-list li {
+            padding: 8px 12px;
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: 16px;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+        }
+
+        .frame-analysis {
+            margin-top: 18px;
+            padding-top: 16px;
+            border-top: 1px solid var(--card-border);
+        }
+
+        .frame-analysis-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+            font-size: 0.9rem;
+        }
+
+        .frame-analysis-header span {
+            color: var(--muted);
+            font-size: 0.78rem;
+        }
+
+        .frame-results {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+        }
+
+        .frame-result {
+            padding: 10px 12px;
+            border: 1px solid var(--card-border);
+            border-radius: 14px;
+            background: rgba(59, 130, 246, 0.06);
+            font-size: 0.8rem;
+        }
+
+        .frame-result-top {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 7px;
+        }
+
+        .frame-result-track {
+            height: 6px;
+            border-radius: 10px;
+            background: rgba(148, 163, 184, 0.18);
+            overflow: hidden;
+        }
+
+        .frame-result-fill {
+            height: 100%;
+            border-radius: inherit;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+        }
+
+        @media(max-width:420px) {
+            .frame-results {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .report-sec {
+            margin-top: 24px;
+            text-align: right;
+        }
+
+        .report-sec button {
+            background: linear-gradient(135deg, #ff4d4d, #cc0000);
+        }
+
+        .badge-danger {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid var(--danger);
+            color: #fecaca;
+        }
+
+        .badge-warning {
+            background: rgba(245, 158, 11, 0.2);
+            border: 1px solid var(--warning);
+        }
+
+        .badge-safe {
+            background: rgba(34, 197, 94, 0.2);
+            border: 1px solid var(--success);
+            color: var(--success);
         }
 
         #visitCard {
-            margin-top: 25px;
-        }
-
-        #visitWarning {
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-        }
-
-        #visitBtn {
-            background: linear-gradient(135deg,
-                    #16a34a,
-                    #15803d);
-
-            margin: 0;
+            width: 100%;
+            max-width: none;
+            margin-top: 0;
         }
 
         #openQRSection {
-            display: flex;
-
-            justify-content: space-between;
-
-            align-items: center;
-
-            gap: 24px;
-
-            margin-top: 0;
+            width: 100%;
+            margin-top: 24px;
         }
 
         #visitBtn {
             margin-left: auto;
+            display: block;
+
             background:
                 linear-gradient(135deg,
                     #16a34a,
                     #15803d);
+        }
+
+        #visitBtn:hover {
+            transform: translateY(-2px);
         }
 
         #aiCard {
@@ -312,34 +358,6 @@
                     #7c3aed);
         }
 
-
-        #visitBtn:hover {
-            transform: translateY(-2px);
-        }
-
-        .result-list {
-            list-style: none;
-            margin-top: 16px;
-        }
-
-        .result-list li {
-
-            background:
-                rgba(59, 130, 246, .1);
-
-            border-radius: 14px;
-
-            padding: 10px;
-
-            margin-bottom: 8px;
-        }
-
-        .badge {
-            padding: 4px 12px;
-            border-radius: 40px;
-            font-size: .8rem;
-        }
-
         footer {
             text-align: center;
             margin-top: 48px;
@@ -347,9 +365,310 @@
             font-size: 0.75rem;
         }
 
-        @media (max-width:800px) {
-            .grid2 {
+        @media (max-width: 800px) {
+
+            .two-col {
                 grid-template-columns: 1fr;
+            }
+
+            header {
+                flex-wrap: nowrap;
+                align-items: center;
+                gap: 10px;
+            }
+
+            header .brand {
+                flex: 1;
+                min-width: 0;
+            }
+
+            header .brand h2 {
+                font-size: 1.25rem;
+                line-height: 1.2;
+                white-space: nowrap;
+            }
+
+            header .brand p {
+                font-size: 0.8rem;
+                line-height: 1.2;
+                white-space: nowrap;
+            }
+
+            header .brand-logo {
+                width: 42px;
+                height: 42px;
+                flex-shrink: 0;
+            }
+
+            .back-link {
+                flex-shrink: 0;
+                white-space: nowrap;
+                font-size: 0.85rem;
+            }
+
+            #openQRSection {
+                margin-top: 24px;
+            }
+
+            #visitCard {
+                padding: 20px;
+            }
+
+            #actionDetails {
+                margin-top: 10px !important;
+                line-height: 1.5;
+            }
+
+            #visitBtn {
+                margin-left: auto;
+                margin-top: 14px !important;
+            }
+        }
+
+        @media (max-width: 420px) {
+
+            .container {
+                padding: 16px;
+            }
+
+            header .brand h2 {
+                font-size: 0.92rem;
+            }
+
+            header .brand p {
+                font-size: 0.62rem;
+            }
+
+            .back-link {
+                font-size: 0.62rem;
+            }
+
+            #visitCard {
+                padding: 18px;
+            }
+
+            #startScannerBtn {
+                margin-bottom: 10px;
+                margin-top: 10px;
+                margin-left: 10px;
+            }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Deepfake-specific additions using the QR Analyzer visual system */
+        .source-tabs {
+            display: flex;
+            gap: 10px;
+            margin: 18px 0
+        }
+
+        .source-tabs button {
+            flex: 1;
+            margin: 0
+        }
+
+        .active-tab {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6)
+        }
+
+        #previewContainer {
+            margin-top: 15px
+        }
+
+        #previewContainer img,
+        #previewContainer video {
+            width: 100%;
+            max-height: 280px;
+            object-fit: cover;
+            border-radius: 18px;
+            display: block
+        }
+
+        .drop-zone {
+            margin-top: 15px;
+            border: 2px dashed #3b82f6;
+            border-radius: 20px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: .3s
+        }
+
+        .drop-zone:hover {
+            background: rgba(59, 130, 246, .08)
+        }
+
+        .drop-zone.drag-over {
+            background: rgba(59, 130, 246, .15);
+            border-color: #8b5cf6
+        }
+
+        #analyzeMedia {
+            margin-top: 15px;
+            width: 100%
+        }
+
+        #openQRSection {
+            width: 100%;
+            margin-top: 24px
+        }
+
+        #visitCard {
+            width: 100%;
+            max-width: none;
+            margin-top: 0
+        }
+
+        #visitWarning {
+            display: block;
+            line-height: 1.5
+        }
+
+        #visitBtn {
+            margin-left: auto;
+            display: block;
+            background: linear-gradient(135deg, #16a34a, #15803d)
+        }
+
+        #visitBtn:hover {
+            transform: translateY(-2px)
+        }
+
+        #aiCard {
+            margin-top: 25px
+        }
+
+        #aiExplanation {
+            margin-top: 12px;
+            line-height: 1.8;
+            color: var(--text);
+            font-size: .95rem
+        }
+
+        #explainBtn {
+            margin-top: 16px;
+            background: linear-gradient(135deg, #4f46e5, #7c3aed)
+        }
+
+        .report-sec {
+            margin-top: 24px;
+            text-align: right
+        }
+
+        .report-sec button {
+            background: linear-gradient(135deg, #ff4d4d, #cc0000)
+        }
+
+        .two-col .card:nth-child(1) {
+            animation-delay: .05s
+        }
+
+        .two-col .card:nth-child(2) {
+            animation-delay: .10s
+        }
+
+        #visitCard {
+            animation-delay: .15s
+        }
+
+        #aiCard {
+            animation-delay: .20s
+        }
+
+        @media(max-width:800px) {
+            .two-col {
+                grid-template-columns: 1fr
+            }
+
+            header {
+                flex-wrap: nowrap;
+                align-items: center;
+                gap: 10px
+            }
+
+            header .brand {
+                flex: 1;
+                min-width: 0
+            }
+
+            header .brand h2 {
+                font-size: 1.25rem;
+                line-height: 1.2;
+                white-space: nowrap
+            }
+
+            header .brand p {
+                font-size: .8rem;
+                line-height: 1.2;
+                white-space: nowrap
+            }
+
+            header .brand-logo {
+                width: 42px;
+                height: 42px;
+                flex-shrink: 0
+            }
+
+            .back-link {
+                flex-shrink: 0;
+                white-space: nowrap;
+                font-size: .85rem
+            }
+
+            #openQRSection {
+                margin-top: 24px
+            }
+
+            #visitCard {
+                padding: 20px
+            }
+
+            #visitWarning {
+                margin-top: 10px !important;
+                line-height: 1.5
+            }
+
+            #visitBtn {
+                margin-left: auto;
+                margin-top: 14px !important
+            }
+        }
+
+        @media(max-width:420px) {
+            .container {
+                padding: 16px
+            }
+
+            header .brand h2 {
+                font-size: .92rem
+            }
+
+            header .brand p {
+                font-size: .62rem
+            }
+
+            .back-link {
+                font-size: .62rem
+            }
+
+            #visitCard {
+                padding: 18px
+            }
+
+            .source-tabs {
+                gap: 8px
+            }
+
+            .source-tabs button {
+                padding: 11px 10px;
+                font-size: .82rem
+            }
+
+            .drop-zone {
+                padding: 32px 14px
             }
         }
     </style>
@@ -361,172 +680,158 @@
             <div class="brand">
                 <div class="brand-logo">🎭</div>
                 <div>
-                    <h2> Deepfake Media Detector</h2>
-                    <p>Analyze images, videos, and media URLs for deepfake content</p>
+                    <h2>Deepfake Media Detector</h2>
+                    <p>Deepfake Risk Detection</p>
                 </div>
             </div>
             <a href="index.html" style="color:var(--accent);" class="back-link">← Return to Dashboard</a>
         </header>
-        <div class="grid2">
+        <div class="two-col">
             <div class="card">
-
                 <h3>🎭 Media Source</h3>
-
-                <div class="source-tabs">
-                    <button id="urlTab" class="active-tab">
-                        🔗 From URL
-                    </button>
-
-                    <button id="fileTab">
-                        📁 Upload File
-                    </button>
-                </div>
-                <!-- URL OPTION -->
-                <div id="urlSection">
-
-                    <input type="text" id="mediaUrl" placeholder="https://example.com/video.mp4 or image.jpg">
-
-                </div>
-                <!-- FILE OPTION -->
+                <div class="source-tabs"><button id="urlTab" class="active-tab">🔗 From URL</button><button
+                        id="fileTab">📁 Upload File</button></div>
+                <div id="urlSection"><input type="text" id="mediaUrl"
+                        placeholder="https://example.com/video.mp4 or image.jpg"></div>
                 <div id="fileSection" class="hidden">
-
                     <div id="dropZone" class="drop-zone">
-
                         <p>📁 Drag & Drop Image / Video Here</p>
-                        <p>or click to browse</p>
-
-                        <input type="file" id="mediaFile" accept="image/*,video/*" hidden>
-
+                        <p>or click to browse</p><input type="file" id="mediaFile" accept="image/*,video/*" hidden>
                     </div>
-
                     <div id="previewContainer"></div>
-
                 </div>
-
-                <button id="analyzeMedia">
-                    Analyze Media
-                </button>
-
-                <p style="margin-top:12px;font-size:.8rem;">
-                    Upload an image/video or paste a media URL for analysis.
+                <button id="analyzeMedia">Analyze Media</button>
+                <p style="font-size:0.8rem;margin-top:12px;">Upload an image/video or paste a media URL for analysis.
                 </p>
-
             </div>
             <div class="card" id="deepfakeResult">
-
                 <h3>⚠️ Risk Assessment</h3>
-
-                <div>
-                    <span id="dfBadge" class="badge">
-                        —
-                    </span>
+                <div><span id="dfBadge" class="badge">—</span></div>
+                <div style="margin-top:12px;"><strong>Analyzed Media:</strong>
+                    <p id="mediaName">---</p>
                 </div>
+                <div><strong>Risk Score:</strong> <span id="dfScore">0</span>%</div>
+                <div><strong>Confidence:</strong> <span id="dfConfidence">—</span></div>
+                <ul id="dfReasons" class="result-list"></ul>
 
-                <div style="margin-top:12px;">
-
-                    <strong>Analyzed Media:</strong>
-
-                    <p id="mediaName">
-                        ---
-                    </p>
-
+                <div id="frameAnalysis" class="frame-analysis hidden">
+                    <div class="frame-analysis-header">
+                        <strong>🎞️ Video Frame Analysis</strong>
+                        <span id="frameSummary">—</span>
+                    </div>
+                    <div id="frameResults" class="frame-results"></div>
                 </div>
-
-                <div>
-                    <strong>Risk Score:</strong>
-                    <span id="dfScore">0</span>%
-                </div>
-
-                <div>
-                    <strong>Confidence:</strong>
-                    <span id="dfConfidence">—</span>
-                </div>
-
-                <ul id="dfReasons" class="result-list">
-                </ul>
-
             </div>
         </div>
-
-        <div id="visitCard" class="card">
-            <h3>🌐 Open Deepfake Content</h3>
-            <p id="visitWarning">
-                <button id="visitBtn">
-                    Continue to Content →
-                </button>
-            </p>
+        <div id="openQRSection">
+            <div id="visitCard" class="card">
+                <h3>🌐 Open Deepfake Content</h3>
+                <div id="visitWarning" style="margin-top:12px;">Review the media before opening the original content.
+                </div><button id="visitBtn" style="margin-top:16px;">Continue to Content →</button>
+            </div>
         </div>
         <div id="aiCard" class="card">
             <h3>🛡️ CyberShield AI Assistant</h3>
-
-            <p id="aiExplanation">
-                Understand why this URL was flagged, potential risks, and how to stay protected.
-            </p>
-
-            <button id="explainBtn">
-                🤖 Analyze with AI
-            </button>
+            <p id="aiExplanation">Understand the indicators detected in this media, potential deepfake risks, and how to
+                stay protected.</p><button id="explainBtn">🤖 Analyze with AI</button>
         </div>
-        <div id="reportDeepfake" style="text-align:right;margin-top:28px;" class="hidden">
-            <button id="reportDeepBtn" style="background:#dc2626;">🚨 Report as Deepfake</button>
+        <div id="reportDeepfake" class="report-sec hidden"><button id="reportDeepBtn">🚨 Report as Deepfake</button>
         </div>
-        <footer style="margin-top:48px;text-align:center;">⚠️ Simulated detection using compression artifacts & temporal
-            inconsistency analysis.
-        </footer>
+        <footer style="margin-top:48px;text-align:center;color:var(--muted);">🧠 AI-generated and deepfake detection is
+            powered by Sightengine.
+            Results are probabilistic and should be independently verified.</footer>
     </div>
     <script src="theme.js"></script>
     <script>
         if (!localStorage.getItem("token")) {
             window.location.replace("login.html");
         }
-        const urlTab =
-            document.getElementById("urlTab");
+        // Detection:
+        //   CyberShield Backend → Sightengine
+        //
+        // The browser does NOT perform the detection.
+        // Sightengine is the actual detection engine.
+        // CyberShield AI only explains the returned result.
 
-        const fileTab =
-            document.getElementById("fileTab");
+        const API_BASE_URL =
+            window.location.hostname === "localhost" ||
+                window.location.hostname === "127.0.0.1"
+                ? "http://127.0.0.1:5001"
+                : "https://cybersheild-hub-osjl.onrender.com";
 
-        const urlSection =
-            document.getElementById("urlSection");
 
-        const fileSection =
-            document.getElementById("fileSection");
+        // ============================================================
+        // DOM ELEMENTS
+        // ============================================================
 
-        const mediaFile =
-            document.getElementById("mediaFile");
+        const urlTab = document.getElementById("urlTab");
+        const fileTab = document.getElementById("fileTab");
 
-        const dropZone =
-            document.getElementById("dropZone");
+        const urlSection = document.getElementById("urlSection");
+        const fileSection = document.getElementById("fileSection");
 
-        dropZone.addEventListener("click", () => {
-            mediaFile.click();
-        });
-
-        dropZone.addEventListener("dragover", (e) => {
-
-            e.preventDefault();
-
-            dropZone.classList.add("drag-over");
-        });
-
-        dropZone.addEventListener("dragleave", () => {
-
-            dropZone.classList.remove("drag-over");
-        });
-
-        dropZone.addEventListener("drop", (e) => {
-
-            e.preventDefault();
-
-            dropZone.classList.remove("drag-over");
-
-            mediaFile.files = e.dataTransfer.files;
-
-            mediaFile.dispatchEvent(
-                new Event("change")
-            );
-        });
+        const mediaFile = document.getElementById("mediaFile");
+        const dropZone = document.getElementById("dropZone");
         const previewContainer =
             document.getElementById("previewContainer");
+
+        const mediaInput =
+            document.getElementById("mediaUrl");
+
+        const analyzeBtn =
+            document.getElementById("analyzeMedia");
+
+        const dfScoreSpan =
+            document.getElementById("dfScore");
+
+        const dfConfidenceSpan =
+            document.getElementById("dfConfidence");
+
+        const dfReasons =
+            document.getElementById("dfReasons");
+
+        const dfBadge =
+            document.getElementById("dfBadge");
+
+        const mediaName =
+            document.getElementById("mediaName");
+
+        const reportDeepDiv =
+            document.getElementById("reportDeepfake");
+
+        const openQRSection =
+            document.getElementById("openQRSection");
+
+        const frameAnalysis =
+            document.getElementById("frameAnalysis");
+
+        const frameSummary =
+            document.getElementById("frameSummary");
+
+        const frameResults =
+            document.getElementById("frameResults");
+
+        const explainBtn =
+            document.getElementById("explainBtn");
+
+        const aiExplanation =
+            document.getElementById("aiExplanation");
+
+
+        // ============================================================
+        // STATE
+        // ============================================================
+
+        let currentFile = null;
+        let lastMedia = "";
+        let lastModelResult = null;
+        let currentVideoObjectUrl = null;
+        let currentMediaUrl = null;
+
+
+        // ============================================================
+        // SOURCE SELECTION
+        // ============================================================
 
         urlTab.addEventListener("click", () => {
 
@@ -535,7 +840,9 @@
 
             urlTab.classList.add("active-tab");
             fileTab.classList.remove("active-tab");
+
         });
+
 
         fileTab.addEventListener("click", () => {
 
@@ -544,301 +851,606 @@
 
             fileTab.classList.add("active-tab");
             urlTab.classList.remove("active-tab");
+
         });
 
-        mediaFile.addEventListener("change", () => {
 
-            const file = mediaFile.files[0];
-            window.currentFile = file;
+        // ============================================================
+        // FILE UPLOAD
+        // ============================================================
 
-            if (!file) return;
+        dropZone.addEventListener(
+            "click",
+            () => mediaFile.click()
+        );
 
-            const src =
-                URL.createObjectURL(file);
 
-            if (file.type.startsWith("image")) {
+        dropZone.addEventListener(
+            "dragover",
+            (event) => {
 
-                previewContainer.innerHTML =
-                    `<img src="${src}">`;
+                event.preventDefault();
 
-            } else {
+                dropZone.classList.add("drag-over");
 
-                previewContainer.innerHTML =
-                    `
-        <video controls>
-            <source src="${src}">
-        </video>
-        `;
             }
-        });
-        const mediaInput = document.getElementById('mediaUrl');
-        const analyzeBtn = document.getElementById('analyzeMedia');
-        const dfScoreSpan = document.getElementById('dfScore');
-        const dfConfidenceSpan = document.getElementById('dfConfidence');
-        const dfReasons = document.getElementById('dfReasons');
-        const dfBadge = document.getElementById('dfBadge');
-        const reportDeepDiv = document.getElementById('reportDeepfake');
-        let lastMedia = '';
-        function deepfakeAnalysis(file) {
+        );
 
-            let score = 0;
-            let reasons = [];
 
-            const lower = file.name.toLowerCase();
+        dropZone.addEventListener(
+            "dragleave",
+            () => {
 
-            if (
-                lower.includes("deepfake") ||
-                lower.includes("synthetic")
-            ) {
-                score += 40;
-                reasons.push("Deepfake related filename");
+                dropZone.classList.remove("drag-over");
+
             }
+        );
 
-            if (file.size < 50000) {
 
-                score += 15;
+        dropZone.addEventListener(
+            "drop",
+            (event) => {
 
-                reasons.push(
-                    "Very small media file"
-                );
-            }
+                event.preventDefault();
 
-            if (
-                lower.includes("ai") ||
-                lower.includes("generated")
-            ) {
-                score += 20;
-                reasons.push("AI generated keyword found");
-            }
+                dropZone.classList.remove("drag-over");
 
-            return {
-                score,
-                confidence:
-                    score > 70 ? "High" :
-                        score > 40 ? "Medium" :
-                            "Low",
-                reasons
-            };
-        }
+                if (event.dataTransfer.files?.length) {
 
-        async function getImageInfo(file) {
+                    mediaFile.files =
+                        event.dataTransfer.files;
 
-            return new Promise((resolve) => {
+                    mediaFile.dispatchEvent(
+                        new Event("change")
+                    );
 
-                const img = new Image();
-
-                img.onload = () => {
-
-                    resolve({
-                        width: img.width,
-                        height: img.height
-                    });
-
-                };
-
-                img.src = URL.createObjectURL(file);
-
-            });
-
-        }
-
-        async function loadFaceModel() {
-
-            await faceapi.nets.tinyFaceDetector.loadFromUri(
-                'https://justadudewhohacks.github.io/face-api.js/models'
-            );
-
-            console.log("Face model loaded");
-        }
-
-        loadFaceModel();
-        async function updateAnalysis() {
-
-            let mediaName = "";
-
-            if (!urlSection.classList.contains("hidden")) {
-
-                mediaName =
-                    mediaInput.value.trim();
-
-                if (!mediaName) {
-
-                    alert("Please enter a media URL or upload a file.");
-
-                    return;
                 }
-            } else {
+
+            }
+        );
+
+
+        mediaFile.addEventListener(
+            "change",
+            () => {
 
                 const file =
-                    window.currentFile;
+                    mediaFile.files?.[0];
 
-                if (!file) {
+                currentFile = file || null;
 
-                    alert("Please upload a file.");
+                if (!file) return;
 
-                    return;
+
+                if (currentVideoObjectUrl) {
+
+                    URL.revokeObjectURL(
+                        currentVideoObjectUrl
+                    );
+
+                    currentVideoObjectUrl = null;
+
                 }
 
-                mediaName =
-                    file.name;
-            }
 
-            lastMedia = mediaName;
-
-            document.getElementById("mediaName").textContent = mediaName;
+                const src =
+                    URL.createObjectURL(file);
 
 
-            let result;
+                if (file.type.startsWith("image/")) {
 
-            if (window.currentFile) {
+                    previewContainer.innerHTML = `
+                    <img
+                        src="${src}"
+                        alt="Selected media preview"
+                    >
+                `;
 
-                result =
-                    deepfakeAnalysis(
-                        window.currentFile
-                    );
-
-            } else {
-
-                result = {
-                    score: 10,
-                    confidence: "Low",
-                    reasons: [
-                        "URL based analysis only"
-                    ]
-                };
- 
-            }
-
-            if (window.currentFile &&
-                window.currentFile.type.startsWith("image")) {
-
-                const info =
-                    await getImageInfo(
-                        window.currentFile
-                    );
-
-                if (
-                    info.width < 300 ||
-                    info.height < 300
-                ) {
-
-                    result.score += 15;
-
-                    result.reasons.push(
-                        "Low resolution image"
-                    );
                 }
 
-                const ratio =
-                    info.width / info.height;
+                else if (file.type.startsWith("video/")) {
 
-                if (
-                    ratio > 3 ||
-                    ratio < 0.3
-                ) {
+                    currentVideoObjectUrl = src;
 
-                    result.score += 10;
+                    previewContainer.innerHTML = `
+                    <video
+                        controls
+                        playsinline
+                    >
+                        <source
+                            src="${src}"
+                            type="${file.type}"
+                        >
+                    </video>
+                `;
 
-                    result.reasons.push(
-                        "Unusual aspect ratio"
-                    );
                 }
 
-                const img =
-                    document.querySelector(
-                        "#previewContainer img"
-                    );
+                else {
 
-                if (img) {
-
-                    const faces =
-                        await faceapi.detectAllFaces(
-                            img,
-                            new faceapi.TinyFaceDetectorOptions()
-                        );
-
-                    result.reasons.push(
-                        `${faces.length} face(s) detected`
-                    );
-
-                    if (faces.length === 0) {
-
-                        result.score += 10;
-
-                        result.reasons.push(
-                            "No human face detected"
-                        );
-                    }
-                }
-            }
-
-            result.confidence =
-                result.score > 70 ? "High" :
-                    result.score > 40 ? "Medium" :
-                        "Low";
-
-            dfScoreSpan.innerText =
-                result.score;
-
-            dfConfidenceSpan.innerText =
-                result.confidence;
-
-            dfReasons.innerHTML =
-                result.reasons.map(
-                    r => `<li>🔍 ${r}</li>`
-                ).join("");
-
-            if (result.score > 55) {
-
-                dfBadge.innerText =
-                    "⚠️ Potential Deepfake";
-
-                reportDeepDiv.classList.remove("hidden");
-
-            } else {
-
-                dfBadge.innerText =
-                    "✅ Likely Authentic";
-
-                reportDeepDiv.classList.add("hidden");
-            }
-        }
-        analyzeBtn.addEventListener('click', updateAnalysis);
-
-        const explainBtn =
-            document.getElementById("explainBtn");
-
-        const aiExplanation =
-            document.getElementById("aiExplanation");
-
-        explainBtn.addEventListener(
-            "click",
-            async () => {
-
-                const media =
-                    document.getElementById(
-                        "mediaName"
-                    ).innerText;
-
-                if (
-                    media === "---"
-                ) {
+                    previewContainer.innerHTML = "";
 
                     alert(
-                        "Analyze media first."
+                        "Please select an image or video file."
                     );
 
-                    return;
                 }
 
-                aiExplanation.innerHTML =
-                    "🧠 CyberShield AI is analyzing...";
+            }
+        );
 
-                try {
+
+        // ============================================================
+        // RENDER FRAME ANALYSIS
+        // ============================================================
+
+        function renderFrameAnalysis(
+            frameData = []
+        ) {
+
+            if (
+                !Array.isArray(frameData) ||
+                frameData.length <= 1
+            ) {
+
+                frameAnalysis.classList.add(
+                    "hidden"
+                );
+
+                frameResults.innerHTML = "";
+
+                frameSummary.textContent = "—";
+
+                return;
+
+            }
+
+
+            frameAnalysis.classList.remove(
+                "hidden"
+            );
+
+
+            const values =
+                frameData.map(
+                    item =>
+                        Number(
+                            item.probability || 0
+                        )
+                );
+
+
+            const average =
+                values.reduce(
+                    (sum, value) =>
+                        sum + value,
+                    0
+                ) / values.length;
+
+
+            frameSummary.textContent =
+                `${values.length} frames • average ${Math.round(
+                    average * 100
+                )}%`;
+
+
+            frameResults.innerHTML =
+                frameData.map(
+                    (item, index) => {
+
+                        const probability =
+                            Number(
+                                item.probability || 0
+                            );
+
+                        const percentage =
+                            Math.round(
+                                probability * 100
+                            );
+
+                        const frameNumber =
+                            item.frameIndex ??
+                            index + 1;
+
+                        const timestamp =
+                            Number(
+                                item.timestamp || 0
+                            );
+
+
+                        return `
+                        <div class="frame-result">
+
+                            <div class="frame-result-top">
+
+                                <span>
+                                    Frame ${frameNumber}
+                                    · ${timestamp.toFixed(1)}s
+                                </span>
+
+                                <strong>
+                                    ${percentage}%
+                                </strong>
+
+                            </div>
+
+                            <div class="frame-result-track">
+
+                                <div
+                                    class="frame-result-fill"
+                                    style="width:${percentage}%"
+                                ></div>
+
+                            </div>
+
+                        </div>
+                    `;
+
+                    }
+                ).join("");
+
+        }
+
+
+        // ============================================================
+        // RENDER SIGHTENGINE RESULT
+        // ============================================================
+
+        function renderSightengineResult(data) {
+
+            const score =
+                Number(data.score || 0);
+
+            const confidence =
+                Number(data.confidence || 0);
+
+            const aiGeneratedScore =
+                Number(
+                    data.aiGeneratedScore || 0
+                );
+
+            const deepfakeScore =
+                Number(
+                    data.deepfakeScore || 0
+                );
+
+            const source =
+                data.source;
+
+            const sourceScore =
+                Number(
+                    data.sourceScore || 0
+                );
+
+
+            // --------------------------------------------------------
+            // Verdict
+            // --------------------------------------------------------
+
+            let verdict =
+                data.verdict ||
+                "Analysis Complete";
+
+            let badgeClass =
+                "badge-warning";
+
+
+            if (
+                verdict
+                    .toLowerCase()
+                    .includes("authentic")
+            ) {
+
+                badgeClass =
+                    "badge-safe";
+
+            }
+
+            else if (
+                verdict
+                    .toLowerCase()
+                    .includes("potential") ||
+                verdict
+                    .toLowerCase()
+                    .includes("deepfake")
+            ) {
+
+                badgeClass =
+                    "badge-danger";
+
+            }
+
+            else {
+
+                badgeClass =
+                    "badge-warning";
+
+            }
+
+
+            // --------------------------------------------------------
+            // Badge
+            // --------------------------------------------------------
+
+            dfBadge.className =
+                `badge ${badgeClass}`;
+
+            dfBadge.innerText =
+                verdict;
+
+
+            // --------------------------------------------------------
+            // Scores
+            // --------------------------------------------------------
+
+            dfScoreSpan.innerText =
+                score;
+
+
+            dfConfidenceSpan.innerText =
+                `${confidence}%`;
+
+
+            // --------------------------------------------------------
+            // Reasons
+            // --------------------------------------------------------
+
+            const reasons = [];
+
+
+            reasons.push(
+                `AI-generated probability: ${aiGeneratedScore}%.`
+            );
+
+
+            reasons.push(
+                `Deepfake probability: ${deepfakeScore}%.`
+            );
+
+
+            if (score >= 50) {
+
+                reasons.push(
+                    "The Sightengine detector identified a meaningful probability of AI-generated or deepfake content."
+                );
+
+            }
+
+            else {
+
+                reasons.push(
+                    "The Sightengine detector found a relatively low probability of AI-generated or deepfake content."
+                );
+
+            }
+
+
+            reasons.push(
+                "Detection is probabilistic and should not be treated as definitive proof."
+            );
+
+            if (
+                source &&
+                source !== "none" &&
+                source !== "inconclusive" &&
+                source !== "inconclusive_video"
+            ) {
+
+                reasons.push(
+                    `Possible generation source: ${source} (${sourceScore}%).`
+                );
+
+            }
+
+
+            dfReasons.innerHTML =
+                reasons
+                    .map(
+                        reason =>
+                            `<li>🔍 ${reason}</li>`
+                    )
+                    .join("");
+
+
+            // --------------------------------------------------------
+            // Frame analysis
+            // --------------------------------------------------------
+
+            renderFrameAnalysis(
+                data.frameResults || []
+            );
+
+
+            // --------------------------------------------------------
+            // Report button
+            // --------------------------------------------------------
+
+            if (score >= 50) {
+
+                reportDeepDiv.classList.remove(
+                    "hidden"
+                );
+
+            }
+
+            else {
+
+                reportDeepDiv.classList.add(
+                    "hidden"
+                );
+
+            }
+
+
+            // --------------------------------------------------------
+            // Save result for AI explanation
+            // --------------------------------------------------------
+
+            lastModelResult = {
+
+                score,
+
+                confidence,
+
+                aiGeneratedScore,
+
+                deepfakeScore,
+
+                source,
+
+                sourceScore,
+
+                verdict,
+
+                reasons,
+
+                frames:
+                    data.frames || 1,
+
+                frameResults:
+                    data.frameResults || []
+
+            };
+
+        }
+
+
+        // ============================================================
+        // ANALYZE MEDIA WITH SIGHTENGINE
+        // ============================================================
+
+        async function analyzeMediaWithSightengine(
+            file
+        ) {
+
+            const formData =
+                new FormData();
+
+
+            formData.append(
+                "media",
+                file
+            );
+
+
+            const response =
+                await fetch(
+                    `${API_BASE_URL}/api/deepfake/analyze`,
+                    {
+                        method: "POST",
+                        body: formData
+                    }
+                );
+
+
+            const data =
+                await response.json();
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    data.error ||
+                    "Deepfake analysis failed."
+                );
+
+            }
+
+
+            if (!data.success) {
+
+                throw new Error(
+                    data.error ||
+                    "Sightengine analysis failed."
+                );
+
+            }
+
+
+            return data;
+
+        }
+
+
+        // ============================================================
+        // MAIN ANALYSIS
+        // ============================================================
+
+        async function updateAnalysis() {
+
+            analyzeBtn.disabled = true;
+
+            const originalText =
+                analyzeBtn.innerText;
+
+            analyzeBtn.innerText =
+                "🧠 Analyzing...";
+
+
+            try {
+
+                let fileToAnalyze = null;
+                let displayName = "";
+
+
+                // ----------------------------------------------------
+                // FILE MODE
+                // ----------------------------------------------------
+
+                if (
+                    !fileSection.classList.contains(
+                        "hidden"
+                    )
+                ) {
+
+                    fileToAnalyze =
+                        currentFile;
+
+                    if (!fileToAnalyze) {
+
+                        throw new Error(
+                            "Please upload an image or video file."
+                        );
+
+                    }
+
+                    displayName =
+                        fileToAnalyze.name;
+
+                    currentMediaUrl = null;
+                    openQRSection.classList.add("hidden");
+
+                }
+
+
+                // ----------------------------------------------------
+                // URL MODE
+                // ----------------------------------------------------
+
+                else {
+
+                    const url =
+                        mediaInput.value.trim();
+
+
+                    if (!url) {
+
+                        throw new Error(
+                            "Please enter a media URL."
+                        );
+
+                    }
+
+
+                    displayName =
+                        url;
+
+                    currentMediaUrl = url;
+                    openQRSection.classList.remove("hidden");
 
                     const response =
                         await fetch(
-                            "http://127.0.0.1:5000/generate",
+                            `${API_BASE_URL}/api/deepfake/analyze`,
                             {
                                 method: "POST",
 
@@ -848,60 +1460,352 @@
                                 },
 
                                 body: JSON.stringify({
-
-                                    topic: `
-You are CyberShield AI.
-
-Analyze this media:
-
-Media:
-${media}
-
-Risk Score:
-${dfScoreSpan.innerText}
-
-Confidence:
-${dfConfidenceSpan.innerText}
-
-Indicators:
-${Array.from(dfReasons.children)
-                                            .map(li => li.innerText)
-                                            .join("\n")}
-
-Provide:
-
-1. Deepfake probability
-2. Why it may be fake
-3. Technical indicators
-4. Safety recommendation
-
-Keep response under 150 words.
-`
+                                    url: url
                                 })
                             }
                         );
 
+
+                    const result =
+                        await response.json();
+
+
+                    if (!response.ok) {
+
+                        throw new Error(
+                            result.error ||
+                            "URL analysis failed."
+                        );
+
+                    }
+
+
+                    lastMedia =
+                        displayName;
+
+                    mediaName.textContent =
+                        displayName;
+
+
+                    renderSightengineResult(
+                        result
+                    );
+
+
+                    aiExplanation.textContent =
+                        "Sightengine detection complete. Use the AI Assistant below to explain the returned detection result.";
+
+                    return;
+                }
+
+
+                // ----------------------------------------------------
+                // Show filename
+                // ----------------------------------------------------
+
+                lastMedia =
+                    displayName;
+
+                mediaName.textContent =
+                    displayName;
+
+
+                // ----------------------------------------------------
+                // Call backend → Sightengine
+                // ----------------------------------------------------
+
+                const result =
+                    await analyzeMediaWithSightengine(
+                        fileToAnalyze
+                    );
+
+
+                // ----------------------------------------------------
+                // Render result
+                // ----------------------------------------------------
+
+                renderSightengineResult(
+                    result
+                );
+
+
+                aiExplanation.textContent =
+                    "Sightengine detection complete. Use the AI Assistant below to explain the returned detection result.";
+
+
+            }
+
+            catch (error) {
+
+                console.error(
+                    "Deepfake analysis failed:",
+                    error
+                );
+
+
+                dfBadge.className =
+                    "badge badge-warning";
+
+
+                dfBadge.innerText =
+                    "⚠️ Analysis Failed";
+
+
+                dfScoreSpan.innerText =
+                    "—";
+
+
+                dfConfidenceSpan.innerText =
+                    "—";
+
+
+                dfReasons.innerHTML =
+                    `<li>❌ ${error.message ||
+                    "The media could not be analyzed."
+                    }</li>`;
+
+
+                frameAnalysis.classList.add(
+                    "hidden"
+                );
+
+                frameResults.innerHTML = "";
+
+
+                reportDeepDiv.classList.add(
+                    "hidden"
+                );
+
+
+                alert(
+                    error.message ||
+                    "Deepfake analysis failed."
+                );
+
+            }
+
+            finally {
+
+                analyzeBtn.disabled =
+                    false;
+
+                analyzeBtn.innerText =
+                    originalText;
+
+            }
+
+        }
+
+
+        analyzeBtn.addEventListener(
+            "click",
+            updateAnalysis
+        );
+
+
+        // ============================================================
+        // AI EXPLANATION
+        // ============================================================
+
+        explainBtn.addEventListener(
+            "click",
+            async () => {
+
+                if (
+                    !lastModelResult ||
+                    mediaName.innerText === "---"
+                ) {
+
+                    alert(
+                        "Analyze media first."
+                    );
+
+                    return;
+
+                }
+
+
+                aiExplanation.innerHTML =
+                    "🧠 CyberShield AI is explaining the Sightengine detection result...";
+
+
+                try {
+
+                    const response =
+                        await fetch(
+                            `${API_BASE_URL}/api/ai/explain`,
+                            {
+                                method: "POST",
+
+                                headers: {
+
+                                    "Content-Type":
+                                        "application/json",
+
+                                    "Authorization":
+                                        `Bearer ${localStorage.getItem(
+                                            "token"
+                                        ) || ""
+                                        }`
+
+                                },
+
+                                body:
+                                    JSON.stringify({
+
+                                        source:
+                                            "deepfake_detector",
+
+                                        topic: `
+This is a CYBERSECURITY request from the CyberShield Hub Deepfake Media Detector.
+
+You are CyberShield AI, an explanation assistant.
+
+A professional media detection service has ALREADY analyzed the media.
+
+Your job is ONLY to explain the existing cybersecurity detection result.
+Do NOT perform a new detection.
+Do NOT invent evidence.
+Do NOT change, override, or reinterpret the detector's result.
+
+Media:
+${lastMedia}
+
+Sightengine detector verdict:
+${lastModelResult.verdict}
+
+Overall risk score:
+${lastModelResult.score}%
+
+AI-generated probability:
+${lastModelResult.aiGeneratedScore}%
+
+Deepfake probability:
+${lastModelResult.deepfakeScore}%
+
+Detection confidence:
+${lastModelResult.confidence}%
+
+Explain what these EXISTING cybersecurity detection results mean.
+
+Clearly distinguish:
+- AI-generated probability
+- Deepfake probability
+- Overall risk score
+- Detection confidence
+
+Explain that the result is probabilistic and cannot by itself prove that the media is fake.
+
+Give a short cybersecurity safety recommendation.
+
+Do not claim that you personally analyzed the image or video.
+Do not invent visual details that are not present in the detector result.
+
+Keep the response under 150 words.
+`
+                                    })
+
+                            }
+                        );
+
+
                     const data =
                         await response.json();
 
+
+                    if (!response.ok) {
+
+                        throw new Error(
+                            data.error ||
+                            "AI explanation request failed."
+                        );
+
+                    }
+
+
                     aiExplanation.innerHTML =
-                        data.answer.replace(
+                        String(
+                            data.answer || ""
+                        ).replace(
                             /\n/g,
                             "<br>"
                         );
 
                 }
 
-                catch {
+                catch (error) {
+
+                    console.error(
+                        "AI explanation failed:",
+                        error
+                    );
+
 
                     aiExplanation.innerHTML =
                         "❌ Failed to connect with CyberShield AI.";
+
                 }
 
             }
         );
-        document.getElementById('reportDeepBtn')?.addEventListener('click', () => alert(`Deepfake report submitted for ${lastMedia}`));
+
+
+        // ============================================================
+        // OPEN ORIGINAL DEEPFAKE CONTENT
+        // ============================================================
+
+        document
+            .getElementById("visitBtn")
+            ?.addEventListener("click", () => {
+
+                if (!currentMediaUrl) {
+                    alert("The original content can only be opened when you analyzed a media URL.");
+                    return;
+                }
+
+                window.open(currentMediaUrl, "_blank", "noopener,noreferrer");
+            });
+
+
+        // ============================================================
+        // REPORT BUTTON
+        // ============================================================
+
+        document
+            .getElementById("reportDeepBtn")
+            ?.addEventListener(
+                "click",
+                () =>
+                    alert(
+                        `Deepfake report submitted for ${lastMedia}`
+                    )
+            );
+
+
+        // ============================================================
+        // INITIAL UI STATE
+        // ============================================================
+
+        dfBadge.className =
+            "badge";
+
+        dfBadge.innerText =
+            "Sightengine Detector Ready";
+
+
+        dfReasons.innerHTML = `
+        <li>🧠 Detection is performed by Sightengine AI.</li>
+        <li>🔒 Your Sightengine API key remains on the CyberShield backend.</li>
+        <li>⚠️ Results are probabilistic and should be independently verified.</li>
+    `;
+
+
+        frameAnalysis.classList.add(
+            "hidden"
+        );
+
     </script>
+
 
 </body>
 

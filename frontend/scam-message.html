@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="images/Favicon.png">
-    <title>Scam Message Detector</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>CyberShield - Scam Message Detector</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+
         * {
             margin: 0;
             padding: 0;
@@ -17,12 +17,13 @@
         :root {
             --bg: #020617;
             --card: #020617;
-            --card-border: rgba(51, 65, 85, .9);
+            --card-border: rgba(51, 65, 85, 0.9);
             --text: #e5e7eb;
             --muted: #9ca3af;
             --accent: #3b82f6;
-            --danger: #ef4444;
             --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
         }
 
         body {
@@ -48,144 +49,18 @@
             min-height: 100vh;
         }
 
-        /* =========================
-   LIGHT MODE
-========================= */
+        .light-mode {
+            --bg: #f1f5f9;
+            --card: #ffffff;
+            --text: #020617;
+            --muted: #475569;
+        }
 
         body.light-mode {
-
-            --bg: #f8fafc;
-            --card: #ffffff;
-            --text: #0f172a;
-            --muted: #64748b;
-
-            background:
-                radial-gradient(circle at top left,
-                    rgba(59, 130, 246, .08),
-                    transparent 40%),
-
-                radial-gradient(circle at bottom right,
-                    rgba(34, 197, 94, .05),
-                    transparent 45%),
-
-                #f8fafc;
-
-            color: var(--text);
-        }
-
-        /* Cards */
-
-        body.light-mode .card {
-
             background: #ffffff;
-
-            border: 1px solid #475569;
-
-            box-shadow:
-                0 4px 12px rgba(15, 23, 42, .04),
-                0 1px 3px rgba(15, 23, 42, .05);
-
-            color: #0f172a;
         }
 
-        /* Hover effect exactly like QR page */
-
-        body.light-mode .card:hover {
-
-            border-color: #60a5fa;
-
-            box-shadow:
-                0 0 0 1px rgba(96, 165, 250, .30),
-                0 0 30px rgba(59, 130, 246, .15);
-
-            transform: translateY(-2px);
-        }
-
-        /* Inputs */
-
-        body.light-mode textarea,
-        body.light-mode input {
-
-            background: #f8fafc;
-
-            color: #0f172a;
-
-            border: 1px solid #dbeafe;
-        }
-
-        body.light-mode textarea::placeholder,
-        body.light-mode input::placeholder {
-
-            color: #94a3b8;
-        }
-
-        /* Result items */
-
-        body.light-mode .result-list li {
-
-            background: #eff6ff;
-
-            border: 1px solid #dbeafe;
-
-            color: #1e293b;
-        }
-
-        /* Open Message Card */
-
-        body.light-mode #visitCard {
-            border: 1px solid #475569;
-        }
-
-        body.light-mode #aiCard {
-            border: 1px solid #475569;
-        }
-
-        /* Buttons */
-
-        body.light-mode button {
-
-            background:
-                linear-gradient(135deg,
-                    #3b82f6,
-                    #6366f1);
-
-            color: white;
-
-            box-shadow:
-                0 4px 12px rgba(59, 130, 246, .20);
-        }
-
-        body.light-mode button:hover {
-
-            box-shadow:
-                0 8px 20px rgba(59, 130, 246, .35);
-        }
-
-        /* Green Continue Button */
-
-        body.light-mode #visitBtn {
-
-            background:
-                linear-gradient(135deg,
-                    #22c55e,
-                    #16a34a);
-        }
-
-        /* Footer */
-
-        body.light-mode footer {
-
-            color: #64748b;
-        }
-
-        /* Links */
-
-        body.light-mode a {
-
-            color: #2563eb;
-        }
-
-        .wrap {
+        .container {
             max-width: 1280px;
             margin: 0 auto;
             padding: 24px;
@@ -195,19 +70,29 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap;
+            flex-wrap: nowrap;
+
+            width: 100%;
 
             margin-bottom: 32px;
 
-            border-bottom: 1px solid rgba(59, 130, 246, .3);
+            border-bottom: 1px solid rgba(59, 130, 246, 0.3);
 
             padding-bottom: 16px;
+
+            gap: 20px;
         }
 
-                .brand {
+        .brand {
             display: flex;
             gap: 12px;
             align-items: center;
+
+            min-width: 0;
+        }
+
+        .brand>div:last-child {
+            min-width: 0;
         }
 
         .brand-logo {
@@ -226,76 +111,89 @@
             text-decoration: none;
             font-weight: 500;
         }
-        .grid {
+
+        .two-col {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 28px;
+            margin: 24px 0;
         }
 
         .card {
             background: var(--card);
-
             border: 1px solid var(--card-border);
-
             border-radius: 28px;
-
             padding: 24px;
 
-            transition: .25s ease;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: cardAppear .6s ease forwards;
+
+            transition: all 0.25s ease;
+        }
+
+        .two-col .card:nth-child(1) {
+            animation-delay: .05s;
+        }
+
+        .two-col .card:nth-child(2) {
+            animation-delay: .10s;
+        }
+
+        #visitCard {
+            animation-delay: .15s;
+        }
+
+        #aiCard {
+            animation-delay: .20s;
+        }
+
+        @keyframes cardAppear {
+
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
         }
 
         .card:hover {
+
             border-color: #3b82f6;
 
             box-shadow:
-                0 0 0 1px rgba(59, 130, 246, .3),
-                0 0 25px rgba(59, 130, 246, .25);
+                0 0 0 1px rgba(59, 130, 246, 0.3),
+                0 0 25px rgba(59, 130, 246, 0.25);
 
             transform: translateY(-2px);
         }
 
         textarea,
         input {
-            width: 100%;
-
-            background: rgba(0, 0, 0, .2);
-
+            background: rgba(0, 0, 0, 0.3);
             border: 1px solid var(--card-border);
-
-            border-radius: 20px;
-
-            padding: 14px;
-
+            border-radius: 60px;
+            padding: 14px 20px;
             color: var(--text);
-
-            margin-top: 15px;
-        }
-
-        textarea {
-            resize: none;
+            font-size: 1rem;
+            width: 100%;
+            outline: none;
         }
 
         button {
-            background:
-                linear-gradient(135deg,
-                    var(--accent),
-                    #2563eb);
-
+            background: linear-gradient(135deg, var(--accent), #2563eb);
             border: none;
-
             padding: 12px 24px;
-
             border-radius: 40px;
-
             color: white;
-
             font-weight: 600;
-
             cursor: pointer;
-
-            transition: .25s ease;
-
-            margin-top: 16px;
+            transition: 0.2s;
         }
 
         button:hover {
@@ -305,14 +203,10 @@
                 0 0 18px rgba(59, 130, 246, .35);
         }
 
-        .full-btn {
-            width: 100%;
-        }
-
         .badge {
             padding: 4px 12px;
             border-radius: 40px;
-            font-size: .8rem;
+            font-size: 0.8rem;
         }
 
         .result-list {
@@ -321,33 +215,54 @@
         }
 
         .result-list li {
-            background:
-                rgba(59, 130, 246, .1);
-
-            border-radius: 14px;
-
-            padding: 10px;
-
+            padding: 8px 12px;
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: 16px;
             margin-bottom: 8px;
+            font-size: 0.85rem;
+        }
+
+        .report-sec {
+            margin-top: 24px;
+            text-align: right;
+        }
+
+        .report-sec button {
+            background: linear-gradient(135deg, #ff4d4d, #cc0000);
+        }
+
+        .badge-danger {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid var(--danger);
+            color: #fecaca;
+        }
+
+        .badge-warning {
+            background: rgba(245, 158, 11, 0.2);
+            border: 1px solid var(--warning);
+        }
+
+        .badge-safe {
+            background: rgba(34, 197, 94, 0.2);
+            border: 1px solid var(--success);
+            color: var(--success);
         }
 
         #visitCard {
-            margin-top: 25px;
+            width: 100%;
+            max-width: none;
+            margin-top: 0;
         }
 
-        #openSMSSection {
-            display: flex;
-
-            justify-content: space-between;
-
-            align-items: center;
-
-            gap: 24px;
-
-            padding: 2px;
+        #openQRSection {
+            width: 100%;
+            margin-top: 24px;
         }
 
         #visitBtn {
+            margin-left: auto;
+            display: block;
+
             background:
                 linear-gradient(135deg,
                     #16a34a,
@@ -363,121 +278,301 @@
         }
 
         #aiExplanation {
+
             margin-top: 12px;
 
             line-height: 1.8;
+
+            color: var(--text);
 
             font-size: .95rem;
         }
 
         #explainBtn {
+
+            margin-top: 16px;
+
             background:
                 linear-gradient(135deg,
                     #4f46e5,
                     #7c3aed);
         }
 
-        .report-sec {
-            margin-top: 24px;
-            text-align: right;
-        }
-
-        .report-sec button {
-            background: #ef4444;
-        }
-
         footer {
             text-align: center;
-
             margin-top: 48px;
-
             color: var(--muted);
+            font-size: 0.75rem;
+        }
 
-            font-size: .75rem;
+        @media (max-width: 800px) {
+
+            .two-col {
+                grid-template-columns: 1fr;
+            }
+
+            header {
+                flex-wrap: nowrap;
+                align-items: center;
+                gap: 10px;
+            }
+
+            header .brand {
+                flex: 1;
+                min-width: 0;
+            }
+
+            header .brand h2 {
+                font-size: 1.25rem;
+                line-height: 1.2;
+                white-space: nowrap;
+            }
+
+            header .brand p {
+                font-size: 0.8rem;
+                line-height: 1.2;
+                white-space: nowrap;
+            }
+
+            header .brand-logo {
+                width: 42px;
+                height: 42px;
+                flex-shrink: 0;
+            }
+
+            .back-link {
+                flex-shrink: 0;
+                white-space: nowrap;
+                font-size: 0.85rem;
+            }
+
+            #openQRSection {
+                margin-top: 24px;
+            }
+
+            #visitCard {
+                padding: 20px;
+            }
+
+            #actionDetails {
+                margin-top: 10px !important;
+                line-height: 1.5;
+            }
+
+            #visitBtn {
+                margin-left: auto;
+                margin-top: 14px !important;
+            }
+        }
+
+        @media (max-width: 420px) {
+
+            .container {
+                padding: 16px;
+            }
+
+            header .brand h2 {
+                font-size: 0.92rem;
+            }
+
+            header .brand p {
+                font-size: 0.62rem;
+            }
+
+            .back-link {
+                font-size: 0.62rem;
+            }
+
+            #visitCard {
+                padding: 18px;
+            }
+
+            #startScannerBtn {
+                margin-bottom: 10px;
+                margin-top: 10px;
+                margin-left: 10px;
+            }
         }
 
         .hidden {
             display: none;
         }
+    
 
-        @media(max-width:800px) {
+        #smsText {
+            min-height: 180px;
+            resize: vertical;
+            border-radius: 20px;
+            line-height: 1.6;
+        }
 
-            .grid {
-                grid-template-columns: 1fr;
-            }
+        #scanSms {
+            width: 100%;
+        }
 
+        #smsReasons li {
+            word-break: break-word;
+        }
+
+        #visitCard {
+            width: 100%;
+            max-width: none;
+            margin-top: 0;
+        }
+
+        #openSMSSection {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 24px;
+        }
+
+        #aiCard {
+            margin-top: 25px;
+        }
+
+        #aiExplanation {
+            margin-top: 12px;
+            line-height: 1.8;
+            color: var(--text);
+            font-size: .95rem;
+        }
+
+        #explainBtn {
+            margin-top: 16px;
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        }
+
+        #reportSmsDiv {
+            margin-top: 24px !important;
+            text-align: right !important;
+        }
+
+        #reportSmsBtn {
+            background: linear-gradient(135deg, #ff4d4d, #cc0000) !important;
+        }
+
+        #explainBtn:disabled {
+            opacity: .65;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        @media (max-width: 800px) {
             #openSMSSection {
                 flex-direction: column;
                 align-items: flex-start;
             }
+
+            #openSMSSection #visitBtn {
+                margin-left: auto;
+            }
         }
 
-        /* Force hover for extra cards */
+        @media (max-width: 420px) {
+            .container {
+                padding: 16px;
+            }
 
-        body.light-mode #visitCard:hover,
-        body.light-mode #aiCard:hover {
+            #smsText {
+                min-height: 150px;
+                font-size: .9rem;
+            }
 
-            border-color: #3b82f6 !important;
+            #visitCard {
+                padding: 18px;
+            }
 
-            box-shadow:
-                0 0 0 1px rgba(59, 130, 246, .30),
-                0 0 30px rgba(59, 130, 246, .18) !important;
-
-            transform: translateY(-2px);
+            #openSMSSection #visitBtn {
+                width: 100%;
+            }
         }
+
     </style>
 </head>
 
 <body>
-    <div class="wrap">
+    <div class="container">
+
         <header>
             <div class="brand">
                 <div class="brand-logo">💬</div>
                 <div>
-                    <h2>SMS / Chat Scam Detector</h2>
-                    <p>Analyze SMS, WhatsApp, and chat content for phishing, fraud, and scam indicators</p>
+                    <h2>Scam Message Detector</h2>
+                    <p>Real-time SMS & chat scam analysis</p>
                 </div>
             </div>
-            <a href="index.html" style="color:var(--accent);" class="back-link">← Return to Dashboard</a>
-        </header>
-        <div class="grid">
-            <div class="card">
-                <h3>📝 Paste suspicious message</h3><textarea id="smsText" rows="5"
-                    placeholder="Enter the message..."></textarea><button id="scanSms">Analyze Message</button>
-            </div>
-            <div class="card">
-                <h3>🚨 Scam Risk Assessment</h3>
-                <div><span id="smsRiskBadge">—</span></div>
-                <div><strong>Fraud Score:</strong> <span id="smsScore">0</span>/100</div>
-                <div><strong>Classification:</strong> <span id="smsLabel">—</span></div>
-                <ul id="smsReasons" style="margin-top:12px;list-style:none;"></ul>
-            </div>
-        </div>
-        <div class="card" id="visitCard">
 
+            <a href="index.html" style="color:var(--accent);" class="back-link">
+                ← Return to Dashboard
+            </a>
+        </header>
+
+        <div class="two-col">
+
+            <div class="card">
+                <h3>📝 Message Input</h3>
+
+                <textarea
+                    id="smsText"
+                    rows="6"
+                    placeholder="Paste a suspicious SMS, WhatsApp message, or chat message..."
+                ></textarea>
+
+                <button id="scanSms">
+                    Analyze Message
+                </button>
+
+                <p style="font-size:0.8rem;margin-top:12px;">
+                    Analyze messages for phishing, fraud, urgency tactics,
+                    suspicious links, and scam indicators.
+                </p>
+            </div>
+
+            <div class="card" id="resultPanel">
+                <h3>⚠️ Scam Risk Assessment</h3>
+
+                <div>
+                    <span id="smsRiskBadge" class="badge">—</span>
+                </div>
+
+                <div style="margin-top:12px;">
+                    <strong>Fraud Score:</strong>
+                    <span id="smsScore">0</span>/100
+                </div>
+
+                <div>
+                    <strong>Classification:</strong>
+                    <span id="smsLabel">Not analyzed</span>
+                </div>
+
+                <ul id="smsReasons" class="result-list">
+                    <li>⚡ Enter a suspicious message</li>
+                </ul>
+            </div>
+
+        </div>
+
+        <div id="visitCard" class="card">
             <div id="openSMSSection">
 
                 <div>
+                    <h3>📱 Message Review</h3>
 
-                    <h3>📱 Open Message Content</h3>
-
-                    <p>
-                        This message may be unsafe.
-                        Proceed only if you trust the sender.
+                    <p style="margin-top:12px;line-height:1.6;">
+                        Review the message carefully before replying,
+                        clicking links, sharing information, or making payments.
                     </p>
-
                 </div>
 
                 <button id="visitBtn">
                     Continue →
                 </button>
-
             </div>
-
         </div>
 
         <div id="aiCard" class="card">
-
             <h3>🛡️ CyberShield AI Assistant</h3>
 
             <p id="aiExplanation">
@@ -489,16 +584,35 @@
             <button id="explainBtn">
                 🤖 Analyze with AI
             </button>
-
         </div>
-        <div id="reportSmsDiv" class="hidden" style="text-align:right;margin-top:24px;"><button id="reportSmsBtn"
-                style="background:#dc2626;">📢 Report Scam Number</button></div>
 
-        <script src="theme.js"></script>
-        <script>
+        <div id="reportSmsDiv" class="hidden"
+             style="text-align:right;margin-top:24px;">
+            <button id="reportSmsBtn">
+                📢 Report Scam Number
+            </button>
+        </div>
+
+        <footer style="margin-top:48px;text-align:center;color:var(--muted);">
+            Detects common phishing, fraud, social-engineering,
+            and scam patterns in messages.
+        </footer>
+
+    </div>
+
+    <script src="theme.js"></script>
+    <script>
+
             if (!localStorage.getItem("token")) {
                 window.location.replace("login.html");
             }
+
+            const API_BASE_URL =
+                window.location.hostname === "localhost" ||
+                window.location.hostname === "127.0.0.1"
+                    ? "http://127.0.0.1:5001"
+                    : "https://cybersheild-hub-osjl.onrender.com";
+
             const smsField = document.getElementById('smsText');
             const scanSmsBtn = document.getElementById('scanSms');
             const riskBadgeSpan = document.getElementById('smsRiskBadge');
@@ -506,37 +620,184 @@
             const smsLabelSpan = document.getElementById('smsLabel');
             const smsReasonsUl = document.getElementById('smsReasons');
             const reportDivSms = document.getElementById('reportSmsDiv');
+            const explainBtn = document.getElementById('explainBtn');
+            const aiExplanation = document.getElementById('aiExplanation');
+
             let lastSms = '';
+
             function scamAnalysis(text) {
-                let score = 0, reasons = []; let lower = text.toLowerCase();
-                if (lower.includes('winner') || lower.includes('congratulations')) score += 20, reasons.push('🏆 "Winner" scam trigger');
-                if (lower.includes('click here') || lower.includes('claim now')) score += 15, reasons.push('🎯 Urgent claim action');
-                if (lower.includes('bit.ly') || lower.includes('tinyurl')) score += 25, reasons.push('🔗 Shortened link – hides malicious URL');
-                if (lower.includes('gift card') || lower.includes('free') || lower.includes('cash')) score += 20, reasons.push('💰 Monetary lure');
-                if (lower.match(/\d{10,}/)) score += 15, reasons.push('📞 Suspicious phone number');
+                let score = 0;
+                let reasons = [];
+                let lower = text.toLowerCase();
+
+                if (lower.includes('winner') || lower.includes('congratulations'))
+                    score += 20, reasons.push('🏆 "Winner" scam trigger');
+
+                if (lower.includes('click here') || lower.includes('claim now'))
+                    score += 15, reasons.push('🎯 Urgent claim action');
+
+                if (lower.includes('bit.ly') || lower.includes('tinyurl'))
+                    score += 25, reasons.push('🔗 Shortened link – hides malicious URL');
+
+                if (lower.includes('gift card') || lower.includes('free') || lower.includes('cash'))
+                    score += 20, reasons.push('💰 Monetary lure');
+
+                if (lower.match(/\d{10,}/))
+                    score += 15, reasons.push('📞 Suspicious phone number');
+
                 score = Math.min(score, 100);
-                let label = score > 60 ? 'High confidence scam' : (score > 30 ? 'Suspicious message' : 'Likely legitimate');
+
+                let label =
+                    score > 60
+                        ? 'High confidence scam'
+                        : score > 30
+                            ? 'Suspicious message'
+                            : 'Likely legitimate';
+
                 return { score, reasons, label };
             }
+
             function updateSms() {
-                let text = smsField.value; if (!text.trim()) text = "sample scam message";
+                const text = smsField.value.trim();
+
+                if (!text) {
+                    riskBadgeSpan.innerText = '—';
+                    riskBadgeSpan.className = 'badge';
+                    smsScoreSpan.innerText = '0';
+                    smsLabelSpan.innerText = 'Not analyzed';
+                    smsReasonsUl.innerHTML =
+                        '<li>⚡ Enter a suspicious message</li>';
+                    reportDivSms.classList.add('hidden');
+                    lastSms = '';
+                    return;
+                }
+
                 lastSms = text;
-                let res = scamAnalysis(text);
+
+                const res = scamAnalysis(text);
+
                 smsScoreSpan.innerText = res.score;
                 smsLabelSpan.innerText = res.label;
-                smsReasonsUl.innerHTML = res.reasons.map(r => `<li>⚠️ ${r}</li>`).join('');
-                if (res.score >= 45) {
-                    riskBadgeSpan.innerText = '⚠️ Scam Detected'; riskBadgeSpan.style.background = '#ef444433'; riskBadgeSpan.style.borderRadius = '40px'; riskBadgeSpan.style.padding = '4px 12px';
+
+                smsReasonsUl.innerHTML =
+                    res.reasons.length
+                        ? res.reasons.map(r => `<li>${r}</li>`).join('')
+                        : '<li>✅ No obvious scam indicators detected</li>';
+
+                if (res.score >= 70) {
+                    riskBadgeSpan.innerText = '🔴 Scam Detected';
+                    riskBadgeSpan.className = 'badge badge-danger';
+                    reportDivSms.classList.remove('hidden');
+                } else if (res.score >= 45) {
+                    riskBadgeSpan.innerText = '⚠️ Suspicious';
+                    riskBadgeSpan.className = 'badge badge-warning';
                     reportDivSms.classList.remove('hidden');
                 } else {
-                    riskBadgeSpan.innerText = '✅ Clean'; reportDivSms.classList.add('hidden');
+                    riskBadgeSpan.innerText = '🟢 Low Risk';
+                    riskBadgeSpan.className = 'badge badge-safe';
+                    reportDivSms.classList.add('hidden');
                 }
             }
-            scanSmsBtn.addEventListener('click', updateSms);
-            document.getElementById('reportSmsBtn')?.addEventListener('click', () => alert(`Scam message reported. Sender will be analyzed.`));
-            updateSms();
-        </script>
-    </div>
-</body>
 
+            scanSmsBtn.addEventListener('click', updateSms);
+
+            smsField.addEventListener('input', () => {
+                if (smsField.value.trim()) updateSms();
+            });
+
+            document.getElementById('visitBtn')?.addEventListener('click', () => {
+                if (!lastSms) {
+                    alert('Enter a message first.');
+                    return;
+                }
+                alert('Review the message carefully. Do not click links, reply, share OTPs, passwords, or make payments until the sender is verified.');
+            });
+
+            document.getElementById('reportSmsBtn')?.addEventListener('click', () => {
+                alert('Scam message reported. The sender can be reviewed for further analysis.');
+            });
+
+            explainBtn?.addEventListener('click', async () => {
+                if (!lastSms) {
+                    alert('Analyze a message first.');
+                    return;
+                }
+
+                aiExplanation.innerHTML = '🧠 CyberShield AI is analyzing this message...';
+                explainBtn.disabled = true;
+
+                try {
+                    const localResult = scamAnalysis(lastSms);
+
+                    const response = await fetch(`${API_BASE_URL}/api/ai/explain`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${localStorage.getItem("token")}`
+                        },
+                        body: JSON.stringify({
+                            source: 'scam_message_detector',
+                            topic: `
+This is a cybersecurity analysis request from the CyberShield Scam Message Detector.
+
+Analyze this SMS/chat message for phishing, fraud, scam, social engineering,
+malicious links, financial fraud, impersonation, urgency tactics, or other
+digital-security threats.
+
+Message:
+${lastSms}
+
+Local heuristic score:
+${localResult.score}/100
+
+Local classification:
+${localResult.label}
+
+Local reasons:
+${localResult.reasons.join('\n')}
+
+Return:
+
+🔍 Message Type
+
+🟢 or 🔴 Verdict
+
+📌 Key Findings
+• Maximum 3 points
+
+⚠️ Risks
+• Maximum 3 points
+
+🛡️ Recommendation
+One short sentence
+
+Maximum 250 words.
+No markdown.
+`
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(data.error || 'AI service unavailable');
+                    }
+
+                    aiExplanation.innerHTML =
+                        (data.answer || 'No AI explanation was returned.')
+                            .replace(/\n/g, '<br>');
+
+                } catch (error) {
+                    console.error('AI explanation error:', error);
+                    aiExplanation.innerHTML =
+                        '❌ Unable to generate the AI explanation right now. Please try again.';
+                } finally {
+                    explainBtn.disabled = false;
+                }
+            });
+
+            updateSms();
+
+    </script>
+</body>
 </html>
