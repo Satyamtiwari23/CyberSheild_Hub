@@ -134,6 +134,25 @@ const userSchema = new mongoose.Schema({
     default: false
   },
 
+  // =====================================================
+  // LOGIN BRUTE-FORCE PROTECTION
+  // =====================================================
+
+  loginFailedAttempts: {
+    type: Number,
+    default: 0
+  },
+
+  loginLockUntil: {
+    type: Date,
+    default: null
+  },
+
+  loginLockLevel: {
+    type: Number,
+    default: 0
+  },
+
   resetToken: String,
   resetTokenExpiry: Date,
 
@@ -599,66 +618,258 @@ app.post('/api/signup', async (req, res) => {
   res.json({ message: "Account created successfully" });
 });
 
-// ✅ Login (checks MongoDB)
+
+// =====================================================
+// LOGIN BRUTE-FORCE PROTECTION
+// =====================================================
+
+const INITIAL_LOGIN_ATTEMPT_LIMIT = 5;
+const SUBSEQUENT_LOGIN_ATTEMPT_LIMIT = 2;
+
+const INITIAL_LOCK_HOURS = 1;
+const MAX_LOCK_HOURS = 24;
+
+function getLoginAttemptLimit(user) {
+  return user.loginLockLevel === 0
+    ? INITIAL_LOGIN_ATTEMPT_LIMIT
+    : SUBSEQUENT_LOGIN_ATTEMPT_LIMIT;
+}
+
+function getLockDurationHours(user) {
+  if (user.loginLockLevel === 0) {
+    return INITIAL_LOCK_HOURS;
+  }
+
+  return Math.min(
+    Math.pow(2, user.loginLockLevel),
+    MAX_LOCK_HOURS
+  );
+}
+
+// =====================================================
+// LOGIN WITH BRUTE-FORCE PROTECTION
+// =====================================================
+
 app.post('/api/login', async (req, res) => {
-  const { email, password } = req.body;
 
-  const normalizedEmail = email.toLowerCase().trim();
+  try {
 
-  const user =
-    await User.findOne({
-      email: normalizedEmail
-    });
+    const { email, password } = req.body;
 
-  if (!user) {
-    return res.status(401).json({
-      message: "Invalid credentials"
-    });
-  }
+    if (!email || !password) {
+      return res.status(400).json({
+        message: "Email and password are required."
+      });
+    }
 
-  // Password login is allowed only if
-  // password authentication is linked
-  if (
-    !user.authProviders ||
-    !user.authProviders.includes("password")
-  ) {
-    return res.status(401).json({
-      message: "Password login is not enabled for this account."
-    });
-  }
+    const normalizedEmail =
+      email.toLowerCase().trim();
 
-  const isMatch =
-    await bcrypt.compare(
-      password,
-      user.password
+    const user =
+      await User.findOne({
+        email: normalizedEmail
+      });
+
+    // -------------------------------------------------
+    // USER NOT FOUND
+    // -------------------------------------------------
+
+    if (!user) {
+      return res.status(401).json({
+        message: "Invalid credentials"
+      });
+    }
+
+    // -------------------------------------------------
+    // CHECK IF ACCOUNT IS CURRENTLY LOCKED
+    // -------------------------------------------------
+
+    if (
+      user.loginLockUntil &&
+      user.loginLockUntil > new Date()
+    ) {
+
+      const remainingMs =
+        user.loginLockUntil.getTime() -
+        Date.now();
+
+      const remainingMinutes =
+        Math.ceil(
+          remainingMs / (1000 * 60)
+        );
+
+      return res.status(423).json({
+        message:
+          `Account temporarily locked due to multiple failed login attempts. ` +
+          `Please try again in approximately ${remainingMinutes} minute(s). ` +
+          `If you forgot your password, please reset it.`,
+        locked: true,
+        resetSuggested: true,
+        remainingMinutes
+      });
+    }
+
+    // -------------------------------------------------
+    // IF PREVIOUS LOCK HAS EXPIRED
+    // -------------------------------------------------
+
+    if (
+      user.loginLockUntil &&
+      user.loginLockUntil <= new Date()
+    ) {
+
+      user.loginLockUntil = null;
+      user.loginFailedAttempts = 0;
+
+      await user.save();
+    }
+
+    // -------------------------------------------------
+    // PASSWORD LOGIN ENABLED?
+    // -------------------------------------------------
+
+    if (
+      !user.authProviders ||
+      !user.authProviders.includes("password")
+    ) {
+
+      return res.status(401).json({
+        message:
+          "Password login is not enabled for this account."
+      });
+    }
+
+    // -------------------------------------------------
+    // CHECK PASSWORD
+    // -------------------------------------------------
+
+    const isMatch =
+      await bcrypt.compare(
+        password,
+        user.password
+      );
+
+    // =================================================
+    // WRONG PASSWORD
+    // =================================================
+
+    if (!isMatch) {
+
+      user.loginFailedAttempts =
+        (user.loginFailedAttempts || 0) + 1;
+
+      const attemptLimit =
+        getLoginAttemptLimit(user);
+
+      // ------------------------------------------------
+      // LOCK ACCOUNT WHEN LIMIT IS REACHED
+      // ------------------------------------------------
+
+      if (
+        user.loginFailedAttempts >=
+        attemptLimit
+      ) {
+
+        const lockHours =
+          getLockDurationHours(user);
+
+        user.loginLockUntil =
+          new Date(
+            Date.now() +
+            lockHours * 60 * 60 * 1000
+          );
+
+        // Move to next lock level
+        user.loginLockLevel =
+          (user.loginLockLevel || 0) + 1;
+
+        // Start fresh after this lock expires
+        user.loginFailedAttempts = 0;
+
+        await user.save();
+
+        return res.status(423).json({
+          message:
+            `Too many failed login attempts. ` +
+            `Your account has been locked for ${lockHours} hour(s). ` +
+            `If you forgot your password, please reset it.`,
+          locked: true,
+          resetSuggested: true,
+          lockHours
+        });
+      }
+
+      // ------------------------------------------------
+      // WRONG PASSWORD BUT NOT LOCKED YET
+      // ------------------------------------------------
+
+      await user.save();
+
+      const remainingAttempts =
+        attemptLimit -
+        user.loginFailedAttempts;
+
+      return res.status(401).json({
+        message:
+          `Invalid credentials. ` +
+          `${remainingAttempts} attempt(s) remaining before temporary lock.`,
+        remainingAttempts,
+        locked: false
+      });
+    }
+
+    // =================================================
+    // SUCCESSFUL LOGIN
+    // =================================================
+
+    user.loginFailedAttempts = 0;
+    user.loginLockUntil = null;
+
+    // Reset lock escalation
+    user.loginLockLevel = 0;
+
+    await user.save();
+
+    // -------------------------------------------------
+    // CREATE JWT
+    // -------------------------------------------------
+
+    const token = jwt.sign(
+      {
+        userId: user._id
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "7d"
+      }
     );
 
-  if (!isMatch) {
-    return res.status(401).json({
-      message: "Invalid credentials"
+    // -------------------------------------------------
+    // RETURN TOKEN + USER INFO
+    // -------------------------------------------------
+
+    res.json({
+      message: "Login successful",
+      token,
+      user: {
+        name: user.name,
+        email: user.email
+      }
+    });
+
+  } catch (error) {
+
+    console.error(
+      "Login error:",
+      error.message
+    );
+
+    return res.status(500).json({
+      message:
+        "Unable to process login. Please try again later."
     });
   }
 
-
-  const token = jwt.sign(
-    {
-      userId: user._id
-    },
-    process.env.JWT_SECRET,
-    {
-      expiresIn: "7d"
-    }
-  );
-
-  // Return token + user info
-  res.json({
-    message: "Login successful",
-    token,
-    user: {
-      name: user.name,
-      email: user.email
-    }
-  });
 });
 
 
@@ -879,6 +1090,11 @@ app.post("/api/reset-password", async (req, res) => {
     // Change password
     user.password = await bcrypt.hash(password, 10);
     user.passwordSet = true;
+
+    // Reset login brute-force protection
+    user.loginFailedAttempts = 0;
+    user.loginLockUntil = null;
+    user.loginLockLevel = 0;
 
     // Enable password authentication
     if (!user.authProviders) {
@@ -1154,7 +1370,7 @@ app.post(
         mediaType =
           (
             remoteResponse.headers[
-              "content-type"
+            "content-type"
             ] || ""
           ).split(";")[0].trim();
 
@@ -1533,8 +1749,8 @@ app.post(
         )
           ? sightData.data
           : Array.isArray(
-              sightData?.frames
-            )
+            sightData?.frames
+          )
             ? sightData.frames
             : [];
 
@@ -1592,22 +1808,22 @@ app.post(
       const aiGeneratedScore =
         frameResults.length
           ? Math.max(
-              ...frameResults.map(
-                frame =>
-                  frame.aiGenerated
-              )
+            ...frameResults.map(
+              frame =>
+                frame.aiGenerated
             )
+          )
           : 0;
 
 
       const deepfakeScore =
         frameResults.length
           ? Math.max(
-              ...frameResults.map(
-                frame =>
-                  frame.deepfake
-              )
+            ...frameResults.map(
+              frame =>
+                frame.deepfake
             )
+          )
           : 0;
 
 
