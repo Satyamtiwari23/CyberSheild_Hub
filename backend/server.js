@@ -215,7 +215,8 @@ app.get("/api/account/auth-providers", authenticateToken, async (req, res) => {
 
     if (!user) {
       return res.status(404).json({
-        message: "User not found."
+        success: false,
+        message: "User account not found."
       });
     }
 
@@ -588,9 +589,49 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
-// ✅ Signup (stores in MongoDB)
+
+// =====================================================
+// PASSWORD VALIDATION
+// =====================================================
+
+function validatePassword(password) {
+
+  if (!password || password.length < 6) {
+    return "Password must be at least 6 characters long.";
+  }
+
+  if (!/[A-Z]/.test(password)) {
+    return "Password must contain at least one uppercase letter.";
+  }
+
+  if (!/[a-z]/.test(password)) {
+    return "Password must contain at least one lowercase letter.";
+  }
+
+  if (!/[0-9]/.test(password)) {
+    return "Password must contain at least one number.";
+  }
+
+  if (!/[^A-Za-z0-9\s]/.test(password)) {
+    return "Password must contain at least one special character.";
+  }
+
+  return null;
+}
+
 app.post('/api/signup', async (req, res) => {
+
   const { name, email, password } = req.body;
+
+  // Validate password
+  const passwordError = validatePassword(password);
+
+  if (passwordError) {
+    return res.status(400).json({
+      success: false,
+      message: passwordError
+    });
+  }
 
   const normalizedEmail = email.toLowerCase().trim();
 
@@ -598,8 +639,12 @@ app.post('/api/signup', async (req, res) => {
     await User.findOne({
       email: normalizedEmail
     });
+
   if (existingUser) {
-    return res.status(409).json({ message: "User already exists" });
+    return res.status(409).json({
+      success: false,
+      message: "User already exists"
+    });
   }
 
   const hashedPassword =
@@ -613,11 +658,14 @@ app.post('/api/signup', async (req, res) => {
     authProviders: ["password"],
     passwordSet: true
   });
+
   await newUser.save();
 
-  res.json({ message: "Account created successfully" });
+  res.json({
+    success: true,
+    message: "Account created successfully"
+  });
 });
-
 
 // =====================================================
 // LOGIN BRUTE-FORCE PROTECTION
@@ -896,9 +944,9 @@ app.post("/api/forgot-password", async (req, res) => {
       });
 
     if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found."
+      return res.status(200).json({
+        success: true,
+        message: "If an account exists with this email, you will receive a password reset link shortly."
       });
     }
 
@@ -1018,7 +1066,7 @@ app.post("/api/forgot-password", async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: "Reset link sent successfully."
+      message: "If an account exists with this email, you will receive a password reset link shortly."
     });
 
   } catch (error) {
@@ -1026,9 +1074,9 @@ app.post("/api/forgot-password", async (req, res) => {
     console.error("GMAIL SEND ERROR:");
     console.error(error);
 
-    return res.status(500).json({
-      success: false,
-      message: "Failed to send reset email."
+    return res.status(200).json({
+      success: true,
+      message: "If an account exists with this email, you will receive a password reset link shortly."
     });
 
   }
@@ -1048,10 +1096,12 @@ app.post("/api/reset-password", async (req, res) => {
       });
     }
 
-    if (password.length < 6) {
+    const passwordError = validatePassword(password);
+
+    if (passwordError) {
       return res.status(400).json({
         success: false,
-        message: "Password must be at least 6 characters."
+        message: passwordError
       });
     }
 

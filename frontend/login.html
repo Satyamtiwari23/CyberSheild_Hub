@@ -300,6 +300,14 @@
     .password-toggle.showing .eye-open {
       display: block;
     }
+
+    .password-hint {
+      margin-top: 6px;
+      margin-bottom: 0;
+      font-size: 0.75rem;
+      line-height: 1.4;
+      color: #9ca3af;
+    }
   </style>
 </head>
 
@@ -452,6 +460,9 @@
             </svg>
           </button>
         </div>
+        <p class="password-hint">
+          At least 6 characters, including uppercase, lowercase, number, and special character.
+        </p>
       </div>
 
 
@@ -698,6 +709,42 @@
       const email = document.getElementById("signupEmail").value.trim();
       const password = document.getElementById("signupPassword").value.trim();
       const confirmPassword = document.getElementById("signupConfirmPassword").value.trim();
+
+
+      if (password.length < 6) {
+        signupError.textContent =
+          "Password must be at least 6 characters.";
+        signupError.style.display = "block";
+        return;
+      }
+
+      if (!/[A-Z]/.test(password)) {
+        signupError.textContent =
+          "Password must contain at least one uppercase letter.";
+        signupError.style.display = "block";
+        return;
+      }
+
+      if (!/[a-z]/.test(password)) {
+        signupError.textContent =
+          "Password must contain at least one lowercase letter.";
+        signupError.style.display = "block";
+        return;
+      }
+
+      if (!/[0-9]/.test(password)) {
+        signupError.textContent =
+          "Password must contain at least one number.";
+        signupError.style.display = "block";
+        return;
+      }
+
+      if (!/[^A-Za-z0-9\s]/.test(password)) {
+        signupError.textContent =
+          "Password must contain at least one special character.";
+        signupError.style.display = "block";
+        return;
+      }
 
       if (password !== confirmPassword) {
         signupError.textContent = "Passwords do not match.";
