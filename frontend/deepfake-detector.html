@@ -1336,6 +1336,9 @@
                     `${API_BASE_URL}/api/deepfake/analyze`,
                     {
                         method: "POST",
+                        headers: {
+                            "Authorization": `Bearer ${localStorage.getItem("token") || ""}`
+                        },
                         body: formData
                     }
                 );
@@ -1453,8 +1456,8 @@
                                 method: "POST",
 
                                 headers: {
-                                    "Content-Type":
-                                        "application/json"
+                                    "Content-Type": "application/json",
+                                    "Authorization": `Bearer ${localStorage.getItem("token") || ""}`
                                 },
 
                                 body: JSON.stringify({
