@@ -1,21 +1,6 @@
 // ===== AOS INIT =====
 AOS.init({ duration: 600, once: true });
 
-// ===== LOGIN REDIRECT =====
-function checkAuthentication() {
-
-    if (!localStorage.getItem("token")) {
-        window.location.replace("login.html");
-    }
-
-}
-
-checkAuthentication();
-
-window.addEventListener("pageshow", () => {
-    checkAuthentication();
-});
-
 // ===== DOM REFS =====
 const accountMenu = document.getElementById("accountMenu");
 const themeBtn = document.getElementById("themeBtn");
@@ -54,8 +39,9 @@ let isScanning = false;
 function updateUI() {
     const userEmail = localStorage.getItem("userEmail");
     const userName = localStorage.getItem("userName");
+    const token = localStorage.getItem("token");
 
-    if (userEmail && userName) {
+    if (token && userEmail && userName) {
         if (userNameSpan) userNameSpan.textContent = userName;
         if (userEmailSpan) userEmailSpan.textContent = userEmail;
 
@@ -76,6 +62,17 @@ function updateUI() {
         if (authBtn) authBtn.textContent = "Login";
     }
 }
+
+// ===== REFRESH ACCOUNT UI WHEN RETURNING WITH BROWSER BACK/FORWARD =====
+
+window.addEventListener("pageshow", () => {
+    updateUI();
+
+    // Close account menu after logout/back navigation
+    if (!localStorage.getItem("token")) {
+        accountMenu?.classList.remove("show");
+    }
+});
 
 function logout() {
     localStorage.removeItem("token");

@@ -1374,6 +1374,7 @@ async function validatePublicMediaUrl(rawUrl) {
 
 app.post(
   "/api/deepfake/analyze",
+  authenticateToken,
   upload.single("media"),
   async (req, res) => {
 
@@ -2059,7 +2060,7 @@ app.post(
 );
 
 
-app.post("/api/url/analyze", async (req, res) => {
+app.post("/api/url/analyze", authenticateToken, async (req, res) => {
 
   try {
 
@@ -2094,7 +2095,7 @@ app.post("/api/url/analyze", async (req, res) => {
 });
 
 // 🤖 AI Security Assistant
-app.post("/api/ai/explain", async (req, res) => {
+app.post("/api/ai/explain", authenticateToken, async (req, res) => {
 
   try {
 

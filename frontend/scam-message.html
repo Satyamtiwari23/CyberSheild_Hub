@@ -601,11 +601,8 @@
     </div>
 
     <script src="theme.js"></script>
+    <script src="auth.js"></script>
     <script>
-
-            if (!localStorage.getItem("token")) {
-                window.location.replace("login.html");
-            }
 
             const API_BASE_URL =
                 window.location.hostname === "localhost" ||

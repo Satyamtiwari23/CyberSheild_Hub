@@ -519,10 +519,8 @@
     </div>
 
     <script src="theme.js"></script>
+    <script src="auth.js"></script>
     <script>
-        if (!localStorage.getItem("token")) {
-            window.location.replace("login.html");
-        }
         const urlInput = document.getElementById('urlInput');
         const scanBtn = document.getElementById('scanBtn');
         const riskBadge = document.getElementById('riskBadge');
