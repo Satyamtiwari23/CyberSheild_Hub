@@ -135,6 +135,36 @@ const userSchema = new mongoose.Schema({
   },
 
   // =====================================================
+  // ACCOUNT TIMESTAMPS
+  // =====================================================
+
+  signupAt: {
+    type: Date,
+    default: Date.now
+  },
+
+  lastLoginAt: {
+    type: Date,
+    default: null
+  },
+
+  loginHistory: {
+    type: [
+      {
+        loginAt: {
+          type: Date,
+          required: true
+        },
+        loginMethod: {
+          type: String,
+          default: "password"
+        }
+      }
+    ],
+    default: []
+  },
+
+  // =====================================================
   // LOGIN BRUTE-FORCE PROTECTION
   // =====================================================
 
@@ -875,6 +905,19 @@ app.post('/api/login', async (req, res) => {
 
     // Reset lock escalation
     user.loginLockLevel = 0;
+
+    // =================================================
+    // LOGIN HISTORY
+    // =================================================
+
+    const loginTime = new Date();
+
+    user.lastLoginAt = loginTime;
+
+    user.loginHistory.push({
+      loginAt: loginTime,
+      loginMethod: "password"
+    });
 
     await user.save();
 
@@ -2731,6 +2774,20 @@ app.get("/auth/github/callback", async (req, res) => {
     }
 
 
+
+    // Record successful GitHub login
+    const loginTime = new Date();
+
+    user.lastLoginAt = loginTime;
+
+    user.loginHistory.push({
+      loginAt: loginTime,
+      loginMethod: "github"
+    });
+
+    await user.save();
+
+
     // -------------------------------------------------
     // CREATE CYBERSHIELD JWT
     // -------------------------------------------------
@@ -3046,6 +3103,19 @@ app.get("/auth/google-login/callback", async (req, res) => {
       }
 
     }
+
+
+    // Record successful Google login
+    const loginTime = new Date();
+
+    user.lastLoginAt = loginTime;
+
+    user.loginHistory.push({
+      loginAt: loginTime,
+      loginMethod: "google"
+    });
+
+    await user.save();
 
 
     // -------------------------------------------------
