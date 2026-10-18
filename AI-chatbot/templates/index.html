@@ -1003,6 +1003,76 @@
                 min-width: 42px;
                 min-height: 42px;
             }
+
+            html,
+            body {
+                height: 100%;
+                min-height: 0;
+            }
+
+            .app {
+                height: 100vh;
+                height: 100dvh;
+                min-height: 0;
+            }
+
+            .chat-area {
+                height: 100vh;
+                height: 100dvh;
+                min-height: 0;
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+            }
+
+            #messages {
+                flex: 1 1 auto;
+                min-height: 0;
+                overflow-y: auto;
+                padding-bottom: 20px;
+            }
+
+            .input-area {
+                position: fixed;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                width: 100%;
+                display: flex !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+                z-index: 3000;
+                flex-shrink: 0;
+                padding-bottom: max(10px, env(safe-area-inset-bottom));
+                background: #020617;
+            }
+
+            .input-area input#topic {
+                display: block !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+                flex: 1 1 auto;
+                width: 0;
+                min-width: 0;
+                color: #ffffff;
+                font-size: 16px;
+            }
+
+            .input-area button,
+            .input-area label {
+                display: flex !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+                flex-shrink: 0;
+            }
+
+            body.light-mode .input-area {
+                background: #ffffff;
+            }
+
+            body.light-mode .input-area input#topic {
+                color: #0f172a;
+            }
         }
 
         /* ------------------------- SMALL PHONE ------------------------- */
@@ -1225,7 +1295,7 @@
     </div>
 
     <script>
-        
+
         let chats =
             JSON.parse(
                 localStorage.getItem("history")
