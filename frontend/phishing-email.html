@@ -11,13 +11,9 @@
 
     <title>CyberShield - Phishing Email Analyzer</title>
 
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@400;500;600;700&display=swap"
-        rel="stylesheet"
-    >
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
-
         * {
             margin: 0;
             padding: 0;
@@ -407,7 +403,7 @@
         .hidden {
             display: none;
         }
-    
+
 
 
         /* ==========================================
@@ -432,7 +428,7 @@
             margin-top: 0;
         }
 
-        #openEmailSection > #visitCard {
+        #openEmailSection>#visitCard {
             animation-delay: .15s;
         }
 
@@ -538,7 +534,6 @@
                 width: 100%;
             }
         }
-
     </style>
 
 </head>
@@ -572,11 +567,8 @@
 
                 <h3>✉️ Email Input</h3>
 
-                <textarea
-                    id="emailBody"
-                    rows="6"
-                    placeholder="Enter Complete Email including Sender Email ID"
-                ></textarea>
+                <textarea id="emailBody" rows="6"
+                    placeholder="Enter Complete Email including Sender Email ID"></textarea>
 
                 <button id="scanEmailBtn" class="full-btn">
                     Scan Email
@@ -668,8 +660,7 @@
         </div>
 
 
-        <div id="reportEmailSection" class="hidden"
-            style="text-align:right;margin-top:20px;">
+        <div id="reportEmailSection" class="hidden" style="text-align:right;margin-top:20px;">
 
             <button id="reportEmailBtn">
                 📬 Report Phishing Email
@@ -689,392 +680,345 @@
     <script src="auth.js"></script>
 
     <script>
-            const API_BASE_URL =
-                window.location.hostname === "localhost" ||
-                    window.location.hostname === "127.0.0.1"
-                    ? "http://127.0.0.1:5001"
-                    : "https://cybersheild-hub-osjl.onrender.com";
+        const API_BASE_URL =
+            window.location.hostname === "localhost" ||
+                window.location.hostname === "127.0.0.1"
+                ? "http://127.0.0.1:5001"
+                : "https://cybersheild-hub-osjl.onrender.com";
 
-            const emailText = document.getElementById('emailBody');
-            const scanBtn = document.getElementById('scanEmailBtn');
-            const riskSpan = document.getElementById('emailRiskBadge');
-            const scoreSpan = document.getElementById('emailScore');
-            const verdictSpan = document.getElementById('emailVerdict');
-            const reasonUl = document.getElementById('emailReasonList');
-            const reportDiv = document.getElementById('reportEmailSection');
-            let lastEmail = '';
-            let emailLinks = [];
-            const explainBtn =
-                document.getElementById("explainBtn");
+        const emailText = document.getElementById('emailBody');
+        const scanBtn = document.getElementById('scanEmailBtn');
+        const riskSpan = document.getElementById('emailRiskBadge');
+        const scoreSpan = document.getElementById('emailScore');
+        const verdictSpan = document.getElementById('emailVerdict');
+        const reasonUl = document.getElementById('emailReasonList');
+        const reportDiv = document.getElementById('reportEmailSection');
+        const explainBtn = document.getElementById('explainBtn');
+        const aiExplanation = document.getElementById('aiExplanation');
+        const visitBtn = document.getElementById('visitBtn');
+        const linksBox = document.getElementById('extractedLinksBox');
+        const linksList = document.getElementById('linksList');
 
-            const aiExplanation =
-                document.getElementById("aiExplanation");
-            function analyzeEmail(content) {
+        let lastEmail = '';
+        let lastAnalysis = null;
+        let emailLinks = [];
+        let senderInfo = { from: '', replyTo: '' };
 
-                let score = 0;
-                let reasons = [];
+        /* ---------- helpers ---------- */
 
-                const lower = content.toLowerCase();
+        const esc = s => String(s).replace(/[&<>"']/g, c => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        }[c]));
 
-                // Urgency
-                const urgentWords = [
-                    "urgent",
-                    "immediately",
-                    "within 24 hours",
-                    "action required",
-                    "verify",
-                    "confirm",
-                    "suspended",
-                    "deactivated",
-                    "locked",
-                    "expire"
-                ];
+        const SHORTENERS = ['bit.ly', 'tinyurl.com', 't.co', 'goo.gl', 'is.gd', 'cutt.ly', 'rb.gy'];
+        const BAD_TLDS = ['.ru', '.cn', '.top', '.xyz', '.click', '.icu', '.tk', '.work', '.zip'];
+        const FREE_MAIL = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'proton.me', 'rediffmail.com'];
+        const TRUSTED = ['google.com', 'github.com', 'amazon.com', 'amazon.in', 'microsoft.com', 'paypal.com', 'apple.com'];
 
-                urgentWords.forEach(word => {
-                    if (lower.includes(word)) {
-                        score += 10;
-                        reasons.push(`⚠️ Urgency keyword: ${word}`);
-                    }
-                });
+        const BRANDS = {
+            paypal: ['paypal.com'],
+            amazon: ['amazon.com', 'amazon.in'],
+            microsoft: ['microsoft.com', 'outlook.com', 'office.com'],
+            google: ['google.com', 'gmail.com'],
+            apple: ['apple.com', 'icloud.com'],
+            netflix: ['netflix.com'],
+            sbi: ['sbi.co.in', 'onlinesbi.sbi'],
+            hdfc: ['hdfcbank.com', 'hdfcbank.net'],
+            icici: ['icicibank.com']
+        };
 
-                // Financial bait
-                const financeWords = [
-                    "bank",
-                    "paypal",
-                    "upi",
-                    "payment",
-                    "refund",
-                    "invoice",
-                    "gift card",
-                    "crypto",
-                    "bitcoin"
-                ];
+        const domainMatches = (host, d) => host === d || host.endsWith('.' + d);
 
-                financeWords.forEach(word => {
-                    if (lower.includes(word)) {
-                        score += 10;
-                        reasons.push(`💰 Financial keyword: ${word}`);
-                    }
-                });
+        function getHost(u) {
+            try { return new URL(/^https?:\/\//i.test(u) ? u : 'https://' + u).hostname.toLowerCase(); }
+            catch { return ''; }
+        }
 
-                // Credentials
-                const credentialWords = [
-                    "password",
-                    "otp",
-                    "pin",
-                    "cvv",
-                    "login",
-                    "sign in",
-                    "verify account"
-                ];
+        function extractLinks(text) {
+            return [...new Set(
+                (text.match(/https?:\/\/[^\s<>"']+/gi) || []).map(l => l.replace(/[.,;:!?)]+$/, ''))
+            )];
+        }
 
-                credentialWords.forEach(word => {
-                    if (lower.includes(word)) {
-                        score += 15;
-                        reasons.push(`🔑 Credential request: ${word}`);
-                    }
-                });
-
-                // Links
-                const urls =
-                    content.match(/https?:\/\/[^\s]+/g);
-
-                if (urls) {
-
-                    score += urls.length * 15;
-
-                    reasons.push(
-                        `🔗 ${urls.length} link(s) found`
-                    );
-
-                    urls.forEach(url => {
-
-                        if (
-                            url.includes("@") ||
-                            url.includes("bit.ly") ||
-                            url.includes("tinyurl") ||
-                            url.includes("t.co")
-                        ) {
-
-                            score += 25;
-
-                            reasons.push(
-                                "🚨 Suspicious shortened/hidden URL"
-                            );
-                        }
-                    });
-                }
-
-                // Excessive caps
-                const caps =
-                    content.match(/[A-Z]{5,}/g);
-
-                if (caps) {
-
-                    score += 10;
-
-                    reasons.push(
-                        "📢 Excessive capital letters"
-                    );
-                }
-
-                // Sender mismatch
-                if (
-                    lower.includes("@gmail.com") &&
-                    (
-                        lower.includes("paypal") ||
-                        lower.includes("bank") ||
-                        lower.includes("microsoft")
-                    )
-                ) {
-
-                    score += 30;
-
-                    reasons.push(
-                        "🎭 Possible brand impersonation"
-                    );
-                }
-
-                score = Math.min(score, 100);
-
-                let verdict;
-
-                if (score >= 70) {
-
-                    verdict =
-                        "🔴 High Risk Phishing";
-
-                } else if (score >= 40) {
-
-                    verdict =
-                        "🟠 Suspicious Email";
-
-                } else {
-
-                    verdict =
-                        "🟢 Likely Legitimate";
-                }
-
-                return {
-                    score,
-                    reasons,
-                    verdict
-                };
+        function extractSender(text) {
+            const grab = re => {
+                const m = text.match(re);
+                if (!m) return '';
+                const addr = m[1].match(/[\w.+\-]+@([\w\-]+\.)+[a-z]{2,}/i);
+                return addr ? addr[0].toLowerCase() : '';
+            };
+            let from = grab(/^\s*(?:from|sender)\s*:\s*(.+)$/im);
+            // fallback: first email address in text
+            if (!from) {
+                const m = text.match(/[\w.+\-]+@([\w\-]+\.)+[a-z]{2,}/i);
+                from = m ? m[0].toLowerCase() : '';
             }
-            function updateEmail() {
+            const replyTo = grab(/^\s*reply-to\s*:\s*(.+)$/im);
+            return { from, replyTo };
+        }
 
-                const content = emailText.value.trim();
+        function countHits(words, text) {
+            return words.filter(w =>
+                new RegExp('\\b' + w.replace(/\s+/g, '\\s+') + '\\b', 'i').test(text));
+        }
 
-                if (!content) {
+        /* ---------- link classification ---------- */
 
-                    scoreSpan.innerText = "0";
-                    verdictSpan.innerText = "—";
-                    riskSpan.innerText = "—";
-                    reasonUl.innerHTML = "";
+        function classifyLink(link) {
+            const host = getHost(link);
+            const lower = link.toLowerCase();
+            const flags = [];
 
-                    reportDiv.classList.add("hidden");
+            if (SHORTENERS.includes(host)) flags.push('URL shortener');
+            if (lower.replace(/^https?:\/\//, '').split('/')[0].includes('@')) flags.push('Contains @ (hidden destination)');
+            if (/^\d{1,3}(\.\d{1,3}){3}$/.test(host)) flags.push('Raw IP address');
+            if (host.includes('xn--')) flags.push('Punycode look-alike domain');
+            if (BAD_TLDS.some(t => host.endsWith(t))) flags.push('Suspicious TLD');
+            if (host.split('.').length > 4) flags.push('Too many subdomains');
+            if (/^http:\/\//i.test(link)) flags.push('Not HTTPS');
+            if (/(secure-login|account-update|verify|signin|login|confirm)/i.test(lower)) flags.push('Phishing keyword in URL');
 
-                    return;
+            // brand name in host but not the real domain (paypal.com.evil.io)
+            Object.entries(BRANDS).forEach(([brand, domains]) => {
+                if (host.includes(brand) && !domains.some(d => domainMatches(host, d))) {
+                    flags.push(`Impersonates ${brand}`);
                 }
+            });
 
-                lastEmail = content;
+            const trusted = TRUSTED.some(d => domainMatches(host, d));
 
-                emailLinks =
-                    content.match(
-                        /https?:\/\/[^\s]+/g
-                    ) || [];
+            if (flags.length && !(trusted && flags.every(f => f === 'Phishing keyword in URL'))) {
+                return { host, status: '🔴 Potential Phishing', color: '#ef4444', flags, level: 2 };
+            }
+            if (trusted) return { host, status: '🟢 Trusted Domain', color: '#22c55e', flags, level: 0 };
+            return { host, status: '🟠 Unknown Domain', color: '#f59e0b', flags, level: 1 };
+        }
 
-                const analysis = analyzeEmail(content);
+        /* ---------- analysis ---------- */
 
-                scoreSpan.innerText = analysis.score;
-                verdictSpan.innerText = analysis.verdict;
+        function analyzeEmail(content) {
+            let score = 0;
+            const reasons = [];
 
-                reasonUl.innerHTML =
-                    analysis.reasons
-                        .map(r => `<li>${r}</li>`)
-                        .join("");
+            const urgent = countHits([
+                'urgent', 'immediately', 'within 24 hours', 'action required', 'verify',
+                'confirm', 'suspended', 'deactivated', 'locked', 'expire', 'expires', 'final notice'
+            ], content);
+            if (urgent.length) {
+                score += Math.min(urgent.length * 10, 30);
+                urgent.forEach(w => reasons.push(`⚠️ Urgency keyword: ${w}`));
+            }
 
-                if (analysis.score >= 40) {
+            const finance = countHits([
+                'bank', 'paypal', 'upi', 'payment', 'refund', 'invoice', 'gift card', 'crypto', 'bitcoin'
+            ], content);
+            if (finance.length) {
+                score += Math.min(finance.length * 10, 30);
+                finance.forEach(w => reasons.push(`💰 Financial keyword: ${w}`));
+            }
 
-                    riskSpan.innerText =
-                        "⚠️ Phishing indicators found";
+            const creds = countHits([
+                'password', 'otp', 'pin', 'cvv', 'login', 'sign in', 'verify account'
+            ], content);
+            if (creds.length) {
+                score += Math.min(creds.length * 15, 45);
+                creds.forEach(w => reasons.push(`🔑 Credential request: ${w}`));
+            }
 
-                    reportDiv.classList.remove("hidden");
+            // Sender checks
+            const sender = extractSender(content);
+            senderInfo = sender;
+            const senderDomain = sender.from.split('@')[1] || '';
 
-                } else {
-
-                    riskSpan.innerText =
-                        "✅ No obvious phishing";
-
-                    reportDiv.classList.add("hidden");
+            if (sender.from && sender.replyTo) {
+                const rd = sender.replyTo.split('@')[1];
+                if (rd && rd !== senderDomain) {
+                    score += 25;
+                    reasons.push(`🎭 Reply-To (${sender.replyTo}) differs from sender domain`);
                 }
             }
-            scanBtn.addEventListener(
-                'click',
-                updateEmail
-            );
 
-            document
-                .getElementById("visitBtn")
-                .addEventListener("click", () => {
+            const lower = content.toLowerCase();
+            Object.entries(BRANDS).forEach(([brand, domains]) => {
+                if (!new RegExp('\\b' + brand + '\\b', 'i').test(lower)) return;
+                if (!senderDomain) return;
+                const legit = domains.some(d => domainMatches(senderDomain, d));
+                if (!legit) {
+                    score += FREE_MAIL.includes(senderDomain) ? 30 : 25;
+                    reasons.push(`🎭 Possible ${brand} impersonation (sender: ${senderDomain})`);
+                }
+            });
 
-                    const box =
-                        document.getElementById(
-                            "extractedLinksBox"
-                        );
+            // Links
+            const links = extractLinks(content);
+            if (links.length) {
+                score += Math.min(links.length * 10, 30);
+                reasons.push(`🔗 ${links.length} link(s) found`);
 
-                    const list =
-                        document.getElementById(
-                            "linksList"
-                        );
-
-                    if (emailLinks.length === 0) {
-
-                        list.innerHTML =
-                            "<li>No links found.</li>";
-
-                    } else {
-
-                        list.innerHTML =
-                            emailLinks
-                                .map(link => {
-
-                                    let status =
-                                        "🟠 Unknown Domain";
-
-                                    let color =
-                                        "#f59e0b";
-
-                                    const lower =
-                                        link.toLowerCase();
-
-                                    const trustedDomains = [
-                                        "google.com",
-                                        "github.com",
-                                        "amazon.com",
-                                        "amazon.in",
-                                        "microsoft.com",
-                                        "paypal.com",
-                                        "apple.com"
-                                    ];
-
-                                    const trusted =
-                                        trustedDomains.some(
-                                            domain =>
-                                                lower.includes(domain)
-                                        );
-
-                                    if (trusted) {
-
-                                        status =
-                                            "🟢 Trusted Domain";
-
-                                        color =
-                                            "#22c55e";
-
-                                    }
-
-                                    if (
-                                        lower.includes("bit.ly") ||
-                                        lower.includes("tinyurl") ||
-                                        lower.includes("@") ||
-                                        lower.includes("secure-login") ||
-                                        lower.includes("verify") ||
-                                        lower.includes("account-update") ||
-                                        lower.includes("login")
-                                    ) {
-
-                                        status =
-                                            "🔴 Potential Phishing";
-
-                                        color =
-                                            "#ef4444";
-                                    }
-
-                                    return `
-            <li style="
-                padding:12px;
-                margin-bottom:10px;
-                border-radius:12px;
-                background:rgba(59,130,246,.08);
-            ">
-
-                <a href="${link}"
-                   target="_blank"
-                   style="
-                    color:#3b82f6;
-                    word-break:break-all;
-                   ">
-                    ${link}
-                </a>
-
-                <div style="
-                    margin-top:8px;
-                    color:${color};
-                    font-weight:600;
-                ">
-                    ${status}
-                </div>
-
-            </li>
-            `;
-                                })
-                                .join("");
+                links.forEach(l => {
+                    const c = classifyLink(l);
+                    if (c.level === 2) {
+                        score += 25;
+                        reasons.push(`🚨 ${c.host || l}: ${c.flags.slice(0, 2).join(', ')}`);
                     }
-
-                    box.classList.toggle("hidden");
-
                 });
+            }
 
-            explainBtn?.addEventListener(
-                "click",
-                async () => {
+            if (/[A-Z]{5,}/.test(content.replace(/https?:\/\/\S+/g, ''))) {
+                score += 10;
+                reasons.push('📢 Excessive capital letters');
+            }
 
-                    if (!lastEmail.trim()) {
+            score = Math.min(score, 100);
 
-                        alert(
-                            "Paste and scan an email first."
-                        );
+            const verdict =
+                score >= 70 ? '🔴 High Risk Phishing'
+                    : score >= 40 ? '🟠 Suspicious Email'
+                        : '🟢 Likely Legitimate';
 
-                        return;
-                    }
+            return { score, reasons: [...new Set(reasons)], verdict };
+        }
 
-                    aiExplanation.innerHTML =
-                        "🧠 CyberShield AI is analyzing...";
+        /* ---------- UI ---------- */
 
-                    try {
+        function renderLinks() {
+            if (!emailLinks.length) {
+                linksList.innerHTML = '<li>No links found.</li>';
+                return;
+            }
 
-                        const response =
-                            await fetch(
-                                `${API_BASE_URL}/api/ai/explain`,
-                                {
-                                    method: "POST",
+            linksList.innerHTML = emailLinks.map(link => {
+                const c = classifyLink(link);
+                return `
+            <li style="padding:12px;margin-bottom:10px;border-radius:12px;background:rgba(59,130,246,.08);">
+                <a href="#" class="safe-link" data-url="${esc(link)}"
+                   style="color:#3b82f6;word-break:break-all;">${esc(link)}</a>
+                <div style="margin-top:8px;color:${c.color};font-weight:600;">${c.status}</div>
+                ${c.flags.length
+                        ? `<div style="margin-top:6px;font-size:.8rem;opacity:.85;">${c.flags.map(esc).join(' • ')}</div>`
+                        : ''}
+            </li>`;
+            }).join('');
+        }
 
-                                    headers: {
-                                        "Content-Type": "application/json",
-                                        "Authorization": `Bearer ${localStorage.getItem("token")}`
-                                    },
+        function updateEmail() {
+            const content = emailText.value.trim();
 
-                                    body: JSON.stringify({
+            if (!content) {
+                scoreSpan.innerText = '0';
+                verdictSpan.innerText = '—';
+                riskSpan.innerText = '—';
+                reasonUl.innerHTML = '';
+                reportDiv.classList.add('hidden');
+                lastEmail = ''; lastAnalysis = null; emailLinks = [];
+                return;
+            }
 
-                                        source: "phishing_email_analyzer",
+            lastEmail = content;
+            emailLinks = extractLinks(content);
 
-                                        topic: `
-Analyze this email.
+            const analysis = analyzeEmail(content);
+            lastAnalysis = analysis;
+
+            scoreSpan.innerText = analysis.score;
+            verdictSpan.innerText = analysis.verdict;
+            reasonUl.innerHTML = analysis.reasons.length
+                ? analysis.reasons.map(r => `<li>${esc(r)}</li>`).join('')
+                : '<li>✅ No obvious phishing indicators</li>';
+
+            if (analysis.score >= 40) {
+                riskSpan.innerText = '⚠️ Phishing indicators found';
+                reportDiv.classList.remove('hidden');
+            } else {
+                riskSpan.innerText = '✅ No obvious phishing';
+                reportDiv.classList.add('hidden');
+            }
+
+            // refresh links if panel is already open
+            if (!linksBox.classList.contains('hidden')) renderLinks();
+        }
+
+        scanBtn.addEventListener('click', updateEmail);
+
+        /* ---------- CONTINUE (View Extracted Links) ---------- */
+
+        visitBtn.addEventListener('click', () => {
+            if (!lastEmail) {
+                alert('Paste and scan an email first.');
+                return;
+            }
+            renderLinks();
+            linksBox.classList.toggle('hidden');
+        });
+
+        // Links never open directly — always confirm first (same as QR flow)
+        linksList.addEventListener('click', e => {
+            const a = e.target.closest('.safe-link');
+            if (!a) return;
+            e.preventDefault();
+
+            const url = a.dataset.url;
+            const c = classifyLink(url);
+            const warn = c.level === 2
+                ? '🚨 This link looks like PHISHING.\n' + c.flags.join(', ') + '\n\n'
+                : c.level === 1
+                    ? '⚠️ Unknown domain. Be careful.\n\n'
+                    : '';
+
+            if (confirm(warn + 'Only continue if you trust this destination.\n\n' + url + '\n\nOpen link?')) {
+                window.open(url, '_blank', 'noopener,noreferrer');
+            }
+        });
+
+        /* ---------- AI ---------- */
+
+        explainBtn?.addEventListener('click', async () => {
+            if (!lastEmail.trim() || !lastAnalysis) {
+                alert('Paste and scan an email first.');
+                return;
+            }
+
+            aiExplanation.innerHTML = '🧠 CyberShield AI is analyzing...';
+            explainBtn.disabled = true;
+
+            const token = localStorage.getItem('token');
+            const linkSummary = emailLinks.map(l => {
+                const c = classifyLink(l);
+                return `${l} -> ${c.status}${c.flags.length ? ' (' + c.flags.join(', ') + ')' : ''}`;
+            }).join('\n') || 'None';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/ai/explain`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                    },
+                    body: JSON.stringify({
+                        source: 'phishing_email_analyzer',
+                        topic: `
+This is a cybersecurity analysis request from the CyberShield Phishing Email Analyzer.
+
+Analyze this email for phishing, spoofing, brand impersonation, credential theft,
+malicious links, financial fraud, or other social-engineering threats.
 
 Email Content:
 ${lastEmail}
 
+Sender: ${senderInfo.from || 'Not detected'}
+Reply-To: ${senderInfo.replyTo || 'Not detected'}
+
+Links:
+${linkSummary}
+
 Risk Score:
-${scoreSpan.innerText}
+${lastAnalysis.score}/100
 
 Verdict:
-${verdictSpan.innerText}
+${lastAnalysis.verdict}
 
 Indicators:
-${Array.from(reasonUl.children)
-                                                .map(li => li.innerText)
-                                                .join("\n")}
+${lastAnalysis.reasons.join('\n') || 'None'}
 
 Return:
 
@@ -1089,37 +1033,30 @@ Return:
 • Maximum 3 points
 
 🛡️ Recommendation
+One short sentence
 
 Maximum 250 words.
 No markdown.
 `
-                                    })
-                                });
+                    })
+                });
 
-                        const data =
-                            await response.json();
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error || 'AI service unavailable');
 
-                        aiExplanation.innerHTML =
-                            data.answer.replace(
-                                /\n/g,
-                                "<br>"
-                            );
+                aiExplanation.innerHTML =
+                    esc(data.answer || 'No AI explanation was returned.').replace(/\n/g, '<br>');
 
-                    }
+            } catch (err) {
+                console.error('AI explanation error:', err);
+                aiExplanation.innerHTML = '❌ Failed to connect with CyberShield AI.';
+            } finally {
+                explainBtn.disabled = false;
+            }
+        });
 
-                    catch (err) {
-
-                        aiExplanation.innerHTML =
-                            "❌ Failed to connect with CyberShield AI.";
-                    }
-                }
-            );
-            document.getElementById(
-                'reportEmailBtn')?.addEventListener(
-                    'click', () =>
-                    alert(`Reported email:\n${lastEmail.substring(0, 150)}`
-                    ));
-        
+        document.getElementById('reportEmailBtn')?.addEventListener('click', () =>
+            alert(`Reported email:\n${lastEmail.substring(0, 150)}`));
     </script>
 
 </body>

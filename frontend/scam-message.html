@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,7 +8,6 @@
     <title>CyberShield - Scam Message Detector</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-
         * {
             margin: 0;
             padding: 0;
@@ -397,7 +397,7 @@
         .hidden {
             display: none;
         }
-    
+
 
         #smsText {
             min-height: 180px;
@@ -488,7 +488,6 @@
                 width: 100%;
             }
         }
-
     </style>
 </head>
 
@@ -514,11 +513,8 @@
             <div class="card">
                 <h3>📝 Message Input</h3>
 
-                <textarea
-                    id="smsText"
-                    rows="6"
-                    placeholder="Paste a suspicious SMS, WhatsApp message, or chat message..."
-                ></textarea>
+                <textarea id="smsText" rows="6"
+                    placeholder="Paste a suspicious SMS, WhatsApp message, or chat message..."></textarea>
 
                 <button id="scanSms">
                     Analyze Message
@@ -586,8 +582,7 @@
             </button>
         </div>
 
-        <div id="reportSmsDiv" class="hidden"
-             style="text-align:right;margin-top:24px;">
+        <div id="reportSmsDiv" class="hidden" style="text-align:right;margin-top:24px;">
             <button id="reportSmsBtn">
                 📢 Report Scam Number
             </button>
@@ -603,138 +598,277 @@
     <script src="theme.js"></script>
     <script src="auth.js"></script>
     <script>
-
-            const API_BASE_URL =
-                window.location.hostname === "localhost" ||
+        const API_BASE_URL =
+            window.location.hostname === "localhost" ||
                 window.location.hostname === "127.0.0.1"
-                    ? "http://127.0.0.1:5001"
-                    : "https://cybersheild-hub-osjl.onrender.com";
+                ? "http://127.0.0.1:5001"
+                : "https://cybersheild-hub-osjl.onrender.com";
 
-            const smsField = document.getElementById('smsText');
-            const scanSmsBtn = document.getElementById('scanSms');
-            const riskBadgeSpan = document.getElementById('smsRiskBadge');
-            const smsScoreSpan = document.getElementById('smsScore');
-            const smsLabelSpan = document.getElementById('smsLabel');
-            const smsReasonsUl = document.getElementById('smsReasons');
-            const reportDivSms = document.getElementById('reportSmsDiv');
-            const explainBtn = document.getElementById('explainBtn');
-            const aiExplanation = document.getElementById('aiExplanation');
+        const smsField = document.getElementById('smsText');
+        const scanSmsBtn = document.getElementById('scanSms');
+        const riskBadgeSpan = document.getElementById('smsRiskBadge');
+        const smsScoreSpan = document.getElementById('smsScore');
+        const smsLabelSpan = document.getElementById('smsLabel');
+        const smsReasonsUl = document.getElementById('smsReasons');
+        const reportDivSms = document.getElementById('reportSmsDiv');
+        const explainBtn = document.getElementById('explainBtn');
+        const aiExplanation = document.getElementById('aiExplanation');
+        const visitBtn = document.getElementById('visitBtn');
 
-            let lastSms = '';
+        // Existing review-card elements (no HTML change, only text updated)
+        const reviewTitle = document.querySelector('#openSMSSection h3');
+        const reviewText = document.querySelector('#openSMSSection p');
+        const DEFAULT_REVIEW_TITLE = reviewTitle.textContent;
+        const DEFAULT_REVIEW_TEXT = reviewText.innerHTML;
 
-            function scamAnalysis(text) {
-                let score = 0;
-                let reasons = [];
-                let lower = text.toLowerCase();
+        let lastSms = '';
+        let lastResult = null;
+        let lastEntities = null;
 
-                if (lower.includes('winner') || lower.includes('congratulations'))
-                    score += 20, reasons.push('🏆 "Winner" scam trigger');
+        /* ---------- helpers ---------- */
 
-                if (lower.includes('click here') || lower.includes('claim now'))
-                    score += 15, reasons.push('🎯 Urgent claim action');
+        const esc = s => String(s).replace(/[&<>"']/g, c => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        }[c]));
 
-                if (lower.includes('bit.ly') || lower.includes('tinyurl'))
-                    score += 25, reasons.push('🔗 Shortened link – hides malicious URL');
+        function normalizeUrl(u) {
+            return /^https?:\/\//i.test(u) ? u : 'https://' + u;
+        }
 
-                if (lower.includes('gift card') || lower.includes('free') || lower.includes('cash'))
-                    score += 20, reasons.push('💰 Monetary lure');
+        function getHost(u) {
+            try { return new URL(normalizeUrl(u)).hostname.toLowerCase(); }
+            catch { return ''; }
+        }
 
-                if (lower.match(/\d{10,}/))
-                    score += 15, reasons.push('📞 Suspicious phone number');
+        const SHORTENERS = ['bit.ly', 'tinyurl.com', 't.co', 'goo.gl', 'is.gd', 'cutt.ly', 'rb.gy', 'shorturl.at'];
+        const BAD_TLDS = ['.ru', '.cn', '.top', '.xyz', '.click', '.icu', '.tk', '.work', '.zip'];
 
-                score = Math.min(score, 100);
+        function extractEntities(text) {
+            const links = (text.match(/\b(?:https?:\/\/|www\.)[^\s<>"']+/gi) || [])
+                .map(l => l.replace(/[.,;:!?)]+$/, ''));
 
-                let label =
-                    score > 60
-                        ? 'High confidence scam'
-                        : score > 30
-                            ? 'Suspicious message'
-                            : 'Likely legitimate';
+            // bare shorteners like "bit.ly/abc" without http
+            SHORTENERS.forEach(s => {
+                const m = text.match(new RegExp('(?<![\\w/.])' + s.replace('.', '\\.') + '/[^\\s<>"\']+', 'gi'));
+                if (m) m.forEach(x => { if (!links.some(l => l.includes(x))) links.push(x.replace(/[.,;:!?)]+$/, '')); });
+            });
 
-                return { score, reasons, label };
+            const phones = text.match(/(?:\+?91[-\s]?)?[6-9]\d{9}\b/g) || [];
+            const upiIds = text.match(/\b[\w.\-]{2,}@[a-z]{2,}\b(?!\.)/gi) || [];
+            const amounts = text.match(/(?:₹|rs\.?|inr)\s?[\d,]+(?:\.\d+)?/gi) || [];
+
+            return {
+                links: [...new Set(links)],
+                phones: [...new Set(phones)],
+                upiIds: [...new Set(upiIds)],
+                amounts: [...new Set(amounts)]
+            };
+        }
+
+        /* ---------- analysis ---------- */
+
+        const RULES = [
+            { re: /\b(winner|congratulations|lucky draw|you have won|prize)\b/i, score: 20, msg: '🏆 "Winner / prize" scam trigger' },
+            { re: /\b(click here|claim now|tap (the )?link|click the link)\b/i, score: 15, msg: '🎯 Urgent claim action' },
+            { re: /\b(gift card|free|cash ?back|cash|reward)\b/i, score: 15, msg: '💰 Monetary lure' },
+            { re: /\b(urgent|immediately|within 24 hours|last chance|expires? today|act now)\b/i, score: 15, msg: '⏰ Urgency / pressure tactic' },
+            { re: /\b(account|card|sim|wallet).{0,25}(blocked|suspended|deactivated|expired|closed)\b/i, score: 20, msg: '🚫 Fake account-block threat' },
+            { re: /\b(kyc|pan (card )?update|aadhaar update)\b/i, score: 20, msg: '🪪 KYC / PAN update bait' },
+            { re: /\b(share|send|tell|enter|reply with).{0,25}\b(otp|pin|cvv|password)\b/i, score: 30, msg: '🔑 Asks for OTP / PIN / password' },
+            { re: /\b(scan|enter (your )?pin).{0,30}(receive|refund|money|cashback)\b/i, score: 25, msg: '💳 UPI "receive money" trick' },
+            { re: /\b(work from home|part[- ]time job|earn (rs\.?|₹)?\s?\d+.{0,15}(day|hour)|task based)\b/i, score: 20, msg: '💼 Fake job / earning offer' },
+            { re: /\b(electricity|power).{0,20}(disconnect|cut)\b/i, score: 20, msg: '⚡ Fake utility disconnection threat' },
+            { re: /\b(customs|parcel|courier|delivery).{0,30}(held|failed|pending|fee)\b/i, score: 15, msg: '📦 Fake parcel / courier fee' },
+            { re: /\b(arrest|police|cbi|narcotics|legal action)\b/i, score: 20, msg: '👮 Authority / legal threat' }
+        ];
+
+        function scamAnalysis(text) {
+            let score = 0;
+            const reasons = [];
+
+            RULES.forEach(r => {
+                if (r.re.test(text)) { score += r.score; reasons.push(r.msg); }
+            });
+
+            const ent = extractEntities(text);
+
+            ent.links.forEach(link => {
+                const host = getHost(link);
+                score += 10;
+                reasons.push(`🔗 Link found: ${host || link}`);
+
+                if (SHORTENERS.some(s => host === s)) { score += 25; reasons.push('🔗 Shortened link hides real URL'); }
+                if (/^http:\/\//i.test(link)) { score += 15; reasons.push('🔓 Link is not HTTPS'); }
+                if (BAD_TLDS.some(t => host.endsWith(t))) { score += 20; reasons.push(`⚠️ Suspicious domain: ${host}`); }
+                if (/^\d{1,3}(\.\d{1,3}){3}$/.test(host)) { score += 25; reasons.push('🚨 Link uses raw IP address'); }
+                if (host.includes('xn--')) { score += 25; reasons.push('🚨 Punycode (look-alike) domain'); }
+            });
+
+            if (ent.phones.length && /\b(call|whatsapp|contact|helpline)\b/i.test(text)) {
+                score += 10;
+                reasons.push('📞 Asks you to call / contact a number');
             }
 
-            function updateSms() {
-                const text = smsField.value.trim();
+            score = Math.min(score, 100);
 
-                if (!text) {
-                    riskBadgeSpan.innerText = '—';
-                    riskBadgeSpan.className = 'badge';
-                    smsScoreSpan.innerText = '0';
-                    smsLabelSpan.innerText = 'Not analyzed';
-                    smsReasonsUl.innerHTML =
-                        '<li>⚡ Enter a suspicious message</li>';
-                    reportDivSms.classList.add('hidden');
-                    lastSms = '';
-                    return;
-                }
+            const label =
+                score >= 70 ? 'High confidence scam'
+                    : score >= 40 ? 'Suspicious message'
+                        : 'Likely legitimate';
 
-                lastSms = text;
+            return { score, reasons: [...new Set(reasons)], label, entities: ent };
+        }
 
-                const res = scamAnalysis(text);
+        /* ---------- UI ---------- */
 
-                smsScoreSpan.innerText = res.score;
-                smsLabelSpan.innerText = res.label;
+        function renderReview(res) {
+            const e = res.entities;
+            const row = (t, arr) => arr.length
+                ? `<div style="margin-top:8px;word-break:break-all;"><strong>${t}:</strong> ${arr.map(esc).join(', ')}</div>`
+                : '';
 
-                smsReasonsUl.innerHTML =
-                    res.reasons.length
-                        ? res.reasons.map(r => `<li>${r}</li>`).join('')
-                        : '<li>✅ No obvious scam indicators detected</li>';
+            reviewTitle.textContent = '📱 Message Review';
+            reviewText.innerHTML = `
+            Review the details below before replying, clicking links, sharing information, or paying.
+            ${row('🔗 Links', e.links)}
+            ${row('📞 Numbers', e.phones)}
+            ${row('💳 UPI IDs', e.upiIds)}
+            ${row('💰 Amounts', e.amounts)}
+        `;
+        }
 
-                if (res.score >= 70) {
-                    riskBadgeSpan.innerText = '🔴 Scam Detected';
-                    riskBadgeSpan.className = 'badge badge-danger';
-                    reportDivSms.classList.remove('hidden');
-                } else if (res.score >= 45) {
-                    riskBadgeSpan.innerText = '⚠️ Suspicious';
-                    riskBadgeSpan.className = 'badge badge-warning';
-                    reportDivSms.classList.remove('hidden');
-                } else {
-                    riskBadgeSpan.innerText = '🟢 Low Risk';
-                    riskBadgeSpan.className = 'badge badge-safe';
-                    reportDivSms.classList.add('hidden');
-                }
+        function resetUI() {
+            riskBadgeSpan.innerText = '—';
+            riskBadgeSpan.className = 'badge';
+            smsScoreSpan.innerText = '0';
+            smsLabelSpan.innerText = 'Not analyzed';
+            smsReasonsUl.innerHTML = '<li>⚡ Enter a suspicious message</li>';
+            reportDivSms.classList.add('hidden');
+            reviewTitle.textContent = DEFAULT_REVIEW_TITLE;
+            reviewText.innerHTML = DEFAULT_REVIEW_TEXT;
+            lastSms = ''; lastResult = null; lastEntities = null;
+        }
+
+        function updateSms() {
+            const text = smsField.value.trim();
+            if (!text) { resetUI(); return; }
+
+            lastSms = text;
+            const res = scamAnalysis(text);
+            lastResult = res;
+            lastEntities = res.entities;
+
+            smsScoreSpan.innerText = res.score;
+            smsLabelSpan.innerText = res.label;
+
+            smsReasonsUl.innerHTML = res.reasons.length
+                ? res.reasons.map(r => `<li>${esc(r)}</li>`).join('')
+                : '<li>✅ No obvious scam indicators detected</li>';
+
+            if (res.score >= 70) {
+                riskBadgeSpan.innerText = '🔴 Scam Detected';
+                riskBadgeSpan.className = 'badge badge-danger';
+                reportDivSms.classList.remove('hidden');
+            } else if (res.score >= 40) {
+                riskBadgeSpan.innerText = '⚠️ Suspicious';
+                riskBadgeSpan.className = 'badge badge-warning';
+                reportDivSms.classList.remove('hidden');
+            } else {
+                riskBadgeSpan.innerText = '🟢 Low Risk';
+                riskBadgeSpan.className = 'badge badge-safe';
+                reportDivSms.classList.add('hidden');
             }
 
-            scanSmsBtn.addEventListener('click', updateSms);
+            renderReview(res);
+        }
 
-            smsField.addEventListener('input', () => {
-                if (smsField.value.trim()) updateSms();
-            });
+        scanSmsBtn.addEventListener('click', updateSms);
+        // Textarea khali karne par hi result reset hoga (auto-analyze nahi hoga)
+        smsField.addEventListener('input', () => {
+            if (!smsField.value.trim()) resetUI();
+        });
 
-            document.getElementById('visitBtn')?.addEventListener('click', () => {
-                if (!lastSms) {
-                    alert('Enter a message first.');
-                    return;
+        /* ---------- CONTINUE button ---------- */
+
+        visitBtn?.addEventListener('click', () => {
+            if (!lastSms || !lastResult) {
+                alert('Enter a message first.');
+                return;
+            }
+
+            const { links, phones, upiIds } = lastEntities;
+            const risky = lastResult.score >= 40;
+            const warn = risky
+                ? `⚠️ This message looks ${lastResult.score >= 70 ? 'like a SCAM' : 'suspicious'} (${lastResult.score}/100).\n\n`
+                : '';
+
+            // 1) Link present → confirm, then open
+            if (links.length) {
+                const target = normalizeUrl(links[0]);
+                const ok = confirm(
+                    warn +
+                    'This message contains a link:\n\n' + target +
+                    (links.length > 1 ? `\n\n(+${links.length - 1} more link(s) in the review card)` : '') +
+                    '\n\nOnly continue if you trust the sender.\n\nOpen link?'
+                );
+                if (ok) window.open(target, '_blank', 'noopener,noreferrer');
+                return;
+            }
+
+            // 2) Phone number → confirm call
+            if (phones.length) {
+                const num = phones[0].replace(/[\s-]/g, '');
+                if (confirm(warn + 'Call this number?\n\n' + num)) {
+                    window.location.href = 'tel:' + num;
                 }
-                alert('Review the message carefully. Do not click links, reply, share OTPs, passwords, or make payments until the sender is verified.');
-            });
+                return;
+            }
 
-            document.getElementById('reportSmsBtn')?.addEventListener('click', () => {
-                alert('Scam message reported. The sender can be reviewed for further analysis.');
-            });
+            // 3) UPI ID → just warn + copy (never auto-pay)
+            if (upiIds.length) {
+                alert(
+                    warn +
+                    'UPI ID found: ' + upiIds[0] +
+                    '\n\nNever enter your UPI PIN to "receive" money. Verify the person before paying.'
+                );
+                return;
+            }
 
-            explainBtn?.addEventListener('click', async () => {
-                if (!lastSms) {
-                    alert('Analyze a message first.');
-                    return;
-                }
+            // 4) Nothing actionable
+            alert(
+                warn +
+                'Do not click links, reply, share OTPs/passwords, or make payments until the sender is verified.'
+            );
+        });
 
-                aiExplanation.innerHTML = '🧠 CyberShield AI is analyzing this message...';
-                explainBtn.disabled = true;
+        document.getElementById('reportSmsBtn')?.addEventListener('click', () => {
+            alert('Scam message reported. The sender can be reviewed for further analysis.');
+        });
 
-                try {
-                    const localResult = scamAnalysis(lastSms);
+        /* ---------- AI ---------- */
 
-                    const response = await fetch(`${API_BASE_URL}/api/ai/explain`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${localStorage.getItem("token")}`
-                        },
-                        body: JSON.stringify({
-                            source: 'scam_message_detector',
-                            topic: `
+        explainBtn?.addEventListener('click', async () => {
+            if (!lastSms || !lastResult) {
+                alert('Analyze a message first.');
+                return;
+            }
+
+            aiExplanation.innerHTML = '🧠 CyberShield AI is analyzing this message...';
+            explainBtn.disabled = true;
+
+            const e = lastEntities;
+            const token = localStorage.getItem('token');
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/ai/explain`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                    },
+                    body: JSON.stringify({
+                        source: 'scam_message_detector',
+                        topic: `
 This is a cybersecurity analysis request from the CyberShield Scam Message Detector.
 
 Analyze this SMS/chat message for phishing, fraud, scam, social engineering,
@@ -744,14 +878,20 @@ digital-security threats.
 Message:
 ${lastSms}
 
+Extracted details:
+Links: ${e.links.join(', ') || 'None'}
+Phone numbers: ${e.phones.join(', ') || 'None'}
+UPI IDs: ${e.upiIds.join(', ') || 'None'}
+Amounts: ${e.amounts.join(', ') || 'None'}
+
 Local heuristic score:
-${localResult.score}/100
+${lastResult.score}/100
 
 Local classification:
-${localResult.label}
+${lastResult.label}
 
 Local reasons:
-${localResult.reasons.join('\n')}
+${lastResult.reasons.join('\n') || 'None'}
 
 Return:
 
@@ -771,30 +911,26 @@ One short sentence
 Maximum 250 words.
 No markdown.
 `
-                        })
-                    });
+                    })
+                });
 
-                    const data = await response.json();
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error || 'AI service unavailable');
 
-                    if (!response.ok) {
-                        throw new Error(data.error || 'AI service unavailable');
-                    }
+                // escape first (AI output is untrusted), then keep line breaks
+                aiExplanation.innerHTML =
+                    esc(data.answer || 'No AI explanation was returned.').replace(/\n/g, '<br>');
 
-                    aiExplanation.innerHTML =
-                        (data.answer || 'No AI explanation was returned.')
-                            .replace(/\n/g, '<br>');
+            } catch (error) {
+                console.error('AI explanation error:', error);
+                aiExplanation.innerHTML = '❌ Unable to generate the AI explanation right now. Please try again.';
+            } finally {
+                explainBtn.disabled = false;
+            }
+        });
 
-                } catch (error) {
-                    console.error('AI explanation error:', error);
-                    aiExplanation.innerHTML =
-                        '❌ Unable to generate the AI explanation right now. Please try again.';
-                } finally {
-                    explainBtn.disabled = false;
-                }
-            });
-
-            updateSms();
-
+        updateSms();
     </script>
 </body>
+
 </html>
